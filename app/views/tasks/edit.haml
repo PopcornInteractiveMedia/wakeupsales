@@ -1,0 +1,40 @@
+.container
+  .row
+    .col-md-10
+      .panel.panel-default
+        .panel-heading
+          %h3.panel-title Edit task '#{@task.title}'
+        .panel-body
+          = form_for(@task, :html=>{:class => "form",:method=>"post",:id=>"edit_task_form"}) do |f|
+            /= form_for [@taskable, Task.new], :remote => true, :html=>{:class => "form",:method=>"post",:id=>"new_task"} do |f|
+            %input{:type=>"hidden",:id=>"is_edit_deal",:name=> "is_edit_deal"}
+            .form-group
+              /%label
+              /  Title
+              =f.text_area :title, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"}, :style=> "height:41px;resize: none;" , :required => true, :placeholder => "Task title"
+            .row
+              .form-group.col-md-6
+                /%label Due Date
+                =f.text_field :due_date, required: "true",:class=> "col-md-12 form-control",id: "datetimepicker" , :placeholder => "Due date"
+              .form-group.col-md-6
+                /%label
+                /  Type
+                =f.select :task_type_id, current_user.organization.task_types.collect {|c| [ c.name, c.id ]}, {:include_blank => '- Task Type -'},:class=>"col-md-12 form-control", :required => true
+            .row
+              .form-group.col-md-6
+                /%label Assigned To
+                =f.select :assigned_to, current_user.organization.users.collect {|c| [ c.first_name, c.id ]}, {:include_blank => '- Assign User -'},:class=>"col-md-12 form-control", :required => true
+              .form-group.col-md-6
+                /%label Mail To
+                =f.email_field :mail_to,:class=>"col-md-12 form-control", :required => true, :placeholder => "Mail to"
+            .row
+              .form-group.col-md-6
+                /%label Priority
+                =f.select :priority_id, current_user.organization.priority_types.find(:all).collect {|c| [ c.name, c.id ]}, {:include_blank => '- Task Priority -'},:class=>"col-md-12 form-control", :required => true
+              .form-group.col-md-6
+                /%label Deals
+                =f.select :taskable_id, current_user.organization.deals.find(:all).collect {|c| [ c.title, c.id ]}, {:include_blank => '- Assign Deal -'},:class=>"col-md-12 form-control", :required => true
+                =hidden_field_tag :taskable_type,"Deal"
+            .form-actions
+              =f.submit "Update Task", :class=> "btn btn-primary"
+              =link_to "Cancel",tasks_path,:class=>"btn btn-default"

@@ -1,0 +1,39 @@
+.container
+  .row
+    .panel.panel-default.widget
+      .panel-heading
+        %span.icon-thumbs-up
+        %h3.panel-title
+          Leads
+        %span.label.label-info
+          = @contact.deals.count
+      .panel-body
+        .table-responsive
+          %table.table
+            %thead
+              %tr
+                %th Status
+                %th Age
+                %th Title
+                %th Priority
+                %th Source
+                %th Created By
+            %tbody
+              - @contact.deals.each do |deal|
+                %tr
+                  %td 
+                    = deal.deal_status.name
+                  %td 
+                    %span.icon-time
+                    = format_date(deal.created_at)   
+                  %td 
+                    = link_to deal.title, lead_path(deal)
+                  %td
+                    %span{:class=>"btn btn-xs btn-sm #{(deal.priority_type.original_id == 1 ? 'btn-metis-1' : deal.priority_type.original_id == 2 ? 'btn-metis-2' : 'btn-metis-3')}"}
+                      =deal.priority_type.name
+                  %td 
+                    = deal.deal_source.nil? ? "" : deal.deal_source.source.name
+                  %td 
+                    =image_path "no_user.png", :style=>"max-height:18px"
+                    = deal.initiator.full_name
+         

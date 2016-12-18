@@ -1,0 +1,78 @@
+= form_for @user, :html => { :class => 'form-horizontal', :id => "user_edit_form",:method => "PUT" } do |f|
+
+  .row
+    .form-group.col-md-6.prf_img
+      %label Profile Image
+      .img_upload
+        .cms-file-input.ace-file-multiple{style:"text-align:center"}
+          = f.file_field "profile_image",:class=> "form-control btn-metis-7 btn-file file_hid_block"
+
+          - if @user.image.present?
+            = image_tag @user.image.image.url(:thumb), style: "max-width:80px", :id=>"previewHolder"
+          - else
+            = image_tag "/assets/prof_img.png", :alt=>"profile image", style: "max-width:90px; max-height:90px", :id=>"previewHolder"
+          .click_img
+            Change Image  
+    .form-group.col-md-6{style: "margin-left:31px"}
+      %label 
+        User Group
+      .cb
+      - if @user.admin_type != 1 && params[:action] != "profile"
+        .radio.fl
+          %label
+            =f.radio_button :admin_type, "2", :checked => true, :onclick => "$('#show_dropdown1').hide();"
+            Admin
+        .radio.fl{style: "margin: 0px 0 0 20px;padding-bottom: 8px;"}
+          %label
+            =f.radio_button :admin_type, "3", :onclick => "$('#show_dropdown1').show();"
+            Non-Admin
+            -if (@user.admin_type == 3)
+              -style="display:block;"
+            -else
+              -style="display:none;"
+        .cb
+          %span#show_dropdown1{style: style}
+            = f.select :role_id, options_from_collection_for_select(current_user.organization.roles, "id","name", (@user.role.id if (@user.admin_type == 3) && @user.role.present?)),{ }, :class => 'form-control'
+      - else
+        - if @user.admin_type == 1
+          Super Admin
+        - if @user.admin_type == 2
+          Admin
+        - if @user.admin_type == 3
+          =@user.user_role.role.name
+  .row
+    .form-group.col-md-6
+      =f.text_field :first_name, :required => true ,:class=> "col-md-3 form-control", :placeholder=>"First Name", :html=>{:maxlength=> "20"},:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .form-group.col-md-6{style: "margin-left:31px"}
+      =f.text_field :last_name, :class=> "col-md-12 form-control", :placeholder=>"Last Name",:html=>{:maxlength=> "20"},:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+  .row
+    .form-group.col-md-6
+      =f.email_field :email, :required => true ,:class=> "col-md-12 form-control", :placeholder=>"Email", :html=>{:maxlength=> "50"}, :disabled => true
+    .form-group.col-md-6{style: "margin-left:31px"}
+      =f.text_field :work_phone,:class=>"col-md-12 form-control bfh-phone",:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :onblur => "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:onclick =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", :value => @user.phone.present? ? @user.phone.phone_no : ""
+  .row
+    .form-group.col-md-6{style: "padding-right:0px"}
+      = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, { },:class => 'form-control', :required => true
+    .form-group.col-md-6{:style => "float:left;margin-left:31px;"}
+      = f.select :priority_label, options_for_select((0..15).to_a, :selected => @user.priority_label),{:include_blank => '- Priority Level -'},:class => 'form-control'
+  .cb
+  .modal-footer{style:"margin-left:-15px;"}
+    .form-actions.navbar-left
+      =f.submit "Update", :class=>"btn btn-primary", :disable_with => "Updating...."
+      %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+        %span.c_links
+          Cancel
+:javascript
+  function readURL(input) {
+         if (input.files && input.files[0]) {
+             var reader = new FileReader();
+             reader.onload = function(e) {
+                 $('#previewHolder').attr('src', e.target.result);
+             }
+
+             reader.readAsDataURL(input.files[0]);
+         }
+     }
+     $("#user_profile_image").change(function() {
+         readURL(this);
+     });

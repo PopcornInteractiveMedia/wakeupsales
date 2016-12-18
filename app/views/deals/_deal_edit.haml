@@ -1,0 +1,474 @@
+= form_for(@deal,  :html=>{:class => "form",:multipart => true, :method=>"put",:id=>"update-deal"}) do |f|
+  .col-md-6.p0.fl
+    .col-md-3.p0
+      .fl.grey_act Deal Name:
+    .col-md-8.p0
+      /%a.deal_title{href: "#", id: @deal.id}
+      /  =@deal.title
+      =f.text_field :title,:class=>"form-control col-md-4"
+    .cb10
+  .cb10
+  .col-md-6.p0.fl
+    .col-md-3.p0
+      .fl.grey_act Priority:
+    .col-md-8.p0
+      - hot_priority = @current_organization.hot_priority
+      -if !hot_priority.nil? && !hot_priority.blank?
+        = f.radio_button :priority_type,hot_priority.id, :class => "fl", :checked =>(!@deal.priority_type.nil? && @deal.priority_type.id == hot_priority.id ? true : false) 
+      -else
+        = f.radio_button :priority_type,"", :class => "fl"  
+      .hot_pri.labelTaskType.fl{style:"margin-right:20px;margin-left:5px"}
+        =!hot_priority.nil? && !hot_priority.blank? ? hot_priority.name : "NA"
+      - warm_priority = @current_organization.warm_priority
+      -if !warm_priority.nil? && !warm_priority.blank?
+        =f.radio_button :priority_type,warm_priority.id, :class => "fl", :checked => (!@deal.priority_type.nil? &&  @deal.priority_type.id == warm_priority.id  ? true : false )  
+      -else
+        =f.radio_button :priority_type,"", :class => "fl"
+      .warm_pri.labelTaskType.fl{style:"margin-right:20px;margin-left:5px"}
+        =!warm_priority.nil? && !warm_priority.blank? ? warm_priority.name : "NA"
+      - cold_priority = @current_organization.cold_priority
+      -if !warm_priority.nil? && !warm_priority.blank?
+        =f.radio_button :priority_type, cold_priority.id, :class => "fl", :checked => (!@deal.priority_type.nil? && @deal.priority_type.id == cold_priority.id ? true : false )  
+      -else
+        =f.radio_button :priority_type, "", :class => "fl"
+      .cold_pri.labelTaskType.fl{style:"margin-left:5px"}
+        =!cold_priority.nil? && !cold_priority.blank? ? cold_priority.name : "NA"    
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Assigned To:
+    .col-md-8.p0
+      =f.select :assigned_to, @current_organization.users.where("invitation_token IS ? and is_active = ?", nil,true).order("first_name ASC").collect {|c| [ c.full_name, c.id ]}, {:include_blank => '- Users -',:selected=>@deal.assigned_to},:class=>"form-control", :required => true
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Source:
+    .col-md-8.p0
+      .fl{style:"width:200px;word-wrap: break-word;"}  
+        %a{href: "#", id: "source1", "data-value"=> (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.id : "","data-original-title"=> (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : "", "data-type" => "select", "data-placement" => "top",  rel: "tooltip", title: (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : ""}
+          = truncate( (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : "NA", length: 30)
+        %a{href: "#", id: "editable_source",style:"margin-left:5px", title: "Add a Source","data-value"=>"","data-original-title"=> "", "data-title"=>"custom"}
+          + NEW
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Deal Tag:
+    .col-md-8.p0
+      = f.text_field :tag_list,:class=>"form-control col-md-4", :value => @deal.all_tags
+      %div{:style=>"width:265px"}
+        %font.fnt_color{ size: "2"} Try to enter a comma or hit enter after tag.    
+    .cb10
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Duration:
+    .col-md-8.p0
+      .input-group.fl
+        = select_tag :duration_type , options_for_select(["Weeks", "Hours"],@deal.deal_duration_type), :prompt => "- Duration -", :class => 'form-control ', :style=>"width:124px"
+      .fl
+        =f.text_field :duration,:class=>"form-control col-md-4", style: "width:115px",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)", :value=> @deal.deal_duration
+      %div{:style=>"width:265px"}
+        %font.fnt_color{ size: "2"} 
+    .cb10
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act Payment:
+    .col-md-8.p0
+      .fl{:style=>"font-size:13px"}
+        = f.radio_button :payment_status, "Not done", :checked => (@deal.payment_status.present? && @deal.payment_status == "Not done" ? true : false) , :style =>"position:relative;top:2px", :value => "Not done"
+        Not done
+        = f.radio_button :payment_status, "Partially done", :style =>"margin-left:10px;position:relative;top:2px",  :checked => (@deal.payment_status.present? && @deal.payment_status == "Partially done" ? true : false), :value => "Partially done"
+        Partially done
+        = f.radio_button :payment_status, "Completed", :checked => (@deal.payment_status.present? && @deal.payment_status == "Completed" ? true : false), :value => "Completed", :style=>"margin-left: 11px;"
+        Completed
+    .cb10
+  .col-md-6.p0.fl
+    .col-md-3.p0
+      .fl.grey_act Visibility:
+    .col-md-8.p0
+      .fl{:style=>"font-size:13px"}
+        = f.radio_button :is_public, true, :checked => @deal.is_public? == true ? true : "", :style =>"position:relative;top:2px"      
+        - if params[:controller] == "contacts"
+          Everyone
+        - else
+          Everyone in organization  
+        = f.radio_button :is_public, false, :checked => true, :style =>"margin-left:10px;position:relative;top:2px",  :checked => @deal.is_public? == false ? true : ""
+        /= f.radio_button :is_public, false, :checked =>  params[:controller] == "contacts" ? (@contact.is_public == false ? true : "") : (@deal.is_public == false ? true : "")
+        - if params[:controller] == "contacts"
+          Only I can
+        - else
+          Associate Users
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Deal Amount:
+    .fl.col-md-8.p0
+      .input-group
+        %span.input-group-addon $
+        =f.text_field :amount,:class=>"form-control",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Probability:
+    .col-md-8.p0
+      .input-group
+        /=f.number_field :probability,:class=>"form-control",:maxlength=>"3",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+        =f.text_field :probability,:class=>"form-control", :onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+        %span.input-group-addon %
+      %span{id: "err_prb",style: "color:red;"}
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act Industry:
+    .col-md-8.p0
+      .fl{style:"width:200px;word-wrap: break-word;"}  
+        %a{href: "#", id: "industry1", "data-value"=>@deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.id,"data-original-title"=> @deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.name, "data-type" => "select", "data-placement" => "top" ,  rel: "tooltip", title: @deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.name}
+          = truncate(@deal.deal_industry.nil? ? "NA" : @deal.deal_industry.industry.name, length: 30)       
+        %a{href: "#", style: "margin-left:5px;",id: "editable_industry", title: "Add an Industry","data-value"=>"","data-original-title"=> "", "data-title"=>"custom"}
+          + NEW
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act.mt10 Note:
+    .col-md-8.p0
+      =f.text_area :comments,:class=>"form-control note_txtarea txtarea_editdeal",:style=>"height:70px"
+    .cb10.ht-20
+    .col-md-3.p0
+      .fl.grey_act Bill Type:
+    .col-md-8.p0
+      .fl{:style=>"font-size:13px"}
+        = f.radio_button :billing_type, "Fixed", :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Fixed" ? true : false) , :style =>"position:relative;top:2px", :value => "Fixed"
+        Fixed
+        = f.radio_button :billing_type, "Monthly", :style =>"margin-left:10px;position:relative;top:2px",  :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Monthly" ? true : false), :value => "Monthly"
+        Monthly
+        = f.radio_button :billing_type, "Hourly", :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Hourly" ? true : false), :value => "Hourly", :style=>"margin-left: 11px;"
+        Hourly
+  .cb10
+  .modal-footer
+    .navbar-left
+      .col-md-12
+        %button.btn.btn-primary{type: "submit", "data-disable-with" => "Saving...", :id=>"is_update_deal"} Update
+        %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+          %span.c_links Cancel
+:css
+  #deal_tag_list_tag{width: 80px!important;}          
+#output_update_deal
+:javascript
+  $(document).ready(function() {
+    $("#duration_type").change(function () {
+       if(this.value != ""){
+         $("#deal_duration").prop("required","true")
+       }else{
+         $("#deal_duration").removeAttr("required") 
+       }
+       if($("#deal_duration").val() != ""){
+         $(this).prop("required","true")
+       }else{
+         $(this).removeAttr("required") 
+       }
+     
+    });
+    $("#deal_duration").keyup(function () {
+       if(this.value != ""){
+         $("#duration_type").prop("required","true")
+       }else{
+         $("#duration_type").removeAttr("required") 
+       }
+       
+    });
+    var options = { 
+        target:        '#output_update_deal',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_deal,  // pre-submit callback 
+        success:       showResponse_deal // post-submit callback 
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        //clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind to the form's submit event 
+    $('#update-deal').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+ 
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+  }); 
+ 
+  // pre-submit callback 
+  function showRequest_deal(formData, jqForm, options) { 
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+    $('#is_update_deal').prop("disabled", true).html("Saving...");
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+ 
+    //alert('About to submit: \n\n' + queryString); 
+    //formValidation();
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+  } 
+ 
+  // post-submit callback 
+  function showResponse_deal(responseText, statusText, xhr, $form)  { 
+    // for normal html responses, the first argument to the success callback 
+    // is the XMLHttpRequest object's responseText property 
+ 
+    // if the ajaxForm method was passed an Options Object with the dataType 
+    // property set to 'xml' then the first argument to the success callback 
+    // is the XMLHttpRequest object's responseXML property 
+ 
+    // if the ajaxForm method was passed an Options Object with the dataType 
+    // property set to 'json' then the first argument to the success callback 
+    // is the json data object returned by the server 
+    $('#editDealModal').modal('hide');
+    window.location.reload();
+    //$('#cancel').removeAttr("disabled").html("Cancel");
+    //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+    //    '\n\nThe output div should have already been updated with the responseText.'); 
+  }
+  $(function() {                
+    $.fn.editableform.loading;
+    $('#industry1').editable({
+      url: '/save_lead_industry?deal_id='+"#{@deal.id}",
+      pk: 'industry',
+      mode: 'popup',
+      source: '/get_industry_list?type=industry',
+      title: 'Enter Industry',   
+      data: {custom: 'Select Industry'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please select industry';
+      },
+      render: function() {
+        this.$loading = $($.fn.editableform.loading);        
+        this.$div.empty().append(this.$loading);
+      },
+      success: function(response, newValue) {
+        if(response != "")
+          $('#industry1').attr("data-original-title", response)
+      }
+    });
+    $('#source1').editable({
+      url: '/save_lead_industry?deal_id='+"#{@deal.id}",
+      pk: 'source',
+      mode: 'popup',
+      source: '/get_industry_list?type=source',
+      title: 'Enter Source',   
+      data: {custom: 'Select Source'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please select source';
+      },
+      render: function() {
+        this.$loading = $($.fn.editableform.loading);        
+        this.$div.empty().append(this.$loading);
+      },
+      success: function(response, newValue) {
+        if(response != "")
+          $('#source1').attr("data-original-title", response)
+      }
+    });
+    
+    $('#deal_messanger_type').trigger('change');
+    $('#deal_messanger_type').change(function() {
+      if($(this).val() != ""){
+        $("#deal_messanger_id").prop("required", true);
+      }else{
+        $("#deal_messanger_id").removeAttr("required")
+      }
+    });
+    $('.deal_title').editable({
+      url: '/update_lead_ttl' ,
+      pk: 1,
+      mode: 'inline',
+      title: 'Enter Title',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter deal title';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').editable({
+      url: '/settings/save_source?from=editdeal' ,
+      pk: "#{@deal.id}",
+      title: 'Enter Source',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Source name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        //$("#deal_deal_source").append(o);
+        $("#source1").text(newsource[1]).attr("data-original-title", newsource[1]);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').on('hidden', function(e, editable) {
+      $("#editable_source").text("+ NEW");
+      editable.text = "";
+    });
+    // Save industry
+    $('#editable_industry').editable({
+      url: '/settings/save_industry?from=editdeal' ,
+      pk: "#{@deal.id}",
+      title: 'Enter Industry',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: "left",
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter industry name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        //$("#deal_deal_industry").append(o);
+        
+        $("#industry1").text(newsource[1]).attr("data-original-title", newsource[1]);
+        
+        //$("#editable_industry").text("+NEW");
+        //alert($("#editable_industry").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_industry').on('hidden', function(e, editable) {
+      $("#editable_industry").text("+ NEW");
+      editable.text = "";
+    });
+  });
+  $(function() { 
+    $('#deal_tag_list').tagsInput({'defaultText':'Click to add'});
+  });
+  $("#first_name").keypress(function() {
+  $('#first_name').addClass('loadinggif');
+   setTimeout(hideascontactload, 510);
+  });
+  function hideascontactload()
+  {
+    $('#first_name').removeClass('loadinggif');
+  }
+  function chk_con_id()
+  {
+   var con_id = $("#contactable_id").val();
+   var name = $("#first_name").val();
+   var deal_contacts_id = $("#deal_contacts_id").val();
+   var trainindIdArray = deal_contacts_id.split(',');
+   for(i = 0; i< trainindIdArray.length; i++){
+     if(trainindIdArray[i] == con_id) {
+        $("#show_er").show();
+       $("#show_er").html('Contact is already associated.');
+       return false
+     }
+     else
+     { $("#show_er").hide();}
+   }
+   if(name != "" && con_id == "")
+   {
+    $("#show_er").html('Contact not found.');
+    return false
+   }
+   else
+   {
+    $("#show_er").html('');
+   }
+  }
+  $('#first_name.typeahead').typeahead([{
+    name: 'contacts',
+    valueKey: 'name',
+    remote: {url: '/get_contacts/'+ #{current_user.organization.id}+ '?q=%QUERY'},
+    template: "<p style='word-wrap: break-word;'><strong>{{name}}</strong> - {{email}}</p>",
+    engine: Hogan
+    }]).on('typeahead:selected',onSelected).on('typeahead:opened',onOpened);
+  function onSelected($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    //    var hfield = document.getElementById('hfield');
+    var email = document.getElementById('email');
+    var country = document.getElementById('country');
+    var workphone = document.getElementById('work_phone');
+    console.log(datum.id);
+    //    hfield.value = datum.id;
+    $("#contactable_id").val(datum.id);
+    $("#contactable_type").val(datum.company_type)
+    email.value = datum.email;
+    country.value=datum.country_id;
+    workphone.value = datum.phone_no;
+    $("#country").trigger("change")
+  }
+  function onOpened($e){
+  $("#contactable_id").val("")
+  console.log('Opned');
+  }          

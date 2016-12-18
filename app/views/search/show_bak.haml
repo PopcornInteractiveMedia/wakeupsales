@@ -1,0 +1,168 @@
+:css
+  .dataTables_paginate { float: right; margin-top:-18px; }
+%div.table-responsive
+  %table.table.table-hover{cellspacing: "40", id: "searchResult", style: "border: 1px solid #E0DEDE","data-source"=>tasks_url(format: 'json',params: {cuser: current_user.id, task_type: params[:task_type]})}
+    %thead{style: "background-color:#428bca;color: #fff;"}
+      %tr
+        %th
+          Search Result(s)
+        %th
+        %th
+    %tbody
+
+  =render :partial => "tasks/task_edit_popup"
+  =render :partial => "tasks/task_followup_popup"
+      
+:javascript
+  $(function() {
+    taskDataTable=$('#taskList').dataTable({
+      oLanguage: {"sLengthMenu": "_MENU_", "sProcessing": "<img alt='loader' src='/assets/ajax-loader.png'>" },
+      sPaginationType: "bootstrap",
+      bJQueryUI: true,
+      bServerSide: true,
+      aoColumns: [{sClass: 'check_box_col_width'},{sClass: 'col-md-7'}, null, null, {sClass: 'action_col_width', sAlign: "center"}],
+      sAjaxSource: $('#taskList').data('source'),
+      bLengthChange: false,
+      bFilter: false,
+      bSort: false,
+      aoColumnDefs: [
+        {
+          aTargets: [0],
+            mRender: function(data, type, row ){
+              return "<div class='priority_border' style='background:red'></div>"+row[2];
+            }
+        },
+        {aTargets: [1],
+            mRender: function(data, type, row ){
+              return "<div style="+row[13]+"> \
+                    <ul class='task_list'> \
+                      <li> \
+                        <a href='"+row[12]+"'>"+row[4]+"</a> \
+                        <b>•</b> \
+                        <span class='due_date'> \
+                          Due on &nbsp;"+row[5]+" \
+                        </span> \
+                        <br> \
+                        <span class='assigned_user'> \
+                          Assigned to "+row[6]+" \
+                          <b>•</b> \
+                          <font class='created_by'> \
+                            Created \
+                            "+row[7]+" \
+                            <b>•</b> \
+                            By "+row[8]+" \
+                          </font> \
+                        </span> \
+                      </li> \
+                    </ul> \
+                  </div>"
+              }},
+        {aTargets: [2],
+            mRender: function(data, type, row ){
+              return "<div style='color:green'>"+row[9]+"</div>";
+              
+              }},
+        {aTargets: [3],
+            mRender: function(data, type, row ){
+              return "<div style="+row[13]+"> \
+                      <div class='label"+row[10]+" labelTaskType'>"+row[10]+"</div> \
+                      </div>"
+              
+              }},
+        {aTargets: [4],
+            mRender: function(data, type, row ){
+              if(row[11] == "false"){
+                return "<div class='action_task' style='display: none;'> \
+                        <a href='javascript:void(0)' onclick=\"$('#taskEditModal').modal('show');edit_popup('"+row[3]+"')\" rel='tooltip' style='text-decoration:none;padding:2px 2px;;color:#000'><button class='btn btn-primary btn-xs' type='button'> \
+                          <span class='icon-pencil'></span> \
+                        </button> \
+                        </a> \
+                        <a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" rel='tooltip' style='text-decoration:none;padding:2px 2px;;color:#000'><button class='btn btn-success btn-xs' type='button'> \
+                          <span> \
+                            <img alt='Running-man' src='/assets/running-man.png'> \
+                          </span> \
+                        </button> \
+                        </a> \
+                        <a href=tasks/"+row[3]+" data-confirm='Are you sure?' data-method='delete' rel='tooltip nofollow' style='text-decoration:none;padding:2px 2px;;color:#000' title='Delete'><button class='btn btn-danger btn-xs' type='button'> \
+                          <span class='icon-trash'></span> \
+                        </button> \
+                        </a> \
+                      </div>"
+              }else{
+                return "<div class='action_task' style='display: none;'> \
+                          <a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" rel='tooltip' style='text-decoration:none;padding:2px 2px;;color:#000'><button class='btn btn-success btn-xs' type='button'> \
+                            <span> \
+                              <img alt='Running-man' src='/assets/running-man.png'> \
+                            </span> \
+                          </button> \
+                          </a> \
+                        </div>"
+            }
+              }}
+      ],
+      fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+        $(nRow).addClass('task_row');
+         $(nRow).hover(
+          function() {
+          $(this).find("div.action_task").show();
+          }, function() {
+          $(this).find("div.action_task").hide();
+         });
+         
+      }
+      
+    });
+  
+  $("#search_box").keypress(function(){
+      taskDataTable.fnFilter( $("#search_box").val() );
+     
+  })
+  
+  });
+  
+  function edit_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/edit_task",
+      dataType: 'json',
+      async: false,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#form_content").html(data.responseText);
+        $("#task_loader").hide();
+        
+      }
+    });
+  }
+  function follow_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/follow_up_task",
+      dataType: 'json',
+      async: false,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#followform_content").html(data.responseText);
+        $("#task_loader").hide();
+        
+      }
+    });
+  }

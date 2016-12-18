@@ -1,0 +1,33 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  name: MyString
+  company_strength: 
+  first_name: MyString
+  last_name: MyString
+  email: MyString
+  website: MyString
+  messanger_type: 1
+  messanger_id: MyString
+  linkedin_url: MyString
+  facebook_url: MyString
+  twitter_url: MyString
+  is_public: false
+  created_by: 1
+
+two:
+  organization: 
+  name: MyString
+  company_strength: 
+  first_name: MyString
+  last_name: MyString
+  email: MyString
+  website: MyString
+  messanger_type: 1
+  messanger_id: MyString
+  linkedin_url: MyString
+  facebook_url: MyString
+  twitter_url: MyString
+  is_public: false
+  created_by: 1

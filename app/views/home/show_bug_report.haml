@@ -1,0 +1,63 @@
+:css
+  = stylesheet_link_tag "wakeupsales"
+.container  
+  %h1{style: "text-align: center"}
+    Details of bug report
+  .show_bug_report
+    - if !@report_a_bug.nil?
+      %div
+        .bug_content
+          %div.fl
+            Issue reported by:  
+          %div.fl
+            %a{href: "javascript:void(0)" }
+              = @report_a_bug.email 
+          %div.fr
+            = distance_of_time_in_words(@report_a_bug.created_at, Time.now) + "ago"
+          .cb
+          %div
+            Bug Type:
+            = @report_a_bug.bug_type
+          %div{style: "font-size:16px"}
+            = @report_a_bug.description
+
+      .div{style: "border-bottom: 1px solid #f5f5f5"}
+        %div
+          %h2
+            Comments
+        - commentable = @report_a_bug
+        - comments = commentable.comments.recent.limit(10).all
+        %div{style: "margin-left:30px"}
+          - comments.each do |cmt|
+            %div{style:"border: 1px solid #aaa;margin-bottom: 10px;border-radius: 5px;"}  
+              %div{style: "padding: 10px; background-color:#f2f8fa;border-bottom: 1px solid rgb(170, 170, 170);border-radius: 5px 5px 0px 0px;"}
+                %b
+                  = cmt.email
+                commented
+                =distance_of_time_in_words(cmt.created_at, Time.now) + " ago"
+              .comment_field
+                %div{style: "width: 60%"}
+                  =cmt.comment
+              .cb
+      .comment_section
+        %div
+          %h2
+            Add a Comment
+          %div{style: "margin-left: 30px;width:70%"}
+            %form{action: "/post_comment"}
+              %div
+                / = tinymce 
+                = email_field_tag :email, "",:placeholder => "Please enter your email", class: "sel_input",:required => 'true'
+                = text_area_tag :comment,"", :size => '15x5',:required => 'true',:class => 'sel_input', :placeholder => 'Write your comment',style: "resize: none;"
+                / = text_area_tag :comment, :required => 'true',:class => 'tinymce', :placeholder => 'Write your comment', :rows => 40, :cols => 50
+                = hidden_field_tag :report_a_bug_id, @report_a_bug.id
+              %div{style: "font-size:16px;margin-bottom: 15px;"}
+                Bug Status: 
+                = select_tag "bug_status", options_for_select(["New", "Resolve", "Close"],@report_a_bug.bug_status), class: "form-control"
+              %div
+                = submit_tag "Post Comment", class: "btn btn-primary"
+                %a{href: "/bug_report", class: "btn btn-default"}
+                  Cancel
+
+
+      

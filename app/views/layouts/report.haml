@@ -1,0 +1,30 @@
+!!!
+%html{xmlns: "http://www.w3.org/1999/xhtml"}
+  %meta{content: "text/html; charset=utf-8", "http-equiv" => "Content-Type"}/
+  
+  %head
+    /= stylesheet_link_tag "/var/www/html/wakeupsales_UI/app/assets/stylesheets/wakeupsales.css"
+  
+  %body
+    = yield
+    
+    
+:css
+  body, html{
+  margin:0px;padding:0px;background:#F3F3F5;
+  font-family: 'SourceSansPro-Regular';
+  }
+  a{text-decoration:none}
+  table th{text-align:left;}
+  table{width:100%;}
+  .table-striped > tbody > tr:nth-child(2n) > td, .table-striped > tbody > tr:nth-child(2n) > th{background-color:#F4F4F4}
+  .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th{background-color:#ffffff}
+  .table-responsive{margin-top:-1px;border:1px solid #ddd;border-top:none}
+  .table.table-striped tbody tr td a {color: #3E6BA1;}
+  /*Deal listing css changes*/
+  .table.white-table{font-size:10px;background-color:#FFFFFF;margin-bottom:0px;font-size:14px;color:#999999}
+  .table.white-table > thead > tr > th {font-size:10px;background-color:#EDEEF0;border-top: 1px solid #DDDDDD !important; border-bottom: 1px solid #DDDDDD;color:#666666;font-family:'SourceSansPro-Semibold';}
+  .table.white-table > tbody > tr > td {font-size:10px;}
+  table th:first-child{width:20%}
+  table th:last-child{width:20%}
+  table th{width:20%}

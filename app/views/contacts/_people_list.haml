@@ -1,0 +1,87 @@
+%table.table-striped.table{cellspacing: "20"}
+  - if @people.present?
+    - @people.each do |people|
+      %tr
+        %td
+          .col-md-1
+            - if people.image.present? && people.image.image.present? 
+              = image_tag people.image.image.url(:icon), width: "50", style: "border: 1px solid #ddd;padding: 2px;", class: "img-polaroid img-rounded"
+            - else
+              = image_tag "no_user.png", width: "50", height: "50", style: "border: 1px solid #ddd;padding: 2px;", class: "img-polaroid img-rounded"
+          .col-md-10
+            .row
+              - if people.full_name.present?
+                =link_to people.full_name, "/individual_contact/"+people.id.to_s, style: "font-size: 18px;"
+            .row
+              - if people.position.present?
+                = people.position
+            .row
+              - if people.email.present?
+                %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", rel: "tooltip", title: "#{people.email}",href: "javascript:",:style=>"cursor: default;" , onclick: "$('#send-mail-popup').get(0).reset();$('#to').val(\"#{people.email}\");$('#mailer_id').val(\"#{people.id}\");$('#mailer_type').val(\"#{people.class.name}\");$('#email_contact_id').val(\"#{people.id}\");$('#email_contact_type').val(\"#{people.class.name}\");"}
+                  %font=people.email              
+  - else
+    %div{style: "margin:7px"}
+      No person listed
+      =link_to "Create new", "#contactModal", "data-toggle" => "modal", "onclick" => "$('#contact_referrer').val('People List');$('#new-contact')[0].reset();$('#email_err_i').html('');display_company_div('hide');$('#company_radio').hide();$('#work_phone').val('#{@work_phone.first.phone_no}');$('#company_value').val('#{@contact.name}');$('#company_id').val('#{@contact.id}');$('#country').val(\"#{@contact.address.country_id}\");$('#company_value').attr('disabled', true);$('#country').trigger('change')"
+      individual
+              
+:css
+  .label.arrowed-right {
+  margin-right: 5px;
+  }
+  .label.arrowed {
+  margin-left: 5px;
+  }
+
+  .label.arrowed-right, .label.arrowed-in-right {
+    position: relative;
+    z-index: 1;
+  }
+
+  .label.arrowed, .label.arrowed-in {
+  position: relative;
+  z-index: 1;
+  }
+
+  .label-warning, .badge-warning {
+  background-color: #f89406!important;
+  }
+
+  .label.arrowed:before {
+  left: -10px;
+  border-width: 10px 5px;
+  }
+
+  .label-warning.arrowed:before {
+  border-right-color: #f89406;
+  }
+
+  .label.arrowed:before, .label.arrowed-in:before {
+  display: inline-block;
+  content: "";
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-right-color: #abbac3;
+  }
+
+
+  .label.arrowed-right:after {
+  right: -10px;
+  border-width: 10px 5px;
+  }
+
+
+  .label.arrowed-right:after, .label.arrowed-in-right:after {
+  display: inline-block;
+  content: "";
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-left-color: #abbac3;
+  }
+
+
+

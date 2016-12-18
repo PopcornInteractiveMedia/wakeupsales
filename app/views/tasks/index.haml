@@ -1,0 +1,58 @@
+:javascript
+  //alert('called')
+  $.removeCookie("task_assigned_to");
+  $.removeCookie("task_year");
+  $.removeCookie("task_quarter");  
+  //alert("#{params[:t_type].present?}")
+   if("#{params[:t_type].present?}" != ""){
+      history.replaceState({}, '', '/tasks');  
+      $.removeCookie("t_type");
+   }
+  function delete_task(id, tab_name, recurring){
+    if(confirm("Do you want to delete the task?")){
+        delete_all=false
+        if(recurring == "true")
+          delete_all=confirm("Do you want to delete all recurring tasks?");
+        $.ajax({
+        type: "DELETE",
+        url: "/tasks/"+id,
+        dataType: 'json',
+        data: {delete_all_task: delete_all},
+        async: false,
+        beforeSend: function(){
+          $("#task_loader").show();
+        },
+        success: function(data)
+        {
+        },
+        error: function(data) {
+          $("#task_loader").hide();
+        },
+        complete: function(data) {
+          $("#task_loader").hide();
+          $(document).trigger("add-alerts", [{'message': "Task has been deleted successfully." ,'priority': 'success'}]);
+          var task_tab = tab_name.split('Task')[0];
+          load_task_tabs(task_tab, true); 
+        }
+      });
+    }
+  }
+  
+  
+=hidden_field_tag 'hdntasks', 'mytask'
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      #alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+        %button.close{onclick: "$('#alert-msg').hide();$('#task_loader').hide();"} x
+        #msg_div
+      #filter_msg.col-md-offset-0{style: "text-align: center;display:none"}
+      /  Filtered 4 deals assigned to fro ty from 290 new deals.
+      /  =link_to "RESET", "/tasks", class: "btn btn-xs btn-warning"
+      #task_header
+        = render :partial => "task_header", :object => @tasks
+=render :partial => "tasks/task_js"
+
+

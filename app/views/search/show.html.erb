@@ -1,0 +1,302 @@
+<script>
+$('.srch_fld').click();
+$( document ).ready(function() {
+  $('input[type="text"].bfh-phone, input[type="phone"].bfh-phone, span.bfh-phone').each(function () {
+      var $phone = $(this);
+      $phone.bfhphone($phone.data());
+  });
+  $('.incoming_chk_box_class').change(function() {
+    filter_models();
+  });
+  
+  if("<%=params[:type].present? && (params[:type] != "")  %>" == "true"){
+    $(".filter_btn_search").addClass('open')
+  }
+  var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+  
+  if(typeof url[2] != 'undefined')
+  {
+  var urlparam = url[2].split('=')[1].replace("%2C", ",");
+  var array = urlparam.split(",");
+  $.each(array,function(i){
+   if(array[i] == "deals")
+    $("#deals_fil").prop("checked", true)
+  if(array[i] == "tasks")
+    $("#tasks_fil").prop("checked", true)
+  if(array[i] == "individual_contacts")
+    $("#individual_contacts_fil").prop("checked", true)
+  if(array[i] == "company_contacts")
+    $("#company_contacts_fil").prop("checked", true)
+  });
+ }
+});
+function filter_search_res()
+{
+  var query = $("#query").val();
+  var type = 'deals';
+  alert(query)
+  $.ajax( {
+    type: "POST",
+    url: "/search_result" ,
+    data: {type: type, query: query},
+    success: function(result) {
+      
+     }
+     });
+}
+function filter_models()
+{
+   
+  var checkboxes = document.getElementsByName('filter_chk');
+  var vals = "";
+  for (var i=0, n=checkboxes.length;i<n;i++) {
+   if (checkboxes[i].checked) 
+   {
+    vals += checkboxes[i].value+ ","
+   }
+  }
+  //if(vals != ""){
+   vals = vals.slice(0, -1);
+   window.location.href =  document.URL.replace(/&?type=([^&]$|[^&]*)/i, "") + "&type="+ vals +"";
+   $("#reset_src_filter").show();
+  //} 
+}
+function reset_src_filter()
+{
+  window.location.href =  document.URL.replace(/&?type=([^&]$|[^&]*)/i, "");
+}
+</script>
+
+<style>
+ul, li {
+    list-style-type: none;
+}
+.digg_pagination {
+  background: white;
+  cursor: default;
+  /* self-clearing method: */ }
+  .digg_pagination a, .digg_pagination span, .digg_pagination em {
+    padding: 0.2em 0.5em;
+    display: block;
+    float: left;
+    margin-right: 1px; }
+  .digg_pagination .disabled {
+    color: #999999;
+    border: 1px solid #dddddd;
+	padding: 5px;
+	}
+  .digg_pagination .current {
+    font-style: normal;
+    font-weight: bold;
+    background: #2e6ab1;
+    color: white;
+	border: 1px solid #2e6ab1;
+    }
+  .digg_pagination a {
+    text-decoration: none;
+    color: #105cb6;
+    border: 1px solid #9aafe5; }
+    .digg_pagination a:hover, .digg_pagination a:focus {
+      color: #000033;
+      border-color: #000033; }
+  .digg_pagination .page_info {
+    background: #2e6ab1;
+    color: white;
+    padding: 0.4em 0.6em;
+    width: 22em;
+    margin-bottom: 0.3em;
+    text-align: center; }
+    .digg_pagination .page_info b {
+      color: #000033;
+      background: #6aa6ed;
+      padding: 0.1em 0.25em; }
+  .digg_pagination:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden; }
+  * html .digg_pagination {
+    height: 1%; }
+  *:first-child + html .digg_pagination {
+    overflow: hidden; }
+</style>
+
+<div class="container">
+  <div class="row">
+	<div class="cb10"></div>
+	<div class="cb10"></div>
+	<div class="col-md-12">
+	  <div class="con-box1">
+    <%if @results.present? || params[:type].present?%>
+      <div class="col-md-12">
+        <div class="btn-group filter_btn_search pull-right" style="padding-bottom: 4px;">
+              <button id="reset_src_filter" class="btn btn-warning" type="button" onclick="$('.srch_fld').val('');history.go(-1);" style="margin-right: 50px;height:33px;line-height:7px">Back</button>
+              
+             <%if params[:type].present?%>
+                <button id="reset_src_filter" class="btn btn-warning" type="button" onclick="reset_src_filter();" style="margin-right: 5px;height:33px;line-height:7px">Reset</button>            
+             
+	          <%end%>
+		         
+ 
+              <button class="btn btn-default dropdown-toggle f_menu" data-toggle="dropdown" onclick="reser_all_submenu();add_class_menu();" type="button">
+                <span class="glyphicon glyphicon-filter">
+                </span>
+                Filter
+              </button>
+          <ul class="dropdown-menu main_menu" role="menu">
+            <li class="arrow_top" style="margin-left:87px;z-index:99"></li>
+            <li class="dropdown-submenu" style="line-height: 27px;margin-left: 5px;">
+                <input id="deals_fil" type="checkbox" value="deals" name="filter_chk" class="incoming_chk_box_class"> <span class="labelDeal labelTaskType" style="float:none;margin-left:5px;">Deal</span>
+            
+            </li>
+            <li class="divider"></li>
+            <li class="dropdown-submenu" style="line-height: 27px;">
+                  <input id="tasks_fil" type="checkbox" value="tasks" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelTask labelTaskType" style="float:none;margin-left:5px;">Task</span>
+            
+            </li>
+            <li class="divider"></li>
+            <li class="dropdown-submenu" style="line-height: 27px;">
+                  <input id="company_contacts_fil" type="checkbox" value="company_contacts" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelCompanyContact labelTaskType" style="float:none;margin-left:5px;">CompanyContact</span>
+            
+            </li>
+            <li class="divider"></li>
+            <li class="dropdown-submenu" style="line-height: 27px;">
+                   <input id="individual_contacts_fil" type="checkbox" value="individual_contacts" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelIndividualContact labelTaskType" style="float:none;margin-left:5px;">IndividualContact</span>
+            
+            </li>
+            <li class="divider"></li>
+          </ul>
+        </div>
+        </div>
+    
+    
+		<!--  <input id="deals_fil" type="checkbox" value="deals" name="filter_chk" class="incoming_chk_box_class"> <span class="labelDeal labelTaskType" style="float:none;margin-left:5px;">Deals</span>
+      <input id="tasks_fil" type="checkbox" value="tasks" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelTask labelTaskType" style="float:none;margin-left:5px;">Tasks</span>
+      <input id="company_contacts_fil" type="checkbox" value="company_contacts" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelCompanyContact labelTaskType" style="float:none;margin-left:5px;">CompanyContacts</span>
+      <input id="individual_contacts_fil" type="checkbox" value="individual_contacts" name="filter_chk" class="incoming_chk_box_class" style="margin-left:5px;"> <span class="labelIndividualContact labelTaskType" style="float:none;margin-left:5px;">IndividualContacts</span>
+      <button id="search_flr" class="btn btn-primary" type="button" onclick="filter_models();" style="margin-left:5px;height:25px;line-height:7px;">Filter</button> 
+      <%if params[:type].present?%>
+        <button id="reset_src_filter" class="btn btn-warning" type="button" onclick="reset_src_filter();" style="margin-left:5px;height:25px;line-height:7px">Reset</button>            
+		  <%end%>
+		  <button id="reset_src_filter" class="btn btn-warning" type="button" onclick="$('.srch_fld').val('');history.go(-1);" style="margin-left:125px;height:25px;line-height:7px">Back</button>-->
+    <%end%>
+		  
+			<div style='border: 2px solid #dddddd; height: 500px; overflow-y:scroll;margin-top:5px;'> 
+			   <table class='table table-hover' style='border: 2px solid #dddddd;'>
+
+			<%if @results.nil? || @results.blank?%>
+			<div style="font-size: 18px;margin-left: 36%;margin-top:5%;width:314px;">Oops! No Results Found</div>
+			<% else %>
+
+			 
+					  <thead style='background-color:#8C8C8C;color: #fff;'> 
+						<th colspan='2'>Displaying about <%=@results.total %> result(s) for '<%=h params[:query] %>'</th> 
+						<th>&nbsp;</th> 
+					  </thead>
+					
+				   <% @results.each do |result| %> 
+				   
+						 <tr> 
+								<td style='width:3%'> 
+									
+									<%=image_tag result.image_url , class: 'img-avatar', style: "min-height: 60px;max-width: 60px;" %>
+									
+								</td>
+								 <td style='width:86%'>
+									<%if result.class.name == "Deal" %>
+									   <div> 
+										 <b><a href="/<%=result.class.name.downcase.pluralize%>/<%=result.id.to_s%>"><%=result.title%></a></b> 
+										  &nbsp;&nbsp;
+										 <b>&bull;</b>&nbsp;&nbsp;
+										 Created by <font class='created_by'><%=result.initiator_name%></font>&nbsp;&nbsp;
+									   <br>
+										<font class='created_by'>Created <%=result.created_at.strftime("%H:%M %b %d, %Y")%> &nbsp;&nbsp;</font>
+									 </div>
+
+									<%elsif (result.class.name == "CompanyContact"  || result.class.name == "IndividualContact" ) %>
+									
+									 <div> 
+									 
+									 <%- contact_url = result.class.name == "CompanyContact" ? "company_contact" : "individual_contact" %>
+										<b><a href="/<%=contact_url%>/<%=result.id.to_s%>"><%=result.title%></a></b> 
+										  &nbsp;&nbsp;
+										 <b>&bull;</b>&nbsp;&nbsp;
+										 
+										Created by <font class='blu_apt'><%=result.initiator_name%></font>&nbsp;&nbsp;<br> 
+										<span class='list-info'>"
+											<% @contact_detail ="" %>
+											<%	if result.phone_number %>
+												<%@contact_detail += "<span>Phone:</span> #{result.phone_number}</i>&nbsp;&nbsp;&nbsp;&nbsp;" %>
+											<%end%>
+											<%if result.email !=""%>
+											  <%	@contact_detail += "<span>Email:</span> #{result.email}&nbsp;&nbsp;&nbsp;&nbsp;"%>
+											<%end%>
+											<%if result.country_name !=""%>
+											<%	@contact_detail += "<span>Country:</span>#{result.country_name}</span>"%>
+											<%end%>
+										<% @contact_detail +="<br>" %>
+										
+									 <font class='gry_apt'>Created <%=result.created_at.strftime("%H:%M %b %d, %Y")%> &nbsp;&nbsp;</font> 
+									</div>	
+									 
+									
+									<%elsif result.class.name == "Task"%>
+									
+									 <div> 
+									 
+										<b><a href="<%=result.get_url%>"><%=result.title.to_s%></a></b> 
+										  &nbsp;&nbsp;
+										 <b>&bull;</b>&nbsp;&nbsp;
+										Created by <font class='blu_apt'><%=result.initiator_name%></font>&nbsp;&nbsp;
+										<b>&bull;</b>&nbsp;&nbsp; <b><%=result.taskable_name%></b> <font class='blu_apt'><%=result.taskable_title%></font> 
+										  <br> 
+										  <font class='gry_apt'> Created  <%=result.created_at.strftime("%H:%M %b %d, %Y")%> &nbsp;&nbsp; 
+											<b>&bull;</b>&nbsp;&nbsp; 
+											<span class='task_time due_dt'>Due on &nbsp;<%=result.due_date.present? ? result.due_date.strftime("%H:%M %b %d, %Y") : ""%></span>&nbsp;&nbsp; 
+											<b>&bull;</b>&nbsp;&nbsp;Assigned to <b class='blu_apt'><%=result.assigned_user_name%></b> 
+										   </font>
+										   </div>
+									
+									<%elsif result.class.name == "Note"%>
+									
+									 <div> 
+										<b><%=result.title.html_safe if result.title%></b> 
+										  &nbsp;&nbsp;
+										 <b>&bull;</b>&nbsp;&nbsp;
+										Note by <font class='blu_apt'><%=result.initiator_name%></font>&nbsp;&nbsp;
+										<b>&bull;</b>&nbsp;&nbsp; 
+										<%- notable_url = (result.notable_type_data == "Deal" || result.notable_type_data == "DealMove") ? "deals" : (result.notable_type_data == "CompanyContact" ? "company_contact" : "individual_contact") %>
+
+										<b><%=result.notable_type_data%></b> <font class='blu_apt'><a href="/<%=notable_url%>/<%=result.notable_id.to_s%>"><%=result.notable_type_title%></a></font>
+										 <br> 
+									  <font class='gry_apt'> Created  <%=result.created_at.strftime("%H:%M %b %d, %Y")%> &nbsp;&nbsp;  </font>
+									  </div>
+									  
+									
+									<%else%>
+									  No Data Found
+									<%end%>
+									
+							</td> 
+								<td style='width:11%'> 
+								<div class='label<%= result.class.name %> labelTaskType'> <%= result.class.to_s.titleize %></div> 
+								  
+								</td> 
+							  </tr>
+
+				   <% end %>
+				</table></div>
+				<div class='digg_pagination' style="padding-bottom: 25px;">
+					<%=will_paginate(@results, :params =>{:query=>params[:query]})%>
+				 </div>
+
+			<%end%>
+
+      </div>
+     </div>
+  </div>
+ </div>
+
+
+

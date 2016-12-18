@@ -1,0 +1,9 @@
+-if user_signed_in?
+  #taskModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+    .modal-dialog
+      .modal-content
+        #form_content
+          - @task=Task.new
+          =render :partial => "tasks/task_form", :object => @task, :title=> :""
+
+

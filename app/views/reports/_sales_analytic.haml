@@ -1,0 +1,66 @@
+.table-responsive
+  %table.table.white-table.table-hover.table-striped
+    %thead
+      %tr
+        %th Name
+        %th Group
+        %th Deals assigned
+        %th Call
+        %th Email
+        %th Follow-up
+        %th Quote
+        %th Appointment
+        %th Qualified
+        %th Won
+        /%th 
+        /  Deals
+        /  %i{style: "font-size: 11px;"}  (Not Qual. + Lost)
+        %th Lost
+        %th Junk
+
+    %tbody
+      - if !@users.nil? || !@users.blank?
+        - @users.each do |user|
+          - total_deal=user.all_assigned_deal.by_is_active.includes(:deal_status).by_range(@start_date,@end_date).where("deals.deal_status_id IS NOT NULL").group("deal_statuses.original_id").count
+          %tr
+            %td 
+              = user.full_name
+            %td 
+              - if user.admin_type == 1
+                Super Admin
+              - elsif user.admin_type == 2
+                Admin
+              -elsif user.user_role.present? && user.user_role.role.present?
+                = user.user_role.role.name
+            %td 
+              - assigned_deal = total_deal.values.sum
+              - if assigned_deal != 0 
+                = link_to "javascript:", :onclick=>"display_assigned_deal_user(\'#{user.id}\',\'#{@start_date.to_date}\',\'#{@end_date.to_date}\' )" do
+                  = assigned_deal
+              - else
+                = assigned_deal
+            - deal_ids = user.all_assigned_deal.by_is_active.by_range(@start_date,@end_date).select("id").map(&:id)
+            - all_task = Task.select("id").where(taskable_id: deal_ids).where(taskable_type: "Deal").by_is_completed
+            %td 
+              = all_task.by_name("Call").count
+            %td 
+              = all_task.by_name("Email").count
+            %td 
+              = all_task.by_name("Follow-up").count
+            %td 
+              = all_task.by_name("Quote").count
+            %td 
+              = all_task.by_name("Appointment").count
+            %td 
+              = total_deal.values_at(2).first.nil? ? 0 :  total_deal.values_at(2).first
+            %td 
+              = total_deal.values_at(4).first.nil? ? 0 :  total_deal.values_at(4).first
+            %td 
+              - notq = total_deal.values_at(3).first.nil? ? 0 :  total_deal.values_at(3).first
+              - lost = total_deal.values_at(5).first.nil? ? 0 :  total_deal.values_at(5).first
+              = notq.to_i + lost.to_i
+            %td 
+              = total_deal.values_at(6).first.nil? ? 0 :  total_deal.values_at(6).first
+
+            
+

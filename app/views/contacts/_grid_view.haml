@@ -1,0 +1,100 @@
+.con-box1
+  .navbar-right{style: "margin-right:16px"}
+    .btn-group{style:"margin-top: 14px;"}
+      %button.btn.btn-default
+        .glyphicon.glyphicon-import.fl
+        .import_contact.fl{style: "width:115px;text-align: left;text-transform: capitalize", type: "button"} Import Contact
+      %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+        %span.caret
+        %span.sr-only Toggle Dropdown
+      %ul.dropdown-menu{role: "menu"}
+        %li
+          %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from Zoho CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('zoho_crm')"} Zoho CRM
+        %li
+          %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from Sugar CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('sugar_crm')"} Sugar CRM
+        %li
+          %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from Sugar CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('fatfree_crm')"} FatFree CRM
+        %li
+          %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from other CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('other_crm')"} Other CRM
+    %a#contacts_export_btn{href: contacts_path(format: "csv"), class: "btn btn_adcon btn-default", title: "Export Contact"}
+      %i.glyphicon.glyphicon-export{style: "color: #818282"}
+      Export to CSV
+    %a{href: "/contacts/gmail", class: "btn btn_adcon btn-default", title: "Import Contact"}
+      %i.add_con_icn
+      Import Contact
+    %a{"data-toggle" => "modal", href: "#contactModal", class: "btn btn_adcon btn-default",onclick: "$('#contact_referrer').val('Grid View');$('#new-contact')[0].reset();$('#email_err_i').html('');display_company_div('hide')",rel: "tooltip", title: "Add a Contact"}
+      %i.add_con_icn
+      Add New Contact
+      //          %ul.pagination
+      //            %li.prev.disabled
+      //              %a{href: "#", style: "padding:6px"}
+      //                .fl.page_prv
+      //            %li.next
+      //              %a{href: "#", style: "padding:6px"}
+      //                .fl.page_nxt
+    %a{href: "javascript:void(0)", class: "btn btn_adcon btn-default", onclick: "display_list_view()"}
+      %i.glyphicon.glyphicon-th-list{style: "color: #818282"}
+      List view
+  %div
+    %h3 Contact
+  / .col-md-2{style: "padding:0"}
+  /   /%div
+  /   /  %form.navbar-form{role: "search", style: "padding:0"}
+  /   /    .input-group
+  /   /      %input.form-control{name: "q", placeholder: "Search", style: "width:150px", type: "text"}/
+  /   /      .input-group-btn.con_panel
+  /   /        %button.btn.btn-default{style: "padding:6px", type: "submit"}
+  /   /          %i.glyphicon.glyphicon-search
+  /   .btn-group
+  /     %button.btn.btn-default.contact_select_type{style: "width:150px;text-align: left;text-transform: capitalize", type: "button"} All
+  /     %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+  /       %span.caret
+  /       %span.sr-only Toggle Dropdown
+  /     %ul.dropdown-menu{role: "menu"}
+  /       %li
+  /         %a{href: "javascript:void(0)", onclick: "display_contact_type_per_tab('all');"} All
+  /       %li
+  /         %a{href: "javascript:void(0)" , onclick: "display_contact_type_per_tab('individual');"} Individual
+  /       %li
+  /         %a{href: "javascript:void(0)", onclick: "display_contact_type_per_tab('company');"} Company
+  /       %li
+  /         %a{href: "javascript:void(0)", onclick: "display_contact_type_per_tab('customer');"} Customer
+  /       %li
+  /         %a{href: "javascript:void(0)", onclick: "display_contact_type_per_tab('mycontact');"} My Contact
+  /   .cb10
+  /   .con-box1{style: "padding:0 17px 0 0;border-radius:0px;border:0"}
+      
+  /     %input{:type=>"hidden",:id=>"selected_tab",:name=> "selected_tab"}   
+  /     %input{:type=>"hidden",:id=>"alphabet_value",:name=> "alphabet_value"}    
+  /     #accordion.panel-group
+  /       #all_contacts{style: "width: 103%;"}
+  /         %div{style: "border:1px solid #D9D9D9;min-height:202px;width:100%; text-align:center;vertical-align:middle;padding-top: 70px; "}
+  /           = image_tag "ajax-loader2.gif"
+  #contact_detail
+    /=render partial: "show"
+    =render partial: "contact_details"
+
+
+/ Modal
+/ #ImportContactModal.modal.fade{"aria-hidden" => "true", role: "dialog", tabindex: "-1"}
+/   .modal-dialog{style: "margin-top: 50px;"}
+/     .modal-content
+/       = form_tag("",method: "post",:multipart => true, class: "import_contact_form") do
+/         .modal-header
+/           %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+/           %h4.modal-title Import Contact 
+/           .download_sample_csv{style: "display:none"}
+/             %p
+/               We are supporting csv file import. Here is a sample csv format we are supporting.
+/             %p
+/               Click Here to Download
+/               %a{href: "http://192.168.2.98:3000/contact.csv", download: "contact.csv"} 
+/                 Sample CSV
+/         .modal-body
+/           .row
+/             .form-group.col-md-12
+/               = file_field_tag "attachment_lead", :class => "form-control", :required => true, style: "height: auto;"
+/               = hidden_field_tag "ref_site"
+/           .modal-footer
+/             .pull-left
+/               =submit_tag "Submit", :class=>"btn btn-primary btn-large", :disable_with => "Submitting....", :id => "submit_beta_user", :onclick=> "return chk_validemail('beta_account_email')"  

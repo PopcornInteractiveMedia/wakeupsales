@@ -1,0 +1,544 @@
+:css
+  .cms-file-input input[type="file"] {
+    position: fixed;
+    z-index: 2;
+    opacity: 0;
+    filter: alpha(opacity=0);
+  }
+  .row{
+    margin-top: 3px;
+  }
+  .file_hid_block{
+    height:88px;
+    position: absolute !important;
+    top:1px;
+    vertical-align: middle;
+    width:89px;
+    cursor:pointer;
+  }  
+  .file_upld{
+    display:table-cell;
+    background:#ffffff;
+    border-radius:1px;
+    text-align:center;
+    border: 1px solid #e9e9e9;
+    vertical-align: middle;
+    padding:3px;
+    width:90px;
+    height:90px;
+  }  
+  .click_img{
+    background:#000000;
+    color: #FFFFFF;
+    font-size: 12px;
+    opacity: 0.5;
+    position: absolute;
+    text-align: center;
+    top:72px;
+    width: 89px;
+  }
+  .mt10{margin-top:6px;margin-right:0px;}
+  .img_upload{width:90px;height:90px;border:1px solid #ccc;background:#ffffff;margin-bottom: 5px;border-radius:3px;text-align:center;}
+= javascript_include_tag 'jquery.nicescroll.min'
+= stylesheet_link_tag 'profile'
+.container
+  .row
+    .cb10
+    .col-md-6.prof_det
+      .con-box1
+        .col-md-3.prf_img
+          = form_for @user,:url=> user_save_tmp_img_path+"?user_id="+@user.id.to_s, :html=>{:class => "form-horizontal",:id=>"tempImgSaveForm"}, :remote => true, :method => "POST" do |f|
+            .fl.img_upload
+              .cms-file-input.ace-file-multiple
+                - if @allowed_user
+                  %input{:type=>"hidden",:value=>"#{@user.id}",:id=>"user_id"}
+                  =f.file_field "profile_image" ,:class=>"form-control btn-metis-7 btn-file file_hid_block", :onchange=> "checkFile_withtype(this);$('#profileImgModal').modal({backdrop: 'static',show:true});$('#tempImgSaveForm').submit();"
+                  /%a{:id=>"openprofileImgModal", "data-toggle"=>"modal" ,:href=>"#profileImgModal"}  
+                - if @user.image.present?
+                  - image_path = @user.image.image.url(:thumb)
+                -else
+                  - image_path = "/assets/prof_img.png"
+                #profile_image_div
+                  = image_tag image_path, :alt=>"profile image", style: "max-width:90px; max-height:90px", :id=>"previewHolder"
+                .click_img
+                  Change Image              
+            /- if @allowed_user
+            /  %div
+            /    =f.submit "Update",:id=>"prof_update", :onclick => "return chk_file_present()", :class=>"btn btn-primary btn-sm", :disable_with => "Updating...." ,:style=>"display:none"        
+        .col-md-8.prof_addr
+          %div
+            %span.full-name{style: 'color: #343434'}
+              = @user.full_name
+            %span 
+              (
+              - if @user.admin_type == 1
+                Super Admin
+              - elsif @user.admin_type == 2
+                Admin
+              - elsif @user.admin_type == 3 && @user.role.present?
+                =@user.role.name 
+              )  
+          %div 
+            =@user.organization.name
+        .col-md-11
+          %h3 General Information
+        .cb10
+        .col-md-13.gen_inf_prof{:style=>"margin-right:240px;"}
+          %table.profile_tbl
+            %tr
+              %th Full Name
+              %td 
+                - if @user.first_name.present?
+                  - if @allowed_user
+                    %a.profile_first_name{href: "#", id: @user.id}
+                      = @user.first_name
+                  - else
+                    = @user.first_name
+                - if @user.last_name.present?
+                  - if @allowed_user
+                    %a.profile_last_name{href: "#", id: @user.id}
+                      = @user.last_name
+                  - else
+                    = @user.last_name
+            %tr
+              %th Password
+              %td
+                %a{href: "javascript:", onclick: "$('#user_password').val('');$('#user_password_confirmation').val('');$('#task_alert_msg').hide();$('#changepassModal').modal('show');"} !!!!!!!!!!
+            %tr
+              %th Company
+              %td 
+                =@user.organization.name
+            %tr
+              %th Email
+              %td
+                %font 
+                  = @user.email
+            %tr
+              %th Website
+              %td
+                %font 
+                  =link_to @user.organization.website, /^http/.match(@user.organization.website) ? @user.organization.website : "http://#{@user.organization.website}" , :target => '_blank'
+            - if @user.phone.present?
+              %tr
+                %th Work
+                %td
+                  %font 
+                    - if @allowed_user
+                      %a.profile_phone_number{href: "#", id: @user.id}
+                        = (@user.phone.phone_no if @user.phone.present?)
+                    - else
+                      = (@user.phone.phone_no if @user.phone.present?)
+              //%tr
+              //  %th Cell
+              //  %td
+              //    %font 1 (519) 266 6867
+            %tr
+              %th Time Zone
+              %td 
+                - if @allowed_user
+                  %a.profile_time_zone{:href => "#", :id => @user.id, :"data-value"=> @user.time_zone}
+                    = ActiveSupport::TimeZone["#{@user.time_zone}"]
+                - else
+                  = ActiveSupport::TimeZone["#{@user.time_zone}"]
+          
+            //%tr
+            //  %th Address
+            //  %td 311 W Superior St. 504 Chicago, IL
+            %tr
+              %th User Group
+              %td
+                .labelAppointment.labelTaskType 
+                  - if @user.admin_type == 1
+                    Super Admin
+                  - elsif @user.admin_type == 2
+                    Admin
+                  - elsif @user.admin_type == 3 && @user.role.present?
+                    =@user.role.name                    
+            - if @current_user.admin_type == 1 || @current_user.admin_type == 2
+              %tr
+                %th Priority Level
+                %td
+                  = @user.priority_label                                    
+        .cb10
+        /.col-md-12.gen_inf_prof{style: "border:0px;"}
+        /  %table
+        /    %tr
+        /      %th
+        /      %td
+        /        %button.btn.btn-primary.btn-sm{type: "button"} Update
+        .cb10
+    .col-md-6.prof_det_rt.prof_usr
+      #header_user_data
+      
+      .cb10
+      
+      = hidden_field_tag "user_id", @user.id
+      //#div_scroll_profile{style: "margin-top: 0px;margin-left: 0px;width:100%;height:620px;overflow-y:visible;overflow-x:hidden;"}
+      .con-box1.p0
+        .fl.head_font Deals
+        .cb10  
+        #div_deal_user
+          =image_tag "/assets/ajax-loader2.gif", style: "margin-left: 240px;margin-top: 23px;"
+=render :partial => "change_password"
+=render :partial => "profile_img_crop"
+.cb10
+.cb10
+:javascript
+  function readURL(input) {
+         if (input.files && input.files[0]) {
+             var reader = new FileReader();
+             reader.onload = function(e) {
+                 //$('#previewHolder').attr('src', e.target.result);
+             }
+
+             reader.readAsDataURL(input.files[0]);
+         }
+     }
+     $("#user_profile_image").change(function() {
+         $("#prof_update").show('slow');
+         readURL(this);
+     });  
+  $(document).ready(function(){
+    $('#tempImgSaveForm').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+        
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+    var options = { 
+        target:        '#crop_data_area',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_ImgSave,  // pre-submit callback 
+        success:       showResponse_ImgSave, // post-submit callback 
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    };
+    // pre-submit callback 
+    function showRequest_ImgSave(formData, jqForm, options) { 
+    //$('#notes_submit_btn').prop("disabled", true).html("Please wait...");
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+ 
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+    
+    //alert('About to submit: \n\n' + queryString); 
+    //formValidation();
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+    } 
+    // post-submit callback 
+    function showResponse_ImgSave(responseText, statusText, xhr, $form)  { 
+    if(responseText != "success" && responseText != "fail"){
+        //alert('ssssssssssssssss');
+        $('#crop_loader').hide();
+        $("#crop_data_area").html(responseText);
+        $(".jcrop-keymgr").hide();
+        
+    }
+    else
+      {
+        $('#crop_loader').hide();
+        $("#crop_data_area").html("<p><span style='color:red'>Unable to process your request. Please try after sometime.</span></p>");
+      }
+    }
+    //$("#tempImgSaveForm").bind("ajax:success", function(evt, data, status, xhr) {
+    //    $("#profileImgModal").modal("show")
+    //      alert(JSON.stringify(xhr.responseText ))
+    //});
+    $.ajax({
+        type: "POST",
+        url: "/load_header_count_user",
+        beforeSend: function(){
+          //$("#task_loader").show();
+        },
+        success: function(data)
+        {
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          $("#header_user_data").html(data.responseText);
+        }
+      });
+    setTimeout('fetch_user_leads()', 1000);
+    $('#div_scroll_profile').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+    $('.profile_first_name').editable({
+      url: '/save_profile_info',
+      pk: 1,
+      title: 'Enter first name',
+      type: 'text',
+      placement: 'top',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter first name';
+      },
+      success: function(data) {
+        $('.full-name').html(data);
+      },
+      error: function(data) {
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.profile_last_name').editable({
+      url: '/save_profile_info',
+      pk: 2,
+      title: 'Enter last Name',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter last name';
+       
+      },
+      success: function(data) {
+        $('.full-name').html(data);
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.profile_phone_number').editable({
+      url: '/save_profile_info',
+      pk: 3,
+      title: 'Enter phone Name',
+      type: 'text',
+      placement: 'top',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter phone no';
+       
+      },
+      success: function(data) {       
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.profile_time_zone').editable({
+      url: '/save_profile_info',
+      pk: 4,
+      title: 'Enter time zone',
+      type: 'select',
+      placement: 'top',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter time zone';
+       
+      },
+      source: [
+              {value: 'Hawaii', text:'(GMT-10:00) Hawaii'},
+              {value: 'Alaska', text:'(GMT-09:00) Alaska'},
+              {value: 'Pacific Time (US & Canada)', text:'(GMT-08:00) Pacific Time (US & Canada)'},
+              {value: 'Arizona', text:'(GMT-07:00) Arizona'},
+              {value: 'Mountain Time (US & Canada)', text:'(GMT-07:00) Mountain Time (US & Canada)'},
+              {value: 'Central Time (US & Canada)', text:'(GMT-06:00) Central Time (US & Canada)'},
+              {value: 'Eastern Time (US & Canada)', text:'(GMT-05:00) Eastern Time (US & Canada)'},
+              {value: 'Indiana (East)', text:'(GMT-05:00) Indiana (East)'},
+              {value: '', text:'-------------'},
+              {value: 'American Samoa', text:'(GMT-11:00) American Samoa'},
+              {value: 'International Date Line West', text:'(GMT-11:00) International Date Line West'},
+              {value: 'Midway Island', text:'(GMT-11:00) Midway Island'},
+              {value: 'Tijuana', text:'(GMT-08:00) Tijuana'},
+              {value: 'Chihuahua', text:'(GMT-07:00) Chihuahua'},
+              {value: 'Mazatlan', text:'(GMT-07:00) Mazatlan'},
+              {value: 'Central America', text:'(GMT-06:00) Central America'},
+              {value: 'Guadalajara', text:'(GMT-06:00) Guadalajara'},
+              {value: 'Mexico City', text:'(GMT-06:00) Mexico City'},
+              {value: 'Monterrey', text:'(GMT-06:00) Monterrey'},
+              {value: 'Saskatchewan', text:'(GMT-06:00) Saskatchewan'},
+              {value: 'Bogota', text:'(GMT-05:00) Bogota'},
+              {value: 'Lima', text:'(GMT-05:00) Lima'},
+              {value: 'Quito', text:'(GMT-05:00) Quito'},
+              {value: 'Caracas', text:'(GMT-04:30) Caracas'},
+              {value: 'Atlantic Time (Canada)', text:'(GMT-04:00) Atlantic Time (Canada)'},
+              {value: 'Georgetown', text:'(GMT-04:00) Georgetown'},
+              {value: 'La Paz', text:'(GMT-04:00) La Paz'},
+              {value: 'Santiago', text:'(GMT-04:00) Santiago'},
+              {value: 'Newfoundland', text:'(GMT-03:30) Newfoundland'},
+              {value: 'Brasilia', text:'(GMT-03:00) Brasilia'},
+              {value: 'Buenos Aires', text:'(GMT-03:00) Buenos Aires'},
+              {value: 'Greenland', text:'(GMT-03:00) Greenland'},
+              {value: 'Mid-Atlantic', text:'(GMT-02:00) Mid-Atlantic'},
+              {value: 'Azores', text:'(GMT-01:00) Azores'},
+              {value: 'Cape Verde Is', text:'(GMT-01:00) Cape Verde Is.'},
+              {value: 'Casablanca', text:'(GMT+00:00) Casablanca'},
+              {value: 'Dublin', text:'(GMT+00:00) Dublin'},
+              {value: 'Edinburgh', text:'(GMT+00:00) Edinburgh'},
+              {value: 'Lisbon', text:'(GMT+00:00) Lisbon'},
+              {value: 'London', text:'(GMT+00:00) London'},
+              {value: 'Monrovia', text:'(GMT+00:00) Monrovia'},
+              {value: 'UTC', text:'(GMT+00:00) UTC'},
+              {value: 'Amsterdam', text:'(GMT+01:00) Amsterdam'},
+              {value: 'Belgrade', text:'(GMT+01:00) Belgrade'},
+              {value: 'Berlin', text:'(GMT+01:00) Berlin'},
+              {value: 'Bern', text:'(GMT+01:00) Bern'},
+              {value: 'Bratislava', text:'(GMT+01:00) Bratislava'},
+              {value: 'Brussels', text:'(GMT+01:00) Brussels'},
+              {value: 'Budapest', text:'(GMT+01:00) Budapest'},
+              {value: 'Copenhagen', text:'(GMT+01:00) Copenhagen'},
+              {value: 'Ljubljana', text:'(GMT+01:00) Ljubljana'},
+              {value: 'Madrid', text:'(GMT+01:00) Madrid'},
+              {value: 'Paris', text:'(GMT+01:00) Paris'},
+              {value: 'Prague', text:'(GMT+01:00) Prague'},
+              {value: 'Rome', text:'(GMT+01:00) Rome'},
+              {value: 'Sarajevo', text:'(GMT+01:00) Sarajevo'},
+              {value: 'Skopje', text:'(GMT+01:00) Skopje'},
+              {value: 'Stockholm', text:'(GMT+01:00) Stockholm'},
+              {value: 'Vienna', text:'(GMT+01:00) Vienna'},
+              {value: 'Warsaw', text:'(GMT+01:00) Warsaw'},
+              {value: 'West Central Africa', text:'(GMT+01:00) West Central Africa'},
+              {value: 'Zagreb', text:'(GMT+01:00) Zagreb'},
+              {value: 'Athens', text:'(GMT+02:00) Athens'},
+              {value: 'Bucharest', text:'(GMT+02:00) Bucharest'},
+              {value: 'Cairo', text:'(GMT+02:00) Cairo'},
+              {value: 'Harare', text:'(GMT+02:00) Harare'},
+              {value: 'Helsinki', text:'(GMT+02:00) Helsinki'},
+              {value: 'Istanbul', text:'(GMT+02:00) Istanbul'},
+              {value: 'Jerusalem', text:'(GMT+02:00) Jerusalem'},
+              {value: 'Kyiv', text:'(GMT+02:00) Kyiv'},
+              {value: 'Pretoria', text:'(GMT+02:00) Pretoria'},
+              {value: 'Riga', text:'(GMT+02:00) Riga'},
+              {value: 'Sofia', text:'(GMT+02:00) Sofia'},
+              {value: 'Tallinn', text:'(GMT+02:00) Tallinn'},
+              {value: 'Vilnius', text:'(GMT+02:00) Vilnius'},
+              {value: 'Baghdad', text:'(GMT+03:00) Baghdad'},
+              {value: 'Kuwait', text:'(GMT+03:00) Kuwait'},
+              {value: 'Minsk', text:'(GMT+03:00) Minsk'},
+              {value: 'Nairobi', text:'(GMT+03:00) Nairobi'},
+              {value: 'Riyadh', text:'(GMT+03:00) Riyadh'},
+              {value: 'Tehran', text:'(GMT+03:30) Tehran'},
+              {value: 'Abu Dhabi', text:'(GMT+04:00) Abu Dhabi'},
+              {value: 'Baku', text:'(GMT+04:00) Baku'},
+              {value: 'Moscow', text:'(GMT+04:00) Moscow'},
+              {value: 'Muscat', text:'(GMT+04:00) Muscat'},
+              {value: 'St. Petersburg', text:'(GMT+04:00) St. Petersburg'},
+              {value: 'Tbilisi', text:'(GMT+04:00) Tbilisi'},
+              {value: 'Volgograd', text:'(GMT+04:00) Volgograd'},
+              {value: 'Yerevan', text:'(GMT+04:00) Yerevan'},
+              {value: 'Kabul', text:'(GMT+04:30) Kabul'},
+              {value: 'Islamabad', text:'(GMT+05:00) Islamabad'},
+              {value: 'Karachi', text:'(GMT+05:00) Karachi'},
+              {value: 'Tashkent', text:'(GMT+05:00) Tashkent'},
+              {value: 'Chennai', text:'(GMT+05:30) Chennai'},
+              {value: 'Kolkata', text:'(GMT+05:30) Kolkata'},
+              {value: 'Mumbai', text:'(GMT+05:30) Mumbai'},
+              {value: 'New Delhi', text:'(GMT+05:30) New Delhi'},
+              {value: 'Sri Jayawardenepura', text:'(GMT+05:30) Sri Jayawardenepura'},
+              {value: 'Kathmandu', text:'(GMT+05:45) Kathmandu'},
+              {value: 'Almaty', text:'(GMT+06:00) Almaty'},
+              {value: 'Astana', text:'(GMT+06:00) Astana'},
+              {value: 'Dhaka', text:'(GMT+06:00) Dhaka'},
+              {value: 'Ekaterinburg', text:'(GMT+06:00) Ekaterinburg'},
+              {value: 'Rangoon', text:'(GMT+06:30) Rangoon'},
+              {value: 'Bangkok', text:'(GMT+07:00) Bangkok'},
+              {value: 'Hanoi', text:'(GMT+07:00) Hanoi'},
+              {value: 'Jakarta', text:'(GMT+07:00) Jakarta'},
+              {value: 'Novosibirsk', text:'(GMT+07:00) Novosibirsk'},
+              {value: 'Beijing', text:'(GMT+08:00) Beijing'},
+              {value: 'Chongqing', text:'(GMT+08:00) Chongqing'},
+              {value: 'Hong Kong', text:'(GMT+08:00) Hong Kong'},
+              {value: 'Krasnoyarsk', text:'(GMT+08:00) Krasnoyarsk'},
+              {value: 'Kuala Lumpur', text:'(GMT+08:00) Kuala Lumpur'},
+              {value: 'Perth', text:'(GMT+08:00) Perth'},
+              {value: 'Singapore', text:'(GMT+08:00) Singapore'},
+              {value: 'Taipei', text:'(GMT+08:00) Taipei'},
+              {value: 'Ulaan Bataar', text:'(GMT+08:00) Ulaan Bataar'},
+              {value: 'Urumqi', text:'(GMT+08:00) Urumqi'},
+              {value: 'Irkutsk', text:'(GMT+09:00) Irkutsk'},
+              {value: 'Osaka', text:'(GMT+09:00) Osaka'},
+              {value: 'Sapporo', text:'(GMT+09:00) Sapporo'},
+              {value: 'Seoul', text:'(GMT+09:00) Seoul'},
+              {value: 'Tokyo', text:'(GMT+09:00) Tokyo'},
+              {value: 'Adelaide', text:'(GMT+09:30) Adelaide'},
+              {value: 'Darwin', text:'(GMT+09:30) Darwin'},
+              {value: 'Brisbane', text:'(GMT+10:00) Brisbane'},
+              {value: 'Canberra', text:'(GMT+10:00) Canberra'},
+              {value: 'Guam', text:'(GMT+10:00) Guam'},
+              {value: 'Hobart', text:'(GMT+10:00) Hobart'},
+              {value: 'Melbourne', text:'(GMT+10:00) Melbourne'},
+              {value: 'Port Moresby', text:'(GMT+10:00) Port Moresby'},
+              {value: 'Sydney', text:'(GMT+10:00) Sydney'},
+              {value: 'Yakutsk', text:'(GMT+10:00) Yakutsk'},
+              {value: 'New Caledonia', text:'(GMT+11:00) New Caledonia'},
+              {value: 'Vladivostok', text:'(GMT+11:00) Vladivostok'},
+              {value: 'Auckland', text:'(GMT+12:00) Auckland'},
+              {value: 'Fiji', text:'(GMT+12:00) Fiji'},
+              {value: 'Kamchatka', text:'(GMT+12:00) Kamchatka'},
+              {value: 'Magadan', text:'(GMT+12:00) Magadan'},
+              {value: 'Marshall Is.', text:'(GMT+12:00) Marshall Is.'},
+              {value: 'Solomon Is.', text:'(GMT+12:00) Solomon Is.'},
+              {value: 'Wellington', text:'(GMT+12:00) Wellington'},
+              {value: 'Nuku alofa', text:'(GMT+13:00) Nuku alofa'},
+              {value: 'Samoa', text:'(GMT+13:00) Samoa'},
+              {value: 'Tokelau Is', text:'(GMT+13:00) Tokelau Is'}
+      ],
+      success: function(data) {       
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+  });
+  function chk_file_present(){
+    if ($("#user_profile_image").val() == "")
+      return false;
+    else
+      return true; 
+  }
+  function fetch_user_leads(){
+      user_id = $('#user_id').val();
+      $.get( "/fetch_user_leads?id="+user_id, function( data ) {
+        $( "#div_deal_user" ).html( data );
+        $('#div_scroll_profile').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+      });
+    }

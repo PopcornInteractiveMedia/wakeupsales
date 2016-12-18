@@ -1,0 +1,92 @@
+- if user_signed_in?
+  - unless @current_user.is_siteadmin?
+    %li
+      .fl.sch_res_top{onclick: "sch_slide()"}
+        = form_tag search_result_path, method: :get, id: "search_form", format: "json" do
+          /.navbar-left.input-group#search_fld{style: "opacity:0.5"}
+          .navbar-right.input-group
+            = text_field_tag :query, params[:query], class: "form-control srch_fld",:required=> true
+          .input-group-btn{style: "position:inherit;"}
+            = submit_tag "", name: nil, class: "nav_srch_box", :disable_with => ""
+    %li.dropdown.addData
+      %a#notification_image.dropdown-toggle.image-effect{"data-toggle" => "dropdown", href: "#", style:"padding: 14px 7px 34px !important;"}
+        .fl.icon-new-bell
+        .fl
+          New
+        .fr.dwn_f_arrow
+      %ul.pull-right.dropdown-menu.dropdown-caret.dropdown-close{style: "padding:0"}
+        %li
+          =link_to "#dealModal", "data-toggle" => "modal", "onclick" => "$('#new_deal')[0].reset();$('.error').html('');$('#deal_first_name').attr('disabled', false);" do
+            =image_tag "deal_small.png",:alt=>"", :style=>"margin-right:10%"
+            Deal
+        %li.divider
+        %li
+          =link_to "#taskModal", "data-toggle" => "modal", "onclick" => "$('#task_form')[0].reset();$('#email_err').html('');$('.deal_list').show();$('.contact_firstname_div').hide();$('#deal_title').prop('required','true');$('#deal_title').removeAttr('disabled')" do
+            =image_tag "tasks_small.png",:alt=>"", :style=>"margin-right:10%"
+            Task
+        %li.divider
+        %li
+          =link_to "#contactModal", "data-toggle" => "modal", "onclick" => "$('#new-contact')[0].reset();$('#email_err_i').html('');$('#company_added_info_div').css('display','none');display_company_div('hide')" do
+            =image_tag "contact_small.png",:alt=>"", :style=>"margin-right:10%"
+            Contact
+        - if current_user.is_admin? || current_user.is_super_admin?
+          %li.divider
+          %li
+            =link_to "#inviteuserModal","data-toggle" => "modal", "onclick" => "$('#user_invite_form')[0].reset();$('#email_err_usr').html('');" do
+              /%img{:src=>"/assets/user_small.png",:alt=>"", :style=>"margin-right:10%"}
+              %i.icon-group.icon-2x.green{:style=>"margin-right:10%"}
+              Invite user
+        %li.divider
+    %input{:type=>"hidden",:id=>"session_authenticity_token",:value=>session[:_csrf_token]}
+  - unless current_user.is_siteadmin?
+    %li#bell_notification.dropdown
+      = render partial: "shared/notification_section"
+  %li.dropdown
+    - if current_user.image.present? && current_user.image.image.present?
+      = image_tag current_user.image.image.url(:thumb), :alt=>"profile image", :class=>"profile-circle fl"
+    - else
+      = image_tag "no_user30.png", :alt=>"dummy user", :class=>"img-circle fl"
+    %a.fr.dropdown-toggle{"data-toggle" => "dropdown", href: "#"}
+      .fl
+        =current_user.full_name.blank? ? current_user.organization.name : current_user.full_name
+      .fr.dwn_f_arrow
+    %ul.dropdown-menu
+      %li
+        %div{style: "text-align:left;margin-left:20px"}
+          %b 
+            =current_user.full_name
+          - unless current_user.is_siteadmin?
+            %div{style: "font-size:13px"}
+              =current_user.organization.name
+      %li.divider
+      /- if current_user.is_admin? || current_user.is_super_admin?
+      - unless current_user.is_siteadmin?
+        %li
+          %a{href: "/settings"}
+            %i.icon-cog{style: "margin-right:5px;"}
+            Settings
+        %li.divider
+        %li
+          =link_to profile_path do
+            %i.icon-user{style: "margin-right:5px;"}
+            Profile
+        %li.divider
+      %li
+        =link_to change_password_path do
+          %i.icon-lock{style: "margin-right:5px;"}
+          Change Password
+      %li.divider
+      - if current_user.is_admin?  || current_user.is_super_admin?
+        %li
+          %a{href: "/users"}
+            %i.glyphicon.glyphicon-tower{style: "margin-right:5px;"}
+            Admin
+        %li.divider
+      %li
+        %a{"data-method" => "delete", href: "/users/sign_out", rel: "nofollow"}
+          %i.icon-off{style: "margin-right:5px;"}
+          Logout
+        /= link_to destroy_user_session_path, :method => :delete do
+        /  %i.icon-off{style: "margin-right:5px;"}
+        /    Logout
+/ /.navbar-collapse

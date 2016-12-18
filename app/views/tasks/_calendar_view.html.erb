@@ -1,0 +1,77 @@
+<%=stylesheet_link_tag "/assets/fullcalendar"%>
+<%=javascript_include_tag "/assets/fullcalendar.min"%>
+<div style="margin-left: 70%;position: absolute;margin-top: 6px;">
+    <span class="fc-button fc-button-agendaWeek fc-state-default" id="spanfilterall" unselectable="on" onclick= "$('#calendar_filter_type').val('all');display_tasks('calendar');">All</span>
+    <span class="fc-button fc-button-agendaWeek fc-state-default displaynone" id="spanfilterreset" unselectable="on" onclick= "$('#calendar_filter_type').val('');display_tasks('calendar');">Reset</span>
+ 
+  </div>
+<div id="calendar_content" class="body">
+	<div id='task_calendar_view' style="background:#fff;padding:5px">
+
+	</div>
+</div>
+<script>
+    var date = new Date();
+    var d = date.getDate();
+    var m = date.getMonth();
+    var y = date.getFullYear();
+    var filter = $("#calendar_filter_type").val();
+
+    var calendar = $('#task_calendar_view').fullCalendar({
+        header: {
+            left: 'prev,today,next,',
+            center: 'title',
+            right: 'month,agendaWeek,agendaDay'
+        },
+       eventClick: function(event) {
+        if (event.url) {
+	        window.open(event.url, "_self");
+        }
+    },
+	eventRender: function(event, element, date ) {
+            element.attr('title', event.tip);
+            
+
+            if(event.is_complete == true){
+             element.css("text-decoration", " line-through");
+            }
+			element.find(".fc-event-time").before("<img rel='tooltip' src=" + event.img + "  class='img-circle' style='height:24px;width:24px;margin-right: 3px;' title="+ event.assign_to +" />");
+
+			element.find(".fc-event-title").after("<div style='float:right;font-weight: bold;text-align: right;padding-right: 4px;'>" + event.tasktype + "</div>").after("<div style='float:left;' > Assigned To: <span style='color:black;font-weight:bold;'> " + event.assign_to + "</span> </div>")
+			                
+           
+        },
+        editable: true,
+        eventSources: [
+
+        // your event source
+        {
+            url: '/calendar_data.json',
+            type: 'POST',
+            data : {deal_type :"<%=params[:deal_type]%>",asg_to : "<%=params[:asg_to]%>",task_type: "<%=params[:task_type]%>" , filter_type: filter},
+            beforeSend: function() {
+                $("#task_loader").show();
+            },
+            error: function() {
+                alert('there was an error while fetching events!');
+            },
+            complete: function() {
+                $("#task_loader").hide();
+                if(filter == "all"){
+                  $('#spanfilterall').addClass('displaynone')
+                  $('#spanfilterreset').removeClass('displaynone')
+               } else {
+                  $('#spanfilterall').removeClass('fc-state-active')
+               }
+            },
+            textColor: 'white' // a non-ajax option
+        }
+
+        // any other sources...
+
+       ],timeFormat: 'H(:mm)'
+
+        
+    });
+</script>
+

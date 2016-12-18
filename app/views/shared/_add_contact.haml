@@ -1,0 +1,294 @@
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+#contactModal.modal.fade{'aria-hidden' => 'true', 'aria-labelledby' => 'myModalLabel', role: 'dialog', tabindex: '-1'}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{'aria-hidden' => 'true', type: 'button', 'data-dismiss' => 'modal',} ×
+        %h4.modal-title Add a new contact
+      .modal-body
+        #contact-alert-msg.alert.fade.in.alert-danger{style: 'display:none;'}
+          %button.close{onclick: "$('#contact-alert-msg').hide();$('#loader').hide();"} x
+          #contact_msg_div
+        %form#new-contact{action: contacts_path,method: 'post',enctype: 'multipart/form-data', name: 'contact'}
+          %input{:type=>'hidden',:id=>'chk_con_type',:name=> 'chk_con_type',:value=> 'individual'}
+          %input{:type=>'hidden',:id=>'is_edit_contact',:name=> 'is_edit_contact'}
+          %input{:type=>'hidden',:id=>'contact_referrer',:name=> 'contact_referrer', :value => ''}
+          //%input{:type=>"hidden",:id=>"extension_contact_popup",:name=> "extension_contact_popup"}
+          -#.row{id: "radio_button"}
+          -#  #company_radio.form-group.col-md-2
+          -#    %label.radio.inline{style: "margin:-10px 0 -5px"}
+          -#      %input#comp_radio{name: "contact_type", type: "radio", value: "company", onclick: "display_company_div('show');display_individual_div('hide');" }/
+          -#      / %input#comp_radio{name: "contact_type", type: "radio", value: "company", onclick: "display_company_div('show');" }/
+          -#      Company
+          -#  #individual_radio.form-group.col-md-2
+          -#    %label.radio.inline{style: "margin:-10px 0 -5px"}
+          -#      %input#indi_radio{checked: "checked", name: "contact_type", type: "radio", value: "individual", onclick: "display_company_div('hide');display_individual_div('show');"}/
+          -#      / %input#indi_radio{checked: "checked", name: "contact_type", type: "radio", value: "individual", onclick: "display_company_div('hide');"}/
+          -#      Individual
+
+          .individual_added_info_div
+            .row
+              .form-group.col-md-6
+                %input#first_name.inp_txt{name: 'first_name', class: 'form-control',type: 'text', value: '', required: 'true', placeholder: 'First name',onkeyup: 'return onlycharacters(event)', onkeydown: 'return onlycharacters(event)',onblur: "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"}/
+              .form-group.col-md-6
+                %input#last_name.inp_txt{name: 'last_name', class: 'form-control',type: 'text', value: '', placeholder: 'Last name', onkeyup: 'return onlycharacters(event)', onkeydown: 'return onlycharacters(event)',onblur: "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"}/
+            .row
+              .form-group.col-md-6
+                %input#email.inp_txt{name: 'email', class: 'form-control',type: 'email', value: '', required: 'true', placeholder: 'Email'}/
+                %label{id:'email_err_ind',style: 'display:none',class: 'error'}
+              .form-group.col-md-6
+                =text_field_tag 'company_value', '',:size=>'32' ,:class=>'col-md-12 form-control company_name_typeahead', 'data-provide'=> 'typeahead' , :autocomplete=>'off', :placeholder => 'Company name', onkeyup:"$('#text_loader').show()"
+                =hidden_field_tag 'company_id'
+            .row
+              .form-group.col-md-6
+                - @cn = CompanyStrength.all
+                = select_tag 'company_strength', options_from_collection_for_select(@cn, 'id', 'range'), :prompt => '- Company Size -', :class => 'form-control'
+              .form-group.col-md-6
+                %input#website.inp_txt{name: 'website', class: 'form-control',type: 'text', value: '', placeholder: 'Website'}/
+            .row
+              .form-group.col-md-6
+                - @coun = Country.all
+                = select_tag 'country', options_from_collection_for_select(@coun, 'id', 'name'), :prompt => '- Country -', :class => 'form-control', :required => true, :onchange => "prefill_extension(this.value,'extension_for_contact','extension_contact_popup');get_country_states(this.value);"
+              .form-group.col-md-6
+                = select_tag 'state', nil, :prompt => '- State -', :class => 'form-control'
+            .row
+              .form-group.col-md-6
+                %input#city.inp_txt{name: 'city', class: 'form-control',type: 'text', value: '', placeholder: 'City'}/
+              .form-group.col-md-6
+                .input-group
+                  %span.input-group-addon#extension_for_contact +1
+                  = text_field_tag :work_phone,'', :id=>'work_phone',:value=>'', :class => 'form-control bfh-phone','data-format'=>' (ddd) ddd-dddd',:placeholder=>'(999) 999 9999', :onblur => "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:onclick =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+
+            .row
+              .form-group.col-md-12
+                %textarea#description.inp_txt{name: 'description', class: 'form-control',type: 'text', value: '', placeholder: 'Description'}
+
+          .modal-footer
+            .navbar-left
+              %button.btn.btn-primary.btn-success{type: 'submit', :onclick=>"$('#is_edit_contact').val('false'); return validate_email_contact();",:id=>'contact_submit_btn'} Save
+              %button.btn.btn-primary.btn-success{type: 'submit', :onclick=>"$('#is_edit_contact').val('true');",:id=>'contact_submit_more'} Save & add more
+              %a{href:'#', 'aria-hidden' => 'true', 'data-dismiss' => 'modal'}
+                %span.c_links
+                  Cancel
+
+#output_contact
+:javascript
+  $("#company_value").keypress(function() {
+  $('#company_value').addClass('loadinggif');
+   setTimeout(hidecontactload, 510);
+  });
+  function hidecontactload()
+  {
+    $('#company_value').removeClass('loadinggif');
+  }
+  $('#contactModal').on('show.bs.modal', function (e) {
+    $('#contact-alert-msg').hide();
+  });
+  function display_company_div(type){
+    if(type == "show"){
+      $('.company_added_info_div').show();
+      $('.individual_added_info_div').hide();
+      $("#chk_con_type").val("company")
+      $("#email_err_ind").hide();
+      $("#email_err_ind").html('');
+      $("#email_err_con").hide();
+      $("#email_err_con").html('');
+      $("#company_name").attr("required",true);
+      $("#company_email").attr("required",true);
+      //$("#company_strength").attr("required",true);
+      //$("#website").attr("required",true);
+      $("#first_name").removeAttr("required");
+      $("#email").removeAttr("required");
+      //$("#position").removeAttr("required");
+      //$('.company_added_info_div').slideDown();
+      //$("#company_name").val('').prop("required", true);
+      //$("#company_strength").val('').prop("required", true);
+    }else{
+      $("#chk_con_type").val("individual")
+      $("#email_err_con").hide();
+      $("#email_err_con").html('');
+      $("#email_err_ind").hide();
+      $("#email_err_ind").html('');
+      $('.company_added_info_div').hide();
+      $('.individual_added_info_div').show();
+      $("#company_name").removeAttr("required");
+      $("#company_email").removeAttr("required");
+      //$("#company_strength").removeAttr("required");
+      //$("#website").removeAttr("required");
+
+      $("#first_name").attr("required", true);
+      $("#email").attr("required", true);
+      //$("#company_value").attr("required", true);
+      //$("#position").attr("required", true);
+      //$('.company_added_info_div').slideUp();
+      //$("#company_name").removeAttr("required")
+      //$("#company_strength").removeAttr("required")
+    }
+
+      $("#company_name").val('');
+      $("#company_email").val('');
+      $("#company_strength").val('');
+      $("#website").val('');
+      $("#first_name").val('');
+      $("#email").val('');
+      $("#company_value").val('');
+      $("#position").val('');
+      $("#company_value").val('');
+      $("#country").val('');
+      $("#work_phone").val('');
+      $( "#country" ).keyup();
+  }
+
+  $(window).on('load', function () {
+    display_company_div("hide")
+    $('form input[type="text"].bfh-phone, form input[type="phone"].bfh-phone, span.bfh-phone').each(function () {
+      var $phone = $(this);
+      $phone.bfhphone($phone.data());
+    });
+  });
+  // prepare the form when the DOM is ready
+  $(document).ready(function() {
+    var options = {
+        target:        '#output_contact',   // target element(s) to be updated with server response
+        beforeSubmit:  showRequest_contact,  // pre-submit callback
+        success:       showResponse_contact // post-submit callback
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options:
+        //url:       url         // override for form's 'action' attribute
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type)
+        //clearForm: true        // clear all form fields after successful submit
+        //resetForm: true        // reset the form after successful submit
+
+        // $.ajax options can be used here too, for example:
+        //timeout:   3000
+    };
+
+    // bind to the form's submit event
+    $('#new-contact').submit(function() {
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first
+        // wrap it in a jQuery object and then invoke ajaxSubmit
+        $(this).ajaxSubmit(options);
+
+        // !!! Important !!!
+        // always return false to prevent standard browser submit and page navigation
+        return false;
+    });
+  });
+
+  // pre-submit callback
+  function showRequest_contact(formData, jqForm, options) {
+    // formData is an array; here we use $.param to convert it to a string to display it
+    // but the form plugin does this for you automatically when it submits the data
+    var queryString = $.param(formData);
+    if($('#is_edit_contact').val() == false)
+      $('#contact_submit_btn').prop("disabled", true).html("Please wait...");
+    else
+      $('#contact_submit_more').prop("disabled", true).html("Please wait...");
+    // jqForm is a jQuery object encapsulating the form element.  To access the
+    // DOM element for the form do this:
+    // var formElement = jqForm[0];
+
+    //alert('About to submit: \n\n' + queryString);
+    //formValidation();
+    // here we could return false to prevent the form from being submitted;
+    // returning anything other than false will allow the form submit to continue
+    return true;
+  }
+
+  // post-submit callback
+  function showResponse_contact(responseText, statusText, xhr, $form)  {
+    // for normal html responses, the first argument to the success callback
+    // is the XMLHttpRequest object's responseText property
+
+    // if the ajaxForm method was passed an Options Object with the dataType
+    // property set to 'xml' then the first argument to the success callback
+    // is the XMLHttpRequest object's responseXML property
+
+    // if the ajaxForm method was passed an Options Object with the dataType
+    // property set to 'json' then the first argument to the success callback
+    // is the json data object returned by the server
+
+    if(responseText == "index"){
+      $('#contactModal').modal('hide');
+      $("#indi_radio").prop("checked", true);
+      display_company_div('hide')
+      $("#email").val('');
+      $("#email_err_ind").html('');
+      $('input[type="text"],input[type="email"]').val('');
+      trackEventLeadTracker('New Contact', $('#contact_referrer').val(), '#{current_user.email}');
+      window.location.href = "/contacts";
+      $(document).trigger("add-alerts", [{'message': "Contact added successfully.",'priority': 'info'}]);
+    }
+    else if(responseText == "Name has already been taken" || responseText == "Email has already been taken!"){
+        $("#contact-alert-msg").show();
+        $("#contact_msg_div").show().html(responseText);
+    }else{
+      var selectedVal = "";
+      var selected = $("#radio_button input[type='radio']:checked");
+      if (selected.length > 0) {
+          selectedVal = selected.val();
+      }
+      if(selectedVal == "individual")
+        window.location.href = "/edit_individual_contact/"+responseText;
+      else if(selectedVal == "company")
+        window.location.href = "/edit_company_contact/"+responseText;
+    }
+    $('#contact_submit_btn').removeAttr("disabled").html("Save");
+    $('#contact_submit_more').removeAttr("disabled").html("Save & add more");
+    //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText +
+    //    '\n\nThe output div should have already been updated with the responseText.');
+  }
+  $('.company_name_typeahead').typeahead([{
+    name: 'company_contacts',
+    valueKey: 'company_name',
+    remote: {url: '/get_companies/'+ #{current_user.organization.id if current_user.organization.present?}+ '?q=%QUERY'},
+    template: '<p><strong>{{company_name}}</strong></p>',
+    engine: Hogan
+    }]).on('typeahead:selected',onSelectedTask).on('typeahead:opened',onOpened);
+
+  function onSelectedTask($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+
+    var hfield = document.getElementById('company_id');
+    //var email = document.getElementById('deal_email');
+    //var country = document.getElementById('deal_country');
+    //var workphone = document.getElementById('deal_work_phone');
+    console.log(datum.company_name);
+    hfield.value = datum.company_name;
+    //email.value = datum.email;
+    //country.value=datum.country_id;
+    //workphone.value = datum.phone_no;
+
+  }
+  //function onSelected($e,datum){
+  //  console.log("autocompleted");
+  //  console.log(datum);
+  //  alert(datum);
+
+    //var hfield = document.getElementById('hfield');
+    //var email = document.getElementById('deal_email');
+    //    var country = document.getElementById('deal_country');
+    //    var workphone = document.getElementById('deal_work_phone');
+    //    console.log(datum.id);
+    //    hfield.value = datum.id;
+    //    email.value = datum.email;
+    //    country.value=datum.country_id;
+    //    workphone.value = datum.phone_no;
+
+  //}
+  function onOpened($e){
+    $("#company_id").val("")
+    $("#text_loader").hide()
+  }
+
+
+  function onClosed($e){
+    if($("#company_id").val() == ""){
+      $("#company_name").val("");
+    }
+  }
+

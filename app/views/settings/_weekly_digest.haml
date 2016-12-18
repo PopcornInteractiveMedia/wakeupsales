@@ -1,0 +1,92 @@
+.mtop30
+  %h4 Weekly Digest
+.table-responsive.mtop30            
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .row
+      /%h4 Receive Weekly Email
+      %form#weekly_digest{action: "/update_weekly_digest",method: 'post',enctype: "multipart/form-data", name: "contact"}
+        %table{:width=>"50%",:cellspacing=>"0",:cellpadding=>"0"}
+          %tr
+            %td{:width=>"20px"} 
+              Enable Weekly Digest
+            %td{:width=>"30px"} 
+              %input{:type=>"hidden",:id=>"radio_chk",:name=> "radio_chk"}
+              .row{id: "radio_button"}
+                #yes_week_radio.form-group.col-md-2{style: "margin-left:20px"}
+                  %label.radio.inline{style: "margin:10px 0 -5px"}
+                    %input#yes_radio{name: "week_digest", type: "radio", value: "true", onclick: "get_chk_val('1','#{@current_user.user_preference.digest_mail_frequency}')" }/
+                    Yes
+                #no_week_radio.form-group.col-md-2{style: "margin-left:20px"}
+                  %label.radio.inline{style: "margin:10px 0 -5px"}
+                    %input#no_radio{name: "week_digest", type: "radio", value: "false", onclick: "get_chk_val('0','#{@current_user.user_preference.digest_mail_frequency}')"}/
+                    No
+          %tr{:id=>"show_frequency", :style => "display:none;"}
+            %td{:width=>"20px"} 
+              Set Frequency
+            %td{:width=>"30px"} 
+              %input{:type=>"hidden",:id=>"set_frequency",:name=> "set_frequency"}
+              .row{id: "radio_button"}
+                #daily_frequency.form-group.col-md-2{style: "margin-left:20px"}
+                  %label.radio.inline{style: "margin:10px 0 -5px"}
+                    %input#daily_radio{name: "frequency_digest", type: "radio", value: "daily", onclick: "get_frequency_val('daily')" }/
+                    Daily
+                #weekly_frequency.form-group.col-md-2{style: "margin-left:20px"}
+                  %label.radio.inline{style: "margin:10px 0 -5px"}
+                    %input#weekly_radio{name: "frequency_digest", type: "radio", value: "weekly", checked:"checked", onclick: "get_frequency_val('weekly')"}/
+                    Weekly
+                #monthly_frequency.form-group.col-md-2{style: "margin-left:30px"}
+                  %label.radio.inline{style: "margin:10px 0 -5px"}
+                    %input#monthly_radio{name: "frequency_digest", type: "radio", value: "monthly", onclick: "get_frequency_val('monthly')"}/
+                    Monthly						
+    %hr
+    .row
+      .col-md-12
+        %button.btn.btn-primary{type: "button", id: "chart_submit_btn", onclick: "update_weekly_digest()"}
+          Save
+:javascript
+  $( document ).ready(function() {
+    $("#radio_chk").val("#{@current_user.user_preference.weekly_digest}");
+    $("#set_frequency").val("#{@current_user.user_preference.digest_mail_frequency}");
+    if("#{@current_user.user_preference.weekly_digest}"  ==  "true"){
+      $("#yes_radio").attr('checked','checked');
+      $("#show_frequency").show();
+      $("##{@current_user.user_preference.digest_mail_frequency }_radio").attr('checked','checked');
+    }
+    else{
+      $("#no_radio").attr('checked','checked');
+      $("#show_frequency").hide();
+    } 
+  });
+   
+  function get_chk_val(val,frequency){
+    $("#radio_chk").val(val);
+    if(val == "1"){
+      $("#show_frequency").show();
+    }
+    else{
+      $("#show_frequency").hide();
+    }
+    $("#" + frequency + "_radio").attr('checked','checked');
+  }
+  
+  function get_frequency_val(val){
+    $("#set_frequency").val(val);
+  }  
+  
+  function update_weekly_digest(){
+    var weekly_digest = $("#radio_chk").val();
+    var frequency_digest = $("#set_frequency").val();
+    user_id = "#{@current_user.id}";
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      url: "/update_weekly_digest",
+      data: {weekly_digest:weekly_digest,user_id:user_id,frequency_digest:frequency_digest},
+      success: function(data){ 
+        //alert(data.msg);
+        $(document).trigger("add-alerts", [{'message': "Weekly digest updated successfully.",'priority': 'success'}]);
+      },
+      error: function(data){
+        alert('got an error');
+      }
+    });
+  }

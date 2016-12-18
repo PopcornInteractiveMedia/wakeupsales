@@ -1,0 +1,473 @@
+
+/= javascript_include_tag 'jquery.nicescroll.min'
+.cb10
+- @activities = get_deal_activity_stream_new(@deal.id)
+- match = ""
+-@activities_date = @activities.group_by{|d| d.activity_date.beginning_of_day}
+-i=0
+- if @activities_date.present?
+  - @activities_date.each do |dt, activity|
+    .activityRoot{:id => "activityId#{i}"}
+      - i += 1
+      
+      - if dt
+        - unless match == dt.strftime("%b %d, %Y")
+          - today = Time.zone.now.strftime('%Y-%m-%d')
+          - yesterday = (Time.zone.now - (24 * 60 * 60)).strftime('%Y-%m-%d')
+          - day_before_yesterday = (Time.zone.now - (48 * 60 * 60)).strftime('%Y-%m-%d')
+          
+          .act_date{:id => "activityHead"}
+            #tod
+              - if (Date.today.to_s == DateTime.parse(dt.to_s).strftime('%Y-%m-%d').to_s)
+                Today
+              - else
+                - if (yesterday.to_s == DateTime.parse(dt.to_s).strftime('%Y-%m-%d').to_s)
+                  Yesterday
+                - else
+                  - if dt.strftime("%Y").to_s == Time.zone.now.year.to_s
+                    = dt.strftime("%b %d")
+                  - else
+                    = dt.strftime("%b %d, %Y")
+            - match = dt.strftime("%b %d, %Y")
+         
+          -activity.each_with_index do |activity,i|
+            .table-responsive.bor-lf{id: "activityList#{i}"}
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                - if((activity.activity_type == "Task") && ( activity.activity_status != "Create"  ) )
+                  - task = Task.where(:id=>activity.activity_id).first
+                  - if task.present?
+                    %tbody
+                      %tr.task_row
+                        %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                          .dt_stream
+                            = activity.activity_date.strftime("%I:%M %p")
+                            .mid_bdr_dasboard{style:"right:-28px"}
+                              %span.img-circle.img-thumbnail.task-s15
+                          %td{style: "vertical-align:top; padding-left: 15px;"}
+                            .fl.grey_act 
+                              /#{task.is_completed == true && activity.activity_status == "Complete" ? "Complete" : activity.activity_status}#{activity.activity_status == "Assign" ? "ed" : "d"} task #{activity.activity_status == "Assign" ? "to" : ""}    
+                              #{ task.is_completed == true && activity.activity_status == "Complete" ? "Completed task" : (  activity.activity_status == "Assign" ? "Created Task and Assigned to" : "Updated Task" ) }
+                              -if(activity.activity_status == "Assign")
+                                - if task.user.present?
+                                  - tuser = task.user
+                                  %a{href: "/profile/#{tuser.id}"}
+                                    = tuser.first_name 
+                                  %b • 
+                                  %span.due_date
+                                    Due on  #{task.due_date.strftime("%a %d %b %Y @ %H:%M") if task.due_date.present?}
+                            - if activity.activity_status == "Update"
+                              .fr{rel: "tooltip", title: "Updated by"}     
+                                - user = User.where("id=?",activity.activity_user_id).first
+                                - if user.present?
+                                  %span.ic_assign
+                                  %a{href: "/profile/#{user.id}"}
+                                    #{(user_name=user.id) == current_user.id ? "me" : user.first_name}               
+                            - else
+                              - user = User.where("id=?",task.created_by).first
+                              - if user.present?
+                                .fr{rel: "tooltip", title: "Created by"}  
+                                  /-if(activity.activity_status == "Assign")
+                                  /  &bull; To
+                                  /  = (task.user.present? ? task.user.first_name : "") 
+                                  /-else
+                                  %span.ic_assign
+                                  %a{href: "/profile/#{user.id}"}
+                                    #{user.id == current_user.id ? "me" : user.first_name} 
+                            .cb
+                            %div 
+
+                              - deal= Deal.find(task.deal_id)
+                              = deal.title+" / "+task.title
+                            -if task.is_completed == true && activity.activity_status == "Complete" && task.outcome.present?
+                              %div.alert-block.outcome
+                                %h4 Outcome
+                                =task.outcome.html_safe
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "Note")
+                  - attachment = Note.find activity.activity_id
+                  -if attachment.notes.present?
+                    %tbody
+                      %tr.task_row{onmouseover: "show_edit(#{activity.id})",onmouseout: "hide_edit(#{activity.id})"}
+                        %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                          .dt_stream
+                            = activity.activity_date.strftime("%I:%M %p")
+                            .mid_bdr_dasboard{style:"right:-28px"}
+                              %span.img-circle.img-thumbnail.note-s15
+                          %td{style: "vertical-align:top; padding-left: 15px;"}
+                            .fl.grey_act 
+                              Created note
+                              - if ((@current_user.is_admin? || activity.activity_user_id == @current_user.id) && !activity.is_available?)
+                                %span.edit{id: "show_edit_#{activity.id}",style: "cursor:pointer;display:none;"}
+                                  %i.glyphicon.glyphicon-pencil
+                                &nbsp;
+                                %span{id: "show_trash_#{activity.id}",style: "cursor:pointer;display:none;",onclick: "delete_activity_note(#{activity.id})"}
+                                  %i.glyphicon.glyphicon-trash
+
+
+                            - user = User.where("id=?",attachment.created_by).first
+                            - if user.present?
+                              .fr{rel: "tooltip", title: "Created by"}                             
+                                - if attachment.created_by
+                                  %span.ic_assign
+                                  - user_name=""
+                                  - if attachment.created_by.present?
+                                    - if user.present? && user.id == current_user.id
+                                      -user_name= "me"
+                                    - elsif user.present? && user.id != current_user.id
+                                      - user_name= (attachment.user.present? ? attachment.user.first_name : "")
+                                  - if user.present?
+                                    /%a{href: "/deals?created_by=#{attachment.created_by}"}
+                                    %a{href: "/profile/#{attachment.created_by}"}
+                                      = user_name
+                                  - else
+                                    = user_name
+                            .cb
+                              
+                              %span
+                                - if ((@current_user.is_admin? || activity.activity_user_id == @current_user.id) && !activity.is_available?)
+                                  %a.note_title{class:"note_#{activity.id}",href: "javascript:void(0)",id: activity.id,style: "border-bottom:1px none #0088CC;cursor:text;color:#333;"}
+                                    = attachment.notes.html_safe
+                                  /%a.note_title{class:"note_#{activity.id}",href: "javascript:void(0)",id: activity.id,style: "border-bottom:1px none #0088CC;"}
+                                -elsif activity.is_available?
+                                  %strike
+                                    = attachment.notes.html_safe
+
+                                -else
+                                  = attachment.notes.html_safe
+                                -if ((activity.created_at.to_time != activity.updated_at.to_time) && !activity.is_available?)
+                                  %div
+                                    %i{id: "edit_note_#{activity.id}",style: "color:#989898 "}
+                                      (
+                                      Edited at
+                                      = activity.updated_at.strftime("%I:%M %p")
+                                      )
+                                -else
+                                  %i{id: "edit_note_#{activity.id}",style: "color:#989898 "}
+                                -if attachment.note_attachments.present? 
+
+                                  - if attachment.is_public
+                                    -attachment.note_attachments.each do |at|
+                                      %img{src: asset_path('attachment.png')}
+                                      %a{href: at.attachment.url,target: "_blank"}
+
+                                        =at.attachment_file_name
+                                        %br
+                                      =attachment.file_description
+                                  -elsif (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+                                    -attachment.note_attachments.each do |at_i|
+                                      %img{src: asset_path('attachment.png')}
+                                      %a{href: at_i.attachment.url,target: "_blank"}
+                                        =at_i.attachment_file_name
+                                        %br
+
+                                      =attachment.file_description
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if((activity.activity_type == "Deal") && ( activity.activity_status != "Create"  ) )
+                  - deal = Deal.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.deal-s15
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            /#{activity.activity_status}#{activity.activity_status == "Assign" || activity.activity_status == "Re-assign" ? "ed" : "d"} deal                            
+                            #{activity.activity_status == "Assign" ? ( activity.activity_user_id.present? ?  "Created Deal and Assigned" : "Created Deal and Yet to assign the deal"    ) : (activity.activity_status == "Re-assign" ? "Reassigned Deal" : (  activity.activity_status == "Update"   ?  "Updated Deal"   :  "d"))} 
+                            - if activity.activity_status == "Assign" || activity.activity_status == "Re-assign"
+                              /- user = User.where("id=?",deal.assigned_to).first
+                              - user =User.where("id=?",activity.activity_user_id).first if activity.activity_user_id
+                              - if user.present?
+                                to 
+                                %a{href: "/profile/#{user.id}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : user.full_name}
+                              /-else
+                              /  to NA
+                          - if activity.activity_status == "Update"
+                            .fr{rel: "tooltip", title: "Updated by"}     
+                              - user = User.where("id=?",activity.activity_user_id).first
+                              - if user.present?
+                                %span.ic_assign
+                                %a{href: "/profile/#{user.id}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : user.first_name}
+                          - elsif activity.activity_status == "Re-assign"
+                            .fr{rel: "tooltip", title: "Re-assigned by"}     
+                              - user = User.where("id =?",activity.activity_by).first
+                              - if user.present?
+
+                                %span.ic_assign                         
+                                %a{href: "/profile/#{activity.activity_by}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : user.first_name}
+                          - else
+                            .fr{rel: "tooltip", title: "Created by"}     
+                              - user = User.where("id=?",deal.initiated_by).first
+                              - if user.present?
+
+                                %span.ic_assign                         
+                                %a{href: "/leads?created_by=#{deal.initiated_by}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : deal.initiator.first_name}
+                          .cb
+                            %div 
+                              = deal.title
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "DealsContact")            
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.con-s15
+                        %td{style: "vertical-align:top; padding-left: 15px;"}
+                          .fl.grey_act 
+                            #{activity.activity_status}ed Contact
+                          - dlcontact = DealsContact.where("id =?",activity.activity_id)
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present? 
+                            .fr{rel: "tooltip", title: "Added by"}     
+                              %span.ic_assign                         
+                              /- if dlcontact.contactable.is_individual?
+                              /-contact_page="individual_contact" 
+                              /- elsif dlcontact.contactable.is_company?
+                              /-contact_page="company_contact"
+                              %a{href: "/profile/#{activity.activity_user_id}"}
+                                #{(user_name=User.find(activity.activity_user_id).id) == current_user.id ? "me" : activity.user.first_name}
+                            .cb
+                              %div 
+                                = activity.activity_desc
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "IndividualContact")
+                  - contact = IndividualContact.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.con-s15
+                        %td{style: "vertical-align:top; padding-left: 15px;"}
+                          .fl.grey_act 
+                            Created contact
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "Created by"}     
+                              %span.ic_assign                          
+                              - if contact.is_individual?
+                                -contact_page="individual_contact" 
+                              - elsif contact.is_company?
+                                -contact_page="company_contact"
+                              %a{href: "/profile/#{user.id}"}
+                                #{(user_name=user.id) == current_user.id ? "me" : activity.user.first_name}
+                          .cb
+                            %div 
+                              = link_to contact.full_name, "/#{contact_page}/#{contact.id}"
+                              
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "DealMove")
+                  - deal_move = DealMove.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.deal-s15
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            Deal moved to 
+                            =deal_move.deal_status.name
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "By"}     
+                              %span.ic_assign                          
+                              - if deal_move.user.present?
+                                %a{href: "/leads?created_by=#{deal_move.user.id}"}
+                                  #{(deal_move.user_id) == current_user.id ? "me" : (deal_move.user.present? ? deal_move.user.first_name : "")}
+                              - else
+                                #{(deal_move.user_id) == current_user.id ? "me" : (deal_move.user.present? ? deal_move.user.first_name : "")}
+                          .cb
+                            %div 
+                              = deal_move.deal.title
+                              -if deal_move.attachment.present?
+                                %div.alert-block.outcome
+                                  %h4 Note:
+                                  =deal_move.attachment.notes.html_safe
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "MailLetter")
+                  - mail_letter = MailLetter.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.activity_mail
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            Mail Sent to 
+                            -if(!mail_letter.contact_info.nil?)
+                              -contact_info =mail_letter.contact_info
+                              %a{href: "/#{contact_info['contact_type'].to_s}/#{contact_info['contact_id'].to_s}"}
+                                =contact_info['full_name']
+                            -else 
+                              =mail_letter.mailto  
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "Assigned To"}     
+                              %span.ic_assign                          
+                              - if mail_letter.user.present?
+                                %a{href: "/leads?created_by=#{mail_letter.user.id}"}
+                                  #{(mail_letter.user.id) == current_user.id ? "me" : (mail_letter.user.present? ? mail_letter.user.first_name : "")}
+                              - else
+                                #{(mail_letter.user.id) == current_user.id ? "me" : (mail_letter.user.present? ? mail_letter.user.first_name : "")}
+                          .cb
+                            %div 
+                              =mail_letter.subject
+                              /= link_to deal_move.deal.title, "javascript:", style: "text-decoration: none;cursor: text;"
+                          %div.grey_act
+                            = "Sent at: #{mail_letter.created_at}"
+                          %div.grey_act
+                            - activity.sent_email_opens.each do |sent_email_open|
+                              .opened_mail
+                                = "Opened at: "
+                                = sent_email_open.opened
+-else
+  %div{id: "no_act",style: "text-align:center;color:red;"}
+    No activities found for this deal.
+                   
+                   
+:javascript
+    $(function()
+  {
+    //$('#activity_info').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+    $('.panel-collapse').addClass('collapse');
+    $('#activity_info table:first').find("#collapse_icon").removeClass('icon-chevron-up').addClass('icon-chevron-down');
+    $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+  });
+
+   $('.day_astream').click(function(e){
+    $(this).children("#collapse_icon").toggleClass('icon-chevron-down icon-chevron-up');
+    });
+  $('a.note_title').editable({
+    url: '/update_note_ttl' ,
+    pk: 1,
+    mode: 'inline',
+    title: 'Edit Note',
+    type: 'textarea',
+    rows: 4,
+    cols: 40,
+    inputclass: "costm_width",
+    placement: 'right',
+    data: {custom: 'text'}, 
+    validate: function(value) {
+      if($.trim(value) == '')
+        return "Note can't be blank!";
+    },
+
+   
+    success: function(data) {
+      
+      //var newsource = data.split('~');
+     
+      var newsource = data.split('~');   
+      $("#edit_note_"+newsource[1]).text('(Edited at '+ newsource[0] +')');
+      //$(".note_"+newsource[0]).hide();
+      //$(".note_"+newsource[0]).text(newsource[1]);
+      //var string = $.parseHTML(newsource[1])
+      //alert($(".note_"+newsource[0]).text())
+       //alert(string)
+       //$(".note_"+newsource[0]).text("sdsdsd");
+       //alert($(".note_"+newsource[0]).html())
+      //var o = new Option(newsource[0],newsource[0]);
+      /// jquerify the DOM object 'o' so we can use the html method
+      
+      //$(o).html(newsource[1]);
+      
+      //$(o).prop('selected', true)
+      //$("#deal_deal_source").append(o);
+       //$(".note_"+newsource[0]).text($("#temp_note").val());
+      // $("#temp_note").html(newsource[1]);
+    },
+    error: function(data) {
+      /* actions on validation error (or ajax error) */
+      var msg = '';
+      alert("msg")
+      if(data.errors) { //validation error
+        $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+      } 
+      else if(data.responseText) { //ajax error
+      msg = data.responseText;
+    }
+  },
+  complete: function(data) {
+   
+        
+  }
+  
+  });
+  
+  function delete_activity_note(id)
+  {
+    var answer = confirm('Are you sure you want to delete this?');
+    if (answer)
+    {
+      
+      $.ajax( {
+          type: "POST",
+          url: "/hide_note" ,
+          data: {id: id},
+          success: function(result) {
+            $(".note_"+id).wrap("<strike>");
+            $("#edit_note_"+id).hide();
+          }
+        });
+    }
+    else
+    {
+      
+      console.log('cancel');
+    }
+    
+  }
+
+  $('.edit').click(function(e){    
+    e.stopPropagation();
+    $(this).parent().parent().find('a.note_title').editable('toggle');
+    $('.edit').hide();
+  });
+  $(document).on('click', function(){
+    //$('.edit').show();
+  })
+  function show_edit(id)
+  {
+    $("#show_edit_"+id).show();
+    $("#show_trash_"+id).show();
+    //$('.edit').hide();
+  }
+  function hide_edit(id)
+  {
+    $("#show_edit_"+id).hide();
+    $("#show_trash_"+id).hide();
+  }
+:css
+  @media screen and (max-width:800px) {
+    .table-responsive{overflow-x:auto;margin-bottom:0;border:none !important}
+  }
+  .outcome{
+    color: #c09853;
+    padding: 0px 35px 8px 14px;
+    margin-top: 11px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    background-color: #fcf8e3;
+    border: 1px solid #fbeed5;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+  }

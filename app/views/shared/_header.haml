@@ -1,0 +1,257 @@
+:javascript
+  $(function(){
+   $('a[rel="tooltip"],i,input:checkbox,button,div').powerTip({placement: 'n'});
+   $(".slide_m").hide();
+   $(".nav.navbar-nav li a").hover(function(){
+     $(this).find(".slide_m").show('slide', { direction: 'right' }, 300);
+   },function(){
+     $(this).find(".slide_m").hide();
+   });
+   $('.f_menu').click(function() {
+    //$(this).preventDefault();
+    $(this).next('.dropdown-menu').toggle(100);
+    //$(this).find('.dropdown-menu').stop(true, true).slideToggle(100);
+    //e.preventDefault()
+   });
+  });
+  function send_mail(){
+    $('#task_loader').show();
+    $.ajax( {
+      type: "POST",
+      url: "/send_latest_blog_mail" ,
+      data: {},
+      success: function(result) {
+        $('#task_loader').hide();
+        $(document).trigger("add-alerts", [{'message': "Latest blog mail sent successfully." ,'priority': 'success'}]);
+      }
+    });
+  }  	  
+  
+.navbar.navbar-default{role: "navigation"}
+  .container
+    /- cache("header_logo", skip_digest: true) do
+    .navbar-header
+      %button.navbar-toggle{"data-target" => ".navbar-collapse", "data-toggle" => "collapse", type: "button"}
+        %span.sr-only Toggle navigation
+        %span.icon-bar
+        %span.icon-bar
+        %span.icon-bar
+      =link_to (user_signed_in? ? "/dashboard" : "/"), class: "navbar-brand" do
+        =image_tag (!user_signed_in? ? "http://www.wakeupsales.org/img/wakeup-salelogo.png" : "new_logo_i.png"), :style =>"height:33px;"
+
+    - if user_signed_in?
+      =hidden_field_tag "ref_page_info", "#{params[:controller]+params[:action]}"
+      %input{:type=>"hidden",:id=>"is_login",:value=>"1"}
+      %input{:type=>"hidden",:id=>"hdn_sqllite",:value=>"0"}
+      .navbar-collapse.collapse
+        %ul.nav.navbar-nav.hmenu#menu-top-nav-menu
+          - cache('dashboard_menu', skip_digest: true) do
+            %li#home{class: "#{params[:action] =='dashboard'   ? 'activ_mnu' : ''}"}
+              =link_to (user_signed_in? ? "/dashboard" : "/") do
+                .fl.ic_dash
+                .fl.slide_m Dashboard
+                .cb
+
+                %b{class: "#{params[:action] == 'dashboard' ? 'caret nav_menu_ovd' : ''}"}
+          -unless @current_user.is_siteadmin?
+
+            %li#deals{class: "#{params[:controller] == 'deals' ? 'activ_mnu' : ''}"}
+              -if @current_user.is_admin?
+                /- ur_h = cookies[:page_tab].present? ? "/deals?type=#{cookies[:page_tab]}" : "/deals"
+                - ur_h = "/leads"
+              -else
+                /- ur_h = cookies[:page_tab].present? ? "/deals?type=#{cookies[:page_tab]}" : "/deals?assigned_to=#{current_user.id}"
+                - ur_h = "/leads?assigned_to=#{current_user.id}"
+              %a{href: "#{ur_h}"}
+                .fl.ic_deal
+                .fl.slide_m Leads
+                .cb
+                %b{class: "#{params[:controller] == 'deals' ? 'caret nav_menu_ovd' : ''}"}
+              - cache("admin_#{@current_user.is_admin?}", skip_digest: true) do
+                %li#tasks{class: "#{params[:controller] == 'tasks' ? 'activ_mnu' : ''}"}
+                  %a{href: "/tasks"}
+                    .fl.ic_task
+                    .fl.slide_m Tasks
+                    .cb
+                    %b{class: "#{params[:controller] == 'tasks' ? 'caret nav_menu_ovd' : ''}"}
+                  %li#contacts{class: "#{params[:controller] == 'contacts' ? 'activ_mnu' : ''}"}
+                    %a{href: "/contacts"}
+                      .fl.ic_con
+                      .fl.slide_m Contacts
+                      .cb
+                      %b{class: "#{params[:controller] == 'contacts' ? 'caret nav_menu_ovd' : ''}"}
+                  /- if @current_user.is_super_admin? || @current_user.is_admin?
+                  /  %li#reports{class: "#{params[:controller] == 'reports' ? 'activ_mnu' : ''}"}
+                  /    %a{href: "/reports"}
+
+                  /      .fl.ic_rpt
+                  /      .fl.slide_m Reports
+
+                  /      .cb
+                  /      %b{class: "#{params[:controller] == 'reports' ? 'caret nav_menu_ovd' : ''}"}
+                  %li#activities{class: "#{params[:action] == 'activities' ? 'activ_mnu' : ''}"}
+                    %a{href: "/activities"}
+                      .fl.ic_acti
+                      .fl.slide_m Activity
+                      .cb
+                      %b{class: "#{params[:action] == 'activities' ? 'caret nav_menu_ovd' : ''}"}
+                  %li#gettingStarted{class: "#{params[:action] == 'getting_started' ? 'activ_mnu' : ''}"}
+
+                    %a{href: "/getting_started"}
+                      .fl.ic_gtstr
+                      .fl.slide_m Getting started here
+                      .cb
+                      %b{class: "#{params[:action] == 'getting_started' ? 'caret nav_menu_ovd' : ''}"}
+        %input{:type=>"hidden",:id=>"session_authenticity_token",:value=>session[:_csrf_token]}
+        %ul.nav.navbar-nav.navbar-right.f_disp
+          - cache("header_right_menu_admin_#{@current_user.is_admin?}", skip_digest: true) do
+            - unless current_user.is_siteadmin?
+              %li.border-box
+                %div{onclick: "sch_slide()"}
+                  .navbar-right.input-group
+                    = form_tag search_result_path, method: :get, id: "search_form", format: "json" do
+                      = text_field_tag :query, params[:query], class: "form-control srch_fld",:required=> true
+
+                      .input-group-btn{style: "position:inherit;"}
+                        = submit_tag "", name: nil, class: "nav_srch_box", :disable_with => ""
+              %li.dropdown.addData
+                %a#notification_image.dropdown-toggle.image-effect{"data-toggle" => "dropdown", href: "#", style:"padding: 14px 7px 34px !important;"}
+                  .fl.icon-new-bell
+                  .fl.disp
+                    New
+                  .fr.dwn_f_arrow
+                %ul.pull-right.dropdown-menu.dropdown-caret.dropdown-close{style: "padding:0"}
+                  %li
+                    =link_to "#dealModal", "data-toggle" => "modal", "onclick" => "$('#new_deal')[0].reset();$('.error').html('');$('#deal_first_name').attr('disabled', false);" do
+                      %span.deal-larg
+
+                      Lead
+                  %li.divider
+                  %li
+                    =link_to "#taskModal", "data-toggle" => "modal", "onclick" => "$('#task_notify_email').val(1);$('#task_form')[0].reset();$('#email_err').html('');$('#puppy_gooddog').prop('checked', true);$('.deal_list').show();$('.contact_firstname_div').hide();$('#check_deal_show').val('false');$('#deal_title_task').removeAttr('disabled');$('#deal_title_task').prop('required','true');$('#clicked_button_ref').val('headermenu');reset_recurring_option();reset_event();" do
+                      %span.task-larg
+
+                      Task
+                  -#%li.divider
+                  -#%li
+                  -#  =link_to "#contactModal", "data-toggle" => "modal", "onclick" => "$('#new-contact')[0].reset();$('#email_err_i').html('');$('#company_added_info_div').css('display','none');display_company_div('hide')" do
+                  -#    %span.con-larg
+                  -#
+                  -#    Contact
+                  - if (current_user.present? && (current_user.is_admin? || current_user.is_super_admin?))
+                    %li.divider
+                    %li
+                      =link_to "#inviteuserModal","data-toggle" => "modal", "onclick" => "$('#user_invite_form')[0].reset();$('.show-alert').hide();$('#email_err_usr').html('');" do
+                        %span.invt-larg
+
+                        /%span.glyphicon.glyphicon-group
+                        Invite user
+                  %li.divider
+          %li#bell_notification.dropdown
+            = render partial: "shared/notification_section" unless current_user.is_siteadmin?
+
+          %li
+            - cache("user_menu_#{@current_user.id}", skip_digest: true) do
+              %a#notification_image2.dropdown-toggle.image-effect{"data-toggle" => "dropdown", href: "#"}
+                .fl
+                  - if current_user.image.present? && current_user.image.image.present?
+                    = image_tag current_user.image.image.url(:thumb), :alt=>"", :class=>"profile-circle fl",:id=>"profile_icon_img"
+                  - else
+                    = image_tag "no_user30.png", :alt=>"dummy user", :class=>"profile-circle fl",:id=>"profile_icon_img"
+                .fl.disp.full-name
+                  =current_user.full_name.blank? ? current_user.organization.name : current_user.full_name
+                .fr.dwn_f_arrow
+              %ul.dropdown-menu
+                %li
+                  %div{style: "text-align:left;margin-left:20px"}
+                    %b.full-name
+                      =current_user.full_name
+                    - unless current_user.is_siteadmin?
+                      %div{style: "font-size:13px"}
+                        =current_user.organization.name if current_user.organization.present?
+                %li.divider
+                - if current_user.is_siteadmin?
+                  %li
+                    =link_to "#", :onclick => "send_mail()" do
+                      %span.glyphicon.glyphicon-send
+                      Send Latest Blog Mail
+                  %li.divider
+                - unless current_user.is_siteadmin?
+                  %li
+                    =link_to "/settings" do
+                      %span.glyphicon.glyphicon-cog
+                      Settings
+                  %li.divider
+                  %li
+                    =link_to "/profile" do
+                      %span.glyphicon.glyphicon-user
+                      Profile
+                  %li
+                    %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip",href: "javascript:void(0)",:style=>"", onclick: "open_crm_modal('sugar_crm');show_crm_radio();"} 
+                      %span.glyphicon.glyphicon-import
+                      Import Contact
+
+                  %li.divider
+                - if current_user.is_admin?  || current_user.is_super_admin?
+                  %li
+                    %a{href: "/users"}
+                      %span.glyphicon.glyphicon-tower
+                      Admin
+                  %li.divider
+                  %li
+                    %a{href: "/reports"}
+                      %span.glyphicon.glyphicon-new-window
+                      Reports
+                  %li.divider
+                  %li
+                    %a{href: "/send_weekly_digest_email"}
+                      %span.glyphicon.glyphicon-list-alt
+                      Send Weekly Email
+                %li.divider
+                %li
+                  = link_to destroy_user_session_path, :method => :delete do
+                    %span.glyphicon.glyphicon-off
+                    Log Out
+    /- else
+    /  %input{:type=>"hidden",:id=>"is_login",:value=>"0"}
+    /  .navbar-collapse.collapse
+    /    %ul.nav.navbar-nav.navbar-right
+    /      %li
+    /        %a{"data-target" => "#myModal", "data-toggle" => "modal", :type => "button", style: "cursor: pointer;"} Download
+    /        #myModal.modal.fade{:role => "dialog"}
+    /          .modal-dialog
+    /            .modal-content{style: "text-align:center;"}
+    /              .modal-header
+    /                %button.close{"data-dismiss" => "modal", :type => "button"} ×
+    /                %h3.modal-title{style: "font-size: 30px;"} Download WakeUpSales CRM tool
+    /              .modal-body
+    /                - download_user = DownloadUser.new()
+    /                = form_for(download_user, :as => :download_user, :url => download_user_path, :html=>{:class => "form-horizontal", :id=>"download_user"}) do |f|
+    /                  .arrow_top{style: "left:273px"}
+    /                  .download_msg
+    /                    We are collecting Email Address to provide new Releases Information with
+    /                  .download_msg
+    /                    No time limits. No spam. No intrusive ads.
+    /                  %label.mail_dl_osc{style: "margin-bottom:20px"}
+    /                    = f.email_field :email, :required => true, :class=>"form-control", :placeholder=>"Email", :size=>"33"
+    /                  %button.btn.btn-primary.btn-block{type: "submit",style: "width:49%;margin: 10px auto 35px;"}
+    /                    Download Now
+    /              / .modal-footer{style: "padding: 7px 5px 14px;"}
+    /              /   .pull-left
+    /              /     %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+    /              /       %span.c_links
+    /              /         Cancel
+    /      %li
+    /        %a{href: "http://blog.andolasoft.com/", rel: "nofollow", target:"_blank", class: "#{!user_signed_in? ? 'o_line' : ''}", style: "border:none;box-shadow:none"}
+    /          Blog
+          
+    /    #forgot_pwd_popup{style: "display:none"}
+    /      = form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post, :class => "form-horizontal", :id=>"fpwd_form" }) do |f|
+    /        = f.email_field :email, :required => true, :class=>"form-control", :placeholder=>"Email", :style=>""
+    /        %br/
+    /        %button.btn.btn-primary.btn-block{type: "submit"}
+    /          Send instructions
+    /        = link_to "Sign In", "javascript:void(0)", :onclick => "$('#forgot_pwd_popup').hide();$('#signin_popup').show();$('#signin_form')[0].reset();"
+
+
+= render partial: "home/import_contact_modal"

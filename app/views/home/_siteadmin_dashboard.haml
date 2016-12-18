@@ -1,0 +1,77 @@
+.container
+  .row
+    .cb10
+    .cb10
+    .col-lg-12
+      .con-box1
+        %div      
+          #task_header
+            .box{style: "border:0"}
+              .tabbable.task_tab
+                %ul.nav.nav-tabs
+                  %li.active
+                    %a{"data-toggle" => "tab", href: "#beta_user_div"} Beta Users
+                  /%li
+                  /  %a{"data-toggle" => "tab", href: "#organization_div", onclick: "$('#range').trigger('change');"} Organizations
+                .tab-content{style: "padding:10px 0px"}
+                  #beta_user_div.tab-pane.active
+                    = render :partial=>"betauser_list"
+                  /#organization_div.tab-pane
+                  /  %div
+                  /    Organization list
+                  /    /= render :partial=>"organization_list"
+        .cb10
+
+        = render :partial=>"beta_accounts/invite_beta_user"
+      .cb10
+
+:javascript
+  $(document).ready(function() {    
+    var activeSystemClass = $('.list-group-item.active');
+    search_leaderboard()
+    function search_leaderboard(){
+      //something is entered in search form
+      $('#system-search').keyup( function() {
+         var that = this;
+          // affect all table rows on in systems table
+          var tableBody = $('.table-list-search tbody');
+          var tableRowsClass = $('.table-list-search tbody tr');
+          $('.search-sf').remove();
+          tableRowsClass.each( function(i, val) {
+          
+              //Lower text for case insensitive
+              var rowText = $(val).text().toLowerCase();
+              var inputText = $(that).val().toLowerCase();
+              if(inputText != '')
+              {
+                  $('.search-query-sf').remove();
+                  tableBody.prepend('<tr class="search-query-sf"><td colspan="12"><strong>Searching for: "'
+                      + $(that).val()
+                      + '"</strong></td></tr>');
+              }
+              else
+              {
+                  $('.search-query-sf').remove();
+              }
+
+              if( rowText.indexOf( inputText ) == -1 )
+              {
+                  //hide rows
+                  tableRowsClass.eq(i).hide();
+                  
+              }
+              else
+              {
+                  $('.search-sf').remove();
+                  tableRowsClass.eq(i).show();
+              }
+          });
+          //all tr elements are hidden
+          if(tableRowsClass.children(':visible').length == 0)
+          {
+              tableBody.append('<tr class="search-sf"><td class="text-muted" colspan="12">No entries found.</td></tr>');
+          }
+      });
+    }
+  });
+  

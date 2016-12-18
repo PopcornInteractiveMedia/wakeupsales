@@ -1,0 +1,30 @@
+-tnc=total_notification_count
+-if tnc > 0
+  %a#notification_image.dropdown-toggle{"data-toggle" => "dropdown", href: "#", style:"padding: 14px 7px 34px !important;"}
+    .fl.icon-flag-notify
+    %span.badge.badge-important 
+      =tnc
+  %ul#notification_popup.user-menu.pull-right.dropdown-menu.notify.dropdown-caret.dropdown-close{style: "width: 265px;padding:0"} 
+    %li.dropdown-header{style: "text-align:center;color:#C447B7;background:#F7ECF2;border-radius: 5px 5px 0 0;padding: 6px;"}
+      =image_tag "/assets/ajax-loader2.gif"
+    
+- else
+  /%a.dropdown-toggle.image-effect{"data-toggle" => "dropdown", href: "#"}
+  /  /= image_tag "default-icon-bell.png"
+  /%ul.user-menu.pull-right.dropdown-menu.notify.dropdown-caret.dropdown-close{style: "width: 265px;padding:0"}
+  /  %li.dropdown-header{style: "text-align:center;border-radius: 5px 5px 0 0;padding: 6px;"}
+  /    %i.icon-warning-sign
+  /      No Unread Notifications
+
+:javascript
+
+  $(document).ready(function(){
+    $("#bell_notification").click(function(){ 
+      if(!$(this).hasClass("open")){
+        $.get( "/fetch_notification_count?tnc=#{tnc}", function( data ) {
+          $( "#notification_popup" ).html( data );
+        });
+      }
+    });
+  });
+  

@@ -1,0 +1,64 @@
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .navbar-right
+        //.btn-group
+        //  %button.btn.btn-default{type: "button"}
+        //    %span.glyphicon.glyphicon-list
+        //  %button.btn.btn-default{type: "button"}
+        //    %span.glyphicon.glyphicon-calendar
+        //.btn-group    
+        //  %button.btn.btn-default{type: "button"}
+        //    %span.glyphicon.glyphicon-filter
+        //    Filter
+        //  %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+        //    %span.caret
+        //    %span.sr-only Toggle Dropdown
+        //  %ul.dropdown-menu{role: "menu"}
+        //    %li
+        //      %a{href: "#"} Action
+        //    %li
+        //      %a{href: "#"} Another action
+        //    %li
+        //      %a{href: "#"} Something else here
+        //    %li.divider
+        //    %li
+        //      %a{href: "#"} Separated link
+        //%button.btn.btn-primary{type: "button"}
+        //  %span.glyphicon.glyphicon-plus-sign 
+        //  Add a New Activity
+      .tablisting.task_tab
+        %ul.nav.nav-tabs
+          %li#todayTask.active{style: "margin-left:-1px"}
+            %a{href: "#"}
+              //Upcoming
+              Activity
+              
+          //%li#overdueTask
+          //  %a{"data-toggle" => "tab", href: "#overdue", onclick: "widget_tasks('overdue')", style: "cursor:pointer;"}
+          //    Started
+              
+          //%li#upcomingTask
+          //  %a{"data-toggle" => "tab", href: "#upcoming", onclick: "widget_tasks('upcoming')", style: "cursor:pointer;"}
+          //    Completed
+              
+          //%li#upcomingTask
+          //  %a{"data-toggle" => "tab", href: "#upcoming", onclick: "widget_tasks('upcoming')", style: "cursor:pointer;"}
+          //    Delegated
+              
+          
+        .cb10.get-space
+      .table-responsive
+        -@source="activities"
+        =render :partial=>"activity_all",:objects=>{source: @source}
+
+:javascript
+  $(window).scroll(function(){
+        if  ($(window).scrollTop() == $(document).height() - $(window).height()){
+           //$('#load_more_span').hide();
+           $('#loading_span').show();
+           Ajax3.call();
+        }
+  });

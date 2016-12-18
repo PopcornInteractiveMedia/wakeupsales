@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  chart: false
+  activities: false
+  feeds: false
+  tasks: false
+  linechart: false
+  pie_chart: false
+
+two:
+  organization: 
+  chart: false
+  activities: false
+  feeds: false
+  tasks: false
+  linechart: false
+  pie_chart: false

@@ -1,0 +1,35 @@
+<style type="text/css">
+.well {
+    background-color: #F5F5F5;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    margin-bottom: 20px;
+    min-height: 20px;
+    padding: 19px;
+}
+</style>
+<br/><br/><br/>
+<div class="row contact_row">
+    <div class="col-md-5 contact_div">
+      <div class="well">
+        <legend>Forgot your password?</legend>
+       <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => { :method => :post, :class => "form" }) do |f| %>
+          <div class="displaynone"><%= devise_error_messages!%></div>
+          <div class="form-group">
+              <%= f.email_field :email, :class=>"form-control", :placeholder => "Email",:required => true, :style=>"height:50px;font-size: 17px;" %>
+          </div>
+          
+           <div class="form-group">
+		             <%= f.submit "Send me reset password instructions" , :class=>"btn btn-primary", :style => "height:50px;font-size: 17px;" %>
+	          </div>	  
+      <% end %>
+    
+      </div>
+    </div>
+</div>
+<%=stylesheet_link_tag "home"%>
+
+
+
+

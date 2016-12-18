@@ -1,0 +1,26 @@
+/ Listing contact in contact details page.
+%ul.contact-left
+  - @contacts.each do |con|        
+    - @name = con.class.name == "IndividualContact" ? con.first_name : con.name
+    %li
+      .small-contactIcon
+        %span.small-contact-middle-center
+          - unless @name.nil?
+            = @name[0].upcase
+          - else
+            = con.email[0].upcase
+    %li
+      %h5
+        - if con.class.name == "IndividualContact"
+          %a{href: "/contact/#{con.id}"} 
+            - unless @name.nil?
+              = @name.titlecase
+            - else
+              = con.titlecase
+        - else
+          %a{href: "/contact/#{con.id}?type=company"} 
+            - unless @name.nil?
+              = @name.titlecase
+            - else
+              = con.titlecase
+    .cb

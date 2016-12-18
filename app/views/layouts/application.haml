@@ -1,0 +1,69 @@
+!!!
+%html{lang: "en"}
+  %meta{charset: "utf-8"}
+  %meta{content: "IE=Edge,chrome=1", "http-equiv" => "X-UA-Compatible"}
+  %meta{content: "We understand the complexity involved in sales process. Now you can streamline your sales activities and improve your productivity through our simple and easy to use CRM. Try this for Free !", name: "description"}
+  %title= content_for?(:title) ? yield(:title) : "WakeUpSales | Ruby on Rails based Open Source CRM Tool"
+  = javascript_include_tag "application"
+  = stylesheet_link_tag   "application", :media => "all"
+  = csrf_meta_tags
+  = favicon_link_tag 'favicon3.ico', :rel => 'shortcut icon'
+  - if(Rails.env == "production")
+    :javascript
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-47612570-1', 'wakeupsales.com');
+      ga('send', 'pageview');
+  %body
+    = render :partial => "shared/header"
+    %div{style: "clear:both;"}
+    %div{"data-alerts" => "alerts", "data-fade" => "3000", "data-ids" => "myid", "data-titles" => "", :class=>"col-md-12"}
+    %div#search_result
+    - if (bootstrap_flash.include?("Signed out successfully.") || bootstrap_flash.include?("Signed in successfully."))
+    - else
+      = bootstrap_flash
+    = yield
+    #task_loader{style: "display:none;position: fixed;margin-top:5%; height: 100%; width: 100%; z-index: 99999; background:#fff; top:0px; left:0px;opacity:0.4"}
+      %div{:class=>"loader_img",style: "width:100%; text-align:center; dispay:table-cell; vertical-align:middle; margin-top:250px"}
+        = image_tag "ajax-loader2.gif"
+
+    - if !user_signed_in?
+      = render :partial => "shared/footer"
+      
+- if user_signed_in?
+  - unless current_user.is_siteadmin?
+    = render :partial => "shared/deal"
+    = render :partial => "shared/add_contact"
+    = render :partial => "shared/notes_attachment"
+    = render :partial => "shared/send_email"
+    = render :partial => "shared/apply_label"
+    = render :partial => "users/invite_user"
+    = render :partial => "tasks/task_popup"
+    = render :partial => "tasks/google_calendar_popup"
+    - if params[:controller] == "deals"
+      = render :partial => "shared/bulk_lead"
+      
+:javascript
+  //$(function(){
+    //$("#headerMenuBar").each     
+    if("#{params[:query]}" == "")
+      $('.srch_fld').val('')
+    $("div[class^='alert']").delay(4000).fadeOut(2000);
+    $('a[rel="tooltip"],i,input:checkbox').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+    $("li").removeClass("activ_mnu");
+    if("#{params[:action]}" == "activities"){
+      li_id="activities";
+    }
+     else if("#{params[:action]}" == "getting_started"){
+      li_id="gettingStarted";
+    }else{
+      li_id="#{params[:controller]}";
+    }
+    $("#"+li_id).addClass("activ_mnu");
+    $("#free_signup").click(function(){$("#beta_account_email").focus();})
+
+  //})
+  
+    

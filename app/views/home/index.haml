@@ -1,0 +1,149 @@
+= stylesheet_link_tag "home"
+.con-body{:style=>"min-height:500px"}
+  .container
+    .jumbotron
+      .navbar-left.col-md-12.p0
+        %h1
+          WAKEUPSALES
+        %h3
+          A Simple CRM to boost your Sales
+
+
+
+        .form_txt 
+        /Try WakeUpSales for FREE!
+        /- @beta_user = BetaAccount.new
+        /= form_for @beta_user, :html => { :class => 'form-inline' } do |f|
+        /  %div.text-center
+        /    = f.email_field "email", :class => "txt_box", :required => true, :autocomplete => "on", :placeholder => "Your Email Address"
+        /    %div
+        /      = f.submit "Create my Beta Account", :class=>"sign", :disable_with => "Submitting....", :onclick=> "return chk_validemail('beta_account_email')"
+
+
+        .cb
+    .cb10
+.cb
+.container
+  .simple
+    Focus
+    %img{alt: "Bullet", src: "/assets/bullet.png"}
+      Accelerate
+      %img{alt: "Bullet", src: "/assets/bullet.png"}
+        Win
+  .row
+    .col-md-3
+      %a.tn{href: "#manage_deals"}
+        .con-box1.box_focus
+          %span
+            %img{src: "/assets/manage_deal.png"}/
+            %br/
+            %span.mng_txt Manage Deals
+    .col-md-3
+      %a.tn{href: "#manage_contact"}
+        .con-box1.box_focus
+          %span
+            %img{src: "/assets/manage_contact.png"}/
+            %br/
+            %span.mng_txt Manage Contacts
+    .col-md-3
+      %a.tn{href: "#sales_activity"}
+        .con-box1.box_focus
+          %span
+            %img{src: "/assets/manage_activity.png", style: "margin:15px 0"}/
+            %br/
+            %span.mng_txt Manage Sales Activities
+    .col-md-3
+      %a.tn{href: "#sales_force"}
+        .con-box1.box_focus
+          %span
+            %img{src: "/assets/sales_force.png"}/
+            %br/
+            %span.mng_txt Sales Force Action
+  .cb10
+  .simple
+    What you Get
+
+  .cb
+  .mng_txt Manage Deals, Manage Contacts, Manage Sales Activities and Sales Force Action
+  .cb10
+  %a{name: "manage_deals"}
+  .gray_content
+    .navbar-left.col-md-6
+      %img.lt_help_1{src: "/assets/Manage_deal2.jpg"}
+    .navbar-left.col-md-6
+      .wus_sub{style: "font-weight:bold"} Manage Deals & Grow your business
+      .fnt17{style: "color:#333333;font-size:19px;width: 428px;line-height:37px;"} No more struggling with spreadsheets  emails. WakeUpSales helps you to manage your deals effectively to grow your business exponentially by adding visibility to your sales pipeline.
+  .cb10
+  %a{name: "manage_contact"}
+  .gray_content
+    .navbar-left.col-md-6
+      .wus_sub{style: "font-weight:bold"} Manage Your Contacts
+      .fnt17{style: "color:#333333;font-size:19px;width: 428px;line-height:37px;"} Customer information is the most valuable for any business. WakeUpSales helps you to store  link the context of each deal to the contacts.
+    .navbar-left.col-md-6
+      %img.lt_help_2{src: "/assets/Manage_contact2.jpg"}
+  .cb10
+  %a{name: "sales_activity"}
+  .gray_content
+    .navbar-left.col-md-6
+      %img.lt_help_3{src: "/assets/Sales_activity2.jpg"}
+    .navbar-left.col-md-6
+      .wus_sub{style: "font-weight:bold"} Manage Sales Activities
+      .fnt17{style: "color:#333333;font-size:19px;width: 428px;line-height:37px;"} WakeUpSales facilitates excellent features for managing in-depth sales activities, such as maintaining notes, tasks, email communication, sales buckets around deals.
+  .cb10
+  %a{name: "sales_force"}
+  .gray_content
+    .navbar-left.col-md-6
+      .wus_sub{style: "font-weight:bold"} Sales Force Action
+      .fnt17{style: "color:#333333;font-size:19px;width: 428px;line-height:37px;"} WakeUpSales is lean  easy to use by your salesforce. Facilitates your sales team to manage  organize deals in pipeline  thereby boost their productivity.
+    .navbar-left.col-md-6
+      %img.lt_help_2{src: "/assets/Sales_Force_action2.jpg"}
+  .cb
+  .gray_content
+    .simple 
+    /Try WakeUpSales for FREE!
+    %input{maxlength: "100", name: "utf8", type: "hidden", value: "?"}/
+    %input{maxlength: "100", name: "authenticity_token", type: "hidden", value: "HoVWF8dQkz8+h3dy+y/rxXnEbkZQriVjaQTLbLJuiPw="}/
+    /%form#new_beta_account.form-inline{"accept-charset" => "UTF-8", action: "/beta_accounts", method: "post"}
+    /  .col-md-12.p0{style: "text-align:center"}
+    /    %input#beta_account_email_2.txt_box{autocomplete: "on", maxlength: "100", name: "beta_account[email]", placeholder: "Your Email Address", required: "required", size: "30", type: "email"}/
+    /    %input.sign{"data-disable-with" => "Submitting....", maxlength: "100", name: "commit", onclick: "return chk_validemail('beta_account_email_2')", style: "height:45px;margin:17px 0 0 15px;width: 250px;", type: "submit", value: "Create my Beta Account"}/
+    /    .cb
+- if !params[:t].nil? || !params[:t].blank?
+  = render :partial => "devise/registrations/new"
+:javascript
+  $(document).ready(function() {    
+      if('#{@buser_email}' != ""){
+        //$("#user_email").val('ddddd');
+        //alert("#{@buser_email}")
+        $('#signup_modal_popup').modal('show'); 
+        $(".email_sgnup_form").val('#{@buser_email}').prop("readonly",true);
+        $("#user_is_beta_user").val(1);
+      }else{
+        history.replaceState({}, '', '/');  
+        $("#user_is_beta_user").val(0);
+      }
+      if('#{cookies[:redirect_deal_id]}' != ''){
+        setTimeout('redirect_deal()', 5000);
+        $.removeCookie("redirect_deal_id");
+      }      
+    });
+    function redirect_deal()
+    {
+      window.location.href ="/leads/#{cookies[:redirect_deal_id]}";
+    }     
+    function chk_validemail(type)
+    {
+      var email_id=$("#"+type+"").val();
+      var atpos=email_id.indexOf("@");
+      var dotpos=email_id.lastIndexOf(".");
+      if (email_id != '' && (atpos<1 || dotpos<atpos+2 || dotpos+2>=email_id.length))
+        {
+         alert('Please enter a valid email address.')
+         $("#"+type+"").focus();
+         return false;
+        }
+      else
+      {
+        return true;
+      }
+    }

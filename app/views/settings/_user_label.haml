@@ -1,0 +1,371 @@
+=stylesheet_link_tag "easyui","icon"
+=javascript_include_tag "jquery.easyui.min","jquery.edatagrid"
+.mtop30
+  .navbar-right
+    %a#addnewlabel.easyui-linkbutton{href: "#", style:"padding-top: 6px;"}
+      %button.btn.btn-primary.pad2{type: "button"}
+        %span.glyphicon.glyphicon-plus-sign
+        New Label      
+  %h4 Labels 
+.table-responsive.mtop30            
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    #collapse4.body
+      %input{:type=>"hidden",:id=>"labelmsg"}
+      %div.table-responsive
+        #dataTablelabel
+:javascript
+  $(function(){
+    var url = document.location.toString();
+    if (url.match('#')) {
+        $('.nav-tabs a[href=#'+url.split('#')[1]+']').tab('show') ;
+    } 
+    
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown', function (e) {
+        window.location.hash = e.target.hash;
+    })
+    //alert('initializeing2');
+    var colors = [
+          {colorid:'AliceBlue',name:'AliceBlue'},
+          {colorid:'AntiqueWhite',name:'AntiqueWhite'},
+          {colorid:'Aqua',name:'Aqua'},
+          {colorid:'Aquamarine',name:'Aquamarine'},
+          {colorid:'Azure',name:'Azure'},
+          {colorid:'Beige',name:'Beige'},
+          {colorid:'Bisque',name:'Bisque'},
+          {colorid:'Black',name:'Black'},
+          {colorid:'BlanchedAlmond',name:'BlanchedAlmond'},
+          {colorid:'Blue',name:'Blue'},
+          {colorid:'BlueViolet',name:'BlueViolet'},
+          {colorid:'Brown',name:'Brown'},
+          {colorid:'BurlyWood',name:'BurlyWood'},
+          {colorid:'CadetBlue',name:'CadetBlue'},
+          {colorid:'Chartreuse',name:'Chartreuse'},
+          {colorid:'Chocolate',name:'Chocolate'},
+          {colorid:'Coral',name:'Coral'},
+          {colorid:'CornflowerBlue',name:'CornflowerBlue'},
+          {colorid:'Cornsilk',name:'Cornsilk'},
+          {colorid:'Crimson',name:'Crimson'},
+          {colorid:'Cyan',name:'Cyan'},
+          {colorid:'DarkBlue',name:'DarkBlue'},
+          {colorid:'DarkCyan',name:'DarkCyan'},
+          {colorid:'DarkGoldenRod',name:'DarkGoldenRod'},
+          {colorid:'DarkGray',name:'DarkGray'},
+          {colorid:'DarkGreen',name:'DarkGreen'},
+          {colorid:'DarkKhaki',name:'DarkKhaki'},
+          {colorid:'DarkMagenta',name:'DarkMagenta'},
+          {colorid:'DarkOliveGreen',name:'DarkOliveGreen'},
+          {colorid:'DarkOrange',name:'DarkOrange'},
+          {colorid:'DarkOrchid',name:'DarkOrchid'},
+          {colorid:'DarkRed',name:'DarkRed'},
+          {colorid:'DarkSalmon',name:'DarkSalmon'},
+          {colorid:'DarkSeaGreen',name:'DarkSeaGreen'},
+          {colorid:'DarkSlateBlue',name:'DarkSlateBlue'},
+          {colorid:'DarkSlateGray',name:'DarkSlateGray'},
+          {colorid:'DarkTurquoise',name:'DarkTurquoise'},
+          {colorid:'DarkViolet',name:'DarkViolet'},
+          {colorid:'DeepPink',name:'DeepPink'},
+          {colorid:'DeepSkyBlue',name:'DeepSkyBlue'},
+          {colorid:'DimGray',name:'DimGray'},
+          {colorid:'DodgerBlue',name:'DodgerBlue'},
+          {colorid:'FireBrick',name:'FireBrick'},
+          {colorid:'FloralWhite',name:'FloralWhite'},
+          {colorid:'ForestGreen',name:'ForestGreen'},
+          {colorid:'Fuchsia',name:'Fuchsia'},
+          {colorid:'Gainsboro',name:'Gainsboro'},
+          {colorid:'GhostWhite',name:'GhostWhite'},
+          {colorid:'Gold',name:'Gold'},
+          {colorid:'GoldenRod',name:'GoldenRod'},
+          {colorid:'Gray',name:'Gray'},
+          {colorid:'Green',name:'Green'},
+          {colorid:'GreenYellow',name:'GreenYellow'},
+          {colorid:'HoneyDew',name:'HoneyDew'},
+          {colorid:'HotPink',name:'HotPink'},
+          {colorid:'IndianRed ',name:'IndianRed '},
+          {colorid:'Indigo ',name:'Indigo '},
+          {colorid:'Ivory',name:'Ivory'},
+          {colorid:'Khaki',name:'Khaki'},
+          {colorid:'Lavender',name:'Lavender'},
+          {colorid:'LavenderBlush',name:'LavenderBlush'},
+          {colorid:'LawnGreen',name:'LawnGreen'},
+          {colorid:'LemonChiffon',name:'LemonChiffon'},
+          {colorid:'LightBlue',name:'LightBlue'},
+          {colorid:'LightCoral',name:'LightCoral'},
+          {colorid:'LightCyan',name:'LightCyan'},
+          {colorid:'LightGoldenRodYellow',name:'LightGoldenRodYellow'},
+          {colorid:'LightGray',name:'LightGray'},
+          {colorid:'LightGreen',name:'LightGreen'},
+          {colorid:'LightPink',name:'LightPink'},
+          {colorid:'LightSalmon',name:'LightSalmon'},
+          {colorid:'LightSeaGreen',name:'LightSeaGreen'},
+          {colorid:'LightSkyBlue',name:'LightSkyBlue'},
+          {colorid:'LightSlateGray',name:'LightSlateGray'},
+          {colorid:'LightSteelBlue',name:'LightSteelBlue'},
+          {colorid:'LightYellow',name:'LightYellow'},
+          {colorid:'Lime',name:'Lime'},
+          {colorid:'LimeGreen',name:'LimeGreen'},
+          {colorid:'Linen',name:'Linen'},
+          {colorid:'Magenta',name:'Magenta'},
+          {colorid:'Maroon',name:'Maroon'},
+          {colorid:'MediumAquaMarine',name:'MediumAquaMarine'},
+          {colorid:'MediumBlue',name:'MediumBlue'},
+          {colorid:'MediumOrchid',name:'MediumOrchid'},
+          {colorid:'MediumPurple',name:'MediumPurple'},
+          {colorid:'MediumSeaGreen',name:'MediumSeaGreen'},
+          {colorid:'MediumSlateBlue',name:'MediumSlateBlue'},
+          {colorid:'MediumSpringGreen',name:'MediumSpringGreen'},
+          {colorid:'MediumTurquoise',name:'MediumTurquoise'},
+          {colorid:'MediumVioletRed',name:'MediumVioletRed'},
+          {colorid:'MidnightBlue',name:'MidnightBlue'},
+          {colorid:'MintCream',name:'MintCream'},
+          {colorid:'MistyRose',name:'MistyRose'},
+          {colorid:'Moccasin',name:'Moccasin'},
+          {colorid:'NavajoWhite',name:'NavajoWhite'},
+          {colorid:'Navy',name:'Navy'},
+          {colorid:'OldLace',name:'OldLace'},
+          {colorid:'Olive',name:'Olive'},
+          {colorid:'OliveDrab',name:'OliveDrab'},
+          {colorid:'Orange',name:'Orange'},
+          {colorid:'OrangeRed',name:'OrangeRed'},
+          {colorid:'Orchid',name:'Orchid'},
+          {colorid:'PaleGoldenRod',name:'PaleGoldenRod'},
+          {colorid:'PaleGreen',name:'PaleGreen'},
+          {colorid:'PaleTurquoise',name:'PaleTurquoise'},
+          {colorid:'PaleVioletRed',name:'PaleVioletRed'},
+          {colorid:'PapayaWhip',name:'PapayaWhip'},
+          {colorid:'PeachPuff',name:'PeachPuff'},
+          {colorid:'Peru',name:'Peru'},
+          {colorid:'Pink',name:'Pink'},
+          {colorid:'Plum',name:'Plum'},
+          {colorid:'PowderBlue',name:'PowderBlue'},
+          {colorid:'Purple',name:'Purple'},
+          {colorid:'Red',name:'Red'},
+          {colorid:'RosyBrown',name:'RosyBrown'},
+          {colorid:'RoyalBlue',name:'RoyalBlue'},
+          {colorid:'SaddleBrown',name:'SaddleBrown'},
+          {colorid:'Salmon',name:'Salmon'},
+          {colorid:'SandyBrown',name:'SandyBrown'},
+          {colorid:'SeaGreen',name:'SeaGreen'},
+          {colorid:'SeaShell',name:'SeaShell'},
+          {colorid:'Sienna',name:'Sienna'},
+          {colorid:'Silver',name:'Silver'},
+          {colorid:'SkyBlue',name:'SkyBlue'},
+          {colorid:'SlateBlue',name:'SlateBlue'},
+          {colorid:'SlateGray',name:'SlateGray'},
+          {colorid:'Snow',name:'Snow'},
+          {colorid:'SpringGreen',name:'SpringGreen'},
+          {colorid:'SteelBlue',name:'SteelBlue'},
+          {colorid:'Tan',name:'Tan'},
+          {colorid:'Teal',name:'Teal'},
+          {colorid:'Thistle',name:'Thistle'},
+          {colorid:'Tomato',name:'Tomato'},
+          {colorid:'Turquoise',name:'Turquoise'},
+          {colorid:'Violet',name:'Violet'},
+          {colorid:'Wheat',name:'Wheat'},
+          {colorid:'White',name:'White'},
+          {colorid:'WhiteSmoke',name:'WhiteSmoke'},
+          {colorid:'Yellow',name:'Yellow'},
+          {colorid:'YellowGreen',name:'YellowGreen'}
+
+
+    ];
+
+    $('#dataTablelabel').datagrid({
+      title:'Labels',
+      iconCls:'icon-edit',
+      width:808,
+      height:250,
+      singleSelect: true,
+      idField: 'id',   
+      url: '/settings/get_user_label',
+      saveUrl: '/settings/save_user_label',
+      updateUrl: '/settings/update_user_label',
+      destroyUrl: 'settings/delete_label',
+      columns:[[
+        {field:'id',title:'Id',hidden:true
+        },
+        {field:'name',title:'Label Name',width:200,sortable:true,required:true,class:'easyui-validatebox',editor:{
+            type:'text',
+            options:{
+              valueField:'name',
+              textField:'name',
+              required:true
+            }
+          }
+        },
+        {field:'color',title:'Label Color',width:200,sortable:true,required:true,class:'easyui-validatebox',editor:{
+            type:'combobox',
+            options:{
+              valueField:'colorid',
+              textField:'name',
+              data:colors,
+              required:true,
+              name:'demo'
+            }
+          },styler:function(value,row,index){
+            return {class:'c1',style:'font-weight:bold;color:'+value}
+          }
+        },
+        {field:'action',title:'Action',width:80,align:'center',
+          formatter:function(value,row,index){
+            if (row.editing){
+              var s = '<a href="javascript:void(0)" onclick="savelabelrow(this)" class="savedg">Save</a> ';
+              var c = '<a href="javascript:void(0)" onclick="cancellabelrow(this)" class="canceldg">Cancel</a>';
+              return s+c;
+            } else {
+              var e = '<a href="javascript:void(0)" onclick="editlabelrow(this)"  class="editdg">Edit</a> ';
+              var d = '<a href="javascript:void(0)" onclick="deleteRow(this)"  class="deletedg" >Delete</a>';
+              return e+d;
+            }
+          }
+        }
+      ]],
+      onBeforeEdit:function(index,row){
+        row.editing = true;
+        updatelabelActions(index);
+      },
+      onAfterEdit:function(index,row){
+        row.editing = false;
+        updatelabelActions(index);
+      },
+      onCancelEdit:function(index,row){
+        row.editing = false;
+        updatelabelActions(index);
+      }
+    });
+    $('#dataTablelabel').datagrid('reload');
+    //$( "#addnewlabel" ).on("click", function() {
+    //  $('#dataTablelabel').datagrid('reload');
+    //});
+     $( ".mylabels" ).on("click", function() {
+      $('#dataTablelabel').datagrid('reload');
+    });
+  });
+  function updatelabelActions(index){
+    $('#dataTablelabel').datagrid('updateRow',{
+      index: index,
+      row:{}
+    });
+  }
+  function getRowIndex(target){
+    var tr = $(target).closest('tr.datagrid-row');
+    return parseInt(tr.attr('datagrid-row-index'));
+  }
+  function editlabelrow(target){
+    $('#dataTablelabel').datagrid('beginEdit', getRowIndex(target));
+    $(".combo-panel").find("div.combobox-item").each(function(e){
+      $(this).attr("style","background:"+$(this).attr("value"));
+    });
+  }
+  function deleteRow(target){
+    $.messager.confirm('Confirm','Do you want to delete the label?',function(r){
+    var id = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html();
+      if (r){
+        $('#dataTablelabel').datagrid('deleteRow', getRowIndex(target));
+        $.ajax({
+        type: "POST",
+        async: false,
+        url: "settings/delete_label?id="+id,
+        success: function(dt){
+        if(id == "")
+        {
+          $("#groupmsg").val(dt);
+          //alert('saved successfully');
+        }
+        }
+        });
+      }
+    });
+  }
+  function savelabelrow(target){
+    var name = $(target).closest('tr.datagrid-row').children("td[field='name']").children("div:first").children("table:first").find("input.datagrid-editable-input").val();
+    var id = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html();
+    var color = $(target).closest('tr.datagrid-row').children("td[field='color']").children("div:first").children("table:first").find("input.combo-text").val();
+    
+    var org = "#{current_user.organization.id}";
+    //alert($(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html());
+    var data = "name=" + name + "&org_id="+org + "&color="+color;
+    var iddiv = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first");
+    
+    //alert(id);
+    if(id != "")
+    {
+      data = data + "&id=" + id ;
+    }
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: 'POST',
+      async: false,
+      url: '/settings/save_user_label',
+      data: data,
+      success: function(dt){
+        if(id == "")
+        {
+          $("#labelmsg").val(dt);
+          //alert('saved successfully');
+        }
+      }
+    });
+    
+    $('#dataTablelabel').datagrid('endEdit', getRowIndex(target));
+    //var newid =$("#labelmsg").val();
+    //alert(newid);
+    //alert($(target).parent("div").html());
+    //if(newid != "")
+    //  {
+    //    //alert(dt);
+    //    $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html(newid);
+    //    //$(iddiv).html(dt);
+    //  }
+    $('#dataTablelabel').datagrid('reload');
+  }
+  function cancellabelrow(target){
+    $('#dataTablelabel').datagrid('cancelEdit', getRowIndex(target));
+  }
+  function insertlabel(){
+    var row = $('#dataTablelabel').datagrid('getSelected');
+    
+    if (typeof(row) != "undefined"){
+      var index = $('#dataTablelabel').datagrid('getRowIndex', row);
+    } else {
+      index = 0;
+    }
+    if (index == -1)
+      {index = 0;}
+      
+    
+    $('#dataTablelabel').datagrid('insertRow', {
+      index: index,
+      row:{
+        status:'P'
+      }
+    });
+    
+    $('#dataTablelabel').datagrid('selectRow',index);    
+    $('#dataTablelabel').datagrid('beginEdit',index);
+    $(".combo-panel").find("div.combobox-item").each(function(e){
+      $(this).attr("style","background:"+$(this).attr("value"));
+    });
+    //alert($(row).closest('tr.datagrid-row').children("td[field='name']").children("div:first").children("table:first").find("input.datagrid-editable-input").val());
+    //$("a.savedg" ).on("click","a",savelabelrow(e.target));
+    //$("a.savedg" ).on("click", function(e) {
+    //  //savelabelrow(e.source);
+    //  alert($(e.target).html());
+    // savelabelrow(e.target);
+    //  e.preventDefault();
+    //  e.stopPropagation();
+    //});
+  }
+  
+  $( "#addnewlabel.easyui-linkbutton" ).on("click", function() {
+    insertlabel();
+  });
+  //$( ".editdg" ).on("click",editlabelrow,this);
+  //$( ".savedg" ).on("click",savelabelrow,this);
+  //$( ".deletedg" ).on("click",deletelabelrow(this));
+  //$( ".canceldg" ).on("click",cancellabelrow(this));
+  //$( ".savedg" ).on("click", function() {
+  //  alert(event.data);
+  //  //savelabelrow(this)
+  //});
+   

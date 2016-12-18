@@ -1,0 +1,176 @@
+- if current_user.organization.industries.present?
+  .table-responsive{style: "border:none;"}
+    %table#industryList.table.table-striped{style: "border: 1px solid #E0DEDE","data-source"=>industry_list_url(format: 'json',params: {org: current_user.organization.id})}
+      %tbody
+          
+:javascript
+  //$(function() {
+       
+    $('#editable_source').editable({
+      url: '/settings/save_industry' ,
+      pk: 1,
+      title: 'Enter Industry',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+Add an Industry",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Industry name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').on('hidden', function(e, editable) {
+      $("#editable_source").text("+Add a Industry");
+      editable.text = "";
+    });
+    
+    taskDataTable=$('#industryList').dataTable({
+      oLanguage: {"sLengthMenu": "_MENU_", "sProcessing": "<img alt='loader' src='/assets/ajax-loader.png'>" },
+      sPaginationType: "bootstrap",
+      bJQueryUI: true,
+      bServerSide: true,
+      sDom: '<"H"f>rtp',
+      aoColumns: [{sClass: 'col-md-9'}],
+      sAjaxSource: $('#industryList').data('source'),
+      bLengthChange: false,
+      bFilter: false,
+      bSort: false,
+      aoColumnDefs: [
+        {
+          aTargets: [0],
+            mRender: function(data, type, row ){
+              return "<div id='dv_ind_"+row[0]+"' style=''>"+row[1]+" \
+                      </div> \
+                      <div id='dv_edit_ind_"+row[0]+"' style='display:none;height:30px;paddint-top:5px;'> \
+                          <form action='javascript:void(0);' id='editIndFrm"+row[0]+"' method='post' name='editIndFrm"+row[0]+"'\"> \
+                            <div class='fl'> \
+                              <input class='form-control' id='edittxtind"+row[0]+"' name='data[ind_name]' type='text' value='"+row[1]+"' required=required onkeyup='fixme(this)'> \
+                              <label id='edit_valid_ind' class='error' style='display:none;'> \
+                              </label> \
+                              <input name='data[ind_id]' type='hidden' value='"+row[1]+"'> \
+                            </div> \
+                            <span style='margin-left:10px;'> \
+                              <span class='glyphicon glyphicon-ok' style='color:#3E6BA1;cursor:pointer;margin-right:10px;margin-top:9px' onclick='return edit_industry("+row[0]+")' type='submit' rel='tooltip' title='Update'></span> \
+                              <a href='javascript:void(0);' onclick='cancelEditdiv("+row[0]+")' rel='tooltip' title='Cancel'><span class='glyphicon glyphicon-remove'></span></a> \
+                            </span> \
+                          </form> \
+                        </div>"
+            }
+        },
+        {aTargets: [1],
+            mRender: function(data, type, row ){
+              return "<div class='action_task' style='float: right; display: none;'> \
+                        <a href='javascript:void(0)' class='grey_act' onclick='edit_ind_popup("+row[0]+")'  style='font-size: 12px;padding:2px;line-height:inherit;color:#333333;text-decoration:none' >\
+                          <span class='glyphicon glyphicon-pencil' title='Edit' rel='tooltip1'></span> \
+                        </a> \
+                        <a href='/delete_industry/"+row[0]+"' class='grey_act'   data-confirm='Do you want to delete the industry?' style='line-height:inherit;'>\
+                          <span class='glyphicon glyphicon-trash' rel='tooltip1' title='Delete'></span> \
+                        </a> \
+                      </div>"
+              
+              }},
+      ],
+      fnPreDrawCallback: function() { $('#task_loader').show();},
+      fnDrawCallback: function() {$('#task_loader').hide();$('span[rel="tooltip1"]').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});},
+      fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+        $('#task_loader').hide();
+        $(nRow).addClass('task_row');
+         $(nRow).hover(
+          function() {
+          $(this).find("div.action_task").show();
+          }, function() {
+          $(this).find("div.action_task").hide();
+         });
+         
+      }
+    });
+  //});
+  function edit_ind_popup(id){
+    $('#dv_ind_' + id).hide();
+    $('#dv_edit_ind_' + id).show();
+  }
+  
+  function cancelEditdiv(id){
+    $('#dv_edit_ind_' + id).hide();
+    $('#dv_ind_' + id).show();
+  }
+  function fixme(element)
+  {
+   var val = element.value;
+   var pattern = new RegExp('[ ]+', 'g');
+   val = val.replace(/^ +/gm, '');
+   element.value = val;
+  }
+  function edit_industry(id){
+    var name = $("#edittxtind"+id).val();
+    if(name != ""){
+    $.ajax({
+      type: "POST",
+      url: "settings/edit_industry",
+
+      async: false,
+      data: {industry_id: id, name:name},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+        if(data == "success")
+        {
+        $('#edit_valid_ind').html('')
+        $('#edit_valid_ind').hide();
+        $("#task_loader").hide();
+        //$("#form_content").html(data.responseText);
+        $('#dv_ind_'+id).html(name);
+        $('#dv_ind_' + id).show();
+        $('#dv_edit_ind_' + id).hide();
+        }
+        else
+        {
+        $('#edit_valid_ind').show();
+        $('#edit_valid_ind').html('Industry already exists.')
+        $("#task_loader").hide();
+        }
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      //complete: function(data) {
+        //$("#task_loader").hide();
+        //$("#form_content").html(data.responseText);
+        //$('#dv_ind_'+id).html(name);
+        //$('#dv_ind_' + id).show();
+        //$('#dv_edit_ind_' + id).hide();
+      //}
+    });
+    }
+  }  
+  $( "tr.task_row" ).hover(
+    function() {
+      $(this).find("div.action_task").show();
+    }, function() {
+      $(this).find("div.action_task").hide();
+    }
+  );

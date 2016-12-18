@@ -1,0 +1,119 @@
+#BulkLeadModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "BulkLeadModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      = form_for("",:url=>"/bulk_lead_upload", :html=>{:class => "form",:method=>"post",:id=>"bulk-lead-form",:multipart => true}) do |f|
+        =hidden_field_tag "mailer_type"
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title 
+            Please upload lead information
+            (CSV format)
+        .modal-body      
+          #lead_alert_msg.alert.fade.in.alert-danger{style: "display:none;margin-bottom: 10px;"}
+            %button.close{onclick: "$('#lead_alert_msg').hide();$('#task_loader').hide();"} ×
+            #lead_msg_div
+          .form-group
+            .panel.panel-default
+              .panel-body{style: "border:none;font-size: 14px;"}
+                %p  Checklist Before Import
+                %ul
+                  %li
+                    What format is your list? We can import CSV files
+                  %li
+                    /%a{href:'/demo_sample_lead_csv_file.csv'} Download a sample file                     
+                    %a{href:'/wakeupsales_lead_template.csv'} Download a sample file                     
+                    to see what we can import (
+                    %a{href:'/learnmore', onclick: "window.open(this.href, this.target, 'width=500,height=550,resizable,scrollbars');return false;"} Learn more
+                    )
+          .form-group
+            %label Upload CSV file
+            = file_field_tag :attachment_lead, :class=>"", :onchange => "checkFile_withtypecsv(this)"
+          .modal-footer#proceed_btn_lead.displaynone
+            .navbar-left
+              %button.btn.btn-primary{type: "submit", disable_with: "Please wait...", id: "lead_upload_submit_btn", onclick: ""} Preview
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+              
+#output_lead_upload
+:javascript
+  $(document).ready(function() { 
+    $('#BulkLeadModal').on('shown.bs.modal', function () {
+      //$('#SendEmailModal').animate({ scrollTop: 1 }, 'slow');
+      //$('#BulkLeadModal').css({"margin-top":"-33px"})
+      
+    });
+    
+    var options = { 
+        target:        '#output_lead_upload',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_lead_upload,  // pre-submit callback 
+        success:       showResponse_lead_upload, // post-submit callback 
+        error: error_uploading,
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind to the form's submit event 
+    $('#bulk-lead-form').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+ 
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+  }); 
+ 
+  // pre-submit callback 
+  function showRequest_lead_upload(formData, jqForm, options) {
+    $('#lead_upload_submit_btn').prop("disabled", true).html("Please wait...");
+    var queryString = $.param(formData);
+    return true; 
+  } 
+ 
+  // post-submit callback 
+  function showResponse_lead_upload(responseText, statusText, xhr, $form)  { 
+    if(responseText == "success"){
+     //$('#lead_upload_submit_btn').removeAttr("disabled").html("Save")
+     //$('#BulkLeadModal').modal('hide');
+     window.location = "/lead_preview"
+     //$(document).trigger("add-alerts", [{'message': "Mail sent successfully.",'priority': 'info'}]);
+    }else{
+      //$(document).trigger("add-alerts", [{'message': "Ooops !!! Please try again later.",'priority': 'info'}]);
+      alert('Ooops !!! Please try again later.')
+    }
+    //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+    //    '\n\nThe output div should have already been updated with the responseText.'); 
+  } 
+  function error_uploading(responseText, statusText, xhr, $form){
+    $("#lead_alert_msg").show();
+    $("#lead_msg_div").html("Ooops !!! Please try again later.");
+    $('#lead_upload_submit_btn').removeAttr("disabled").html("Preview")
+    return false;
+  }
+  
+  
+  function checkFile_withtypecsv(obj){
+    var flname = $("#"+obj.id).val().split(/\\/).pop();
+    var ext = flname.split('.').pop().toLowerCase();
+    if (!ext.match('csv')) {
+      //alert('if')
+      alert("Please upload csv file only. ");
+      $("#"+obj.id).val('');
+      $('#proceed_btn_lead').hide();
+      return false;
+    }else{
+      $('#proceed_btn_lead').show();
+    
+    }
+  }

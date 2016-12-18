@@ -1,0 +1,24 @@
+#googleCalendarModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      #form_content
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title
+            Google Authenticate
+        .modal-body          
+          .socl-signup
+            %ul.socl-btn.fl
+              %li
+                Please authenticate with your google account to synchronise WakeUpSales CRM tasks with google calendar.
+              %li.vi-google{:onclick => "social_authenticate('#{user_omniauth_authorize_path(:google_oauth2)}')"}
+              .cb
+          %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+            %buttton.btn.btn-default.fr
+              Cancel
+          .cb
+
+:javascript
+  function social_authenticate(auth_url){
+    window.location.href = auth_url;
+  }

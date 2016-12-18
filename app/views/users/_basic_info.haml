@@ -1,0 +1,82 @@
+.row{style:"margin-top: 13px;"}
+  .col-sm-5.col-md-4
+    .user-left
+      /.center
+      .fileupload.fileupload-new{"data-provides" => "fileupload"}
+        .user-image
+          .row.col-lg-12
+            .fileupload-new.thumbnail.col-lg-4
+              - if @user.image.present?
+                - image_path = @user.image.image.url(:small)
+              -else
+                - image_path = "http://critterapp.pagodabox.com/img/user.jpg"
+              %img{alt: "", src: image_path }/
+            - if @allowed_user
+              .col-lg-8
+                = form_for @user, :html => { :class => 'form-horizontal' } do |f|
+                  = f.file_field "profile_image", onchange: "return checkFile_withtype(this)"
+                  %br
+                  =f.submit "Update", :onclick => "return chk_file_present()", :class=>"btn btn-primary btn-sm", :disable_with => "Updating...."
+        %hr/
+      %table.table.table-condensed
+        %thead
+          %tr
+            %th{colspan: "3"} General information
+        %tbody
+          %tr
+            %td.black Full Name
+            %td 
+              - if @user.first_name.present?
+                - if @allowed_user
+                  %a.profile_first_name{href: "#", id: @user.id}
+                    = @user.first_name
+                - else
+                  = @user.first_name
+              - if @user.last_name.present?
+                - if @allowed_user
+                  %a.profile_last_name{href: "#", id: @user.id}
+                    = @user.last_name
+                - else
+                  = @user.last_name
+          %tr
+            %td.black Email
+            %td 
+              = @user.email
+          - if @user.phone.present?
+            %tr
+              %td.black Work Phone
+              %td 
+                - if @allowed_user
+                  %a.profile_phone_number{href: "#", id: @user.id}
+                    = (@user.phone.phone_no if @user.phone.present?)
+                - else
+                  = (@user.phone.phone_no if @user.phone.present?)
+          %tr
+            %td.black Time Zone
+            %td 
+              - if @allowed_user
+                %a.profile_time_zone{:href => "#", :id => @user.id, :"data-value"=> @user.time_zone}
+                  = ActiveSupport::TimeZone["#{@user.time_zone}"]
+              - else
+                = ActiveSupport::TimeZone["#{@user.time_zone}"]
+              
+          %tr
+            %td.black User Group
+            %td  
+              %span.label.label-sm.label-info 
+                - if @user.admin_type == 1
+                  Super Admin
+                - elsif @user.admin_type == 2
+                  Admin
+                - elsif @user.admin_type == 3 && @user.role.present?
+                  =@user.role.name
+            %td
+              %a.show-tab{href: "#panel_edit_account"}
+                %i.fa.fa-pencil.edit-user-info
+     
+  .col-sm-7.col-md-8
+    %span{style: "margin-left: 16px;font-size: 19px;color: #F59106;font-weight: bold;"} 
+      Deals
+    #div_deal_user
+      =image_tag "ajax-loader.gif", style: "margin-left: 240px;margin-top: 23px;"
+    

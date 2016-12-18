@@ -1,0 +1,109 @@
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+#sourceModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "sourceModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content.col-md-9      
+      .modal-body
+        %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", :type => "button"} ×
+        %h3#sourceModalLabel Add New Source
+        - source = Source.new
+        = form_for(source,:action=>save_source_path,:url=>"/settings/save_source", :remote => true, :html=>{:class => "form",:method=>"post",:id=>"new_source"}) do |f|
+          .row
+            .form-group.col-md-8
+              =f.text_field :name, :required => true,:name=> "value" ,:class=> "col-md-8 form-control",:html=>{:maxlength=> "100"}, :onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:style=> "resize: none;" 
+              %label{id: "show_err",class: "error"}
+            .form-group.col-md-2 
+              %button.btn.btn-primary{type: "submit"} 
+                %span.glyphicon.glyphicon-ok
+            .form-group.col-md-2 
+              %button.btn.btn-default{"aria-hidden" => "true", "data-dismiss" => "modal"}
+                %span.glyphicon.glyphicon-remove
+
+
+
+
+
+:javascript
+  $(document).ready(function() { 
+      var options = { 
+          target:        '#output2',   // target element(s) to be updated with server response 
+          beforeSubmit:  showRequestSource,  // pre-submit callback 
+          success:       showResponseSource,  // post-submit callback 
+      }; 
+   
+      // bind to the form's submit event 
+      $('#new_source').submit(function() { 
+          // inside event callbacks 'this' is the DOM element so we first 
+          // wrap it in a jQuery object and then invoke ajaxSubmit 
+          
+          
+            $(this).ajaxSubmit(options); 
+            
+          // !!! Important !!! 
+          // always return false to prevent standard browser submit and page navigation 
+            return false; 
+          //}
+      }); 
+  }); 
+  function validatesource()
+  {
+    if($("#source_name").val() != "")
+      return true;
+    else
+      return false;
+  }
+  // pre-submit callback 
+  function showRequestSource(formData, jqForm, options) { 
+      // formData is an array; here we use $.param to convert it to a string to display it 
+      // but the form plugin does this for you automatically when it submits the data 
+      var queryString = $.param(formData); 
+   
+      // jqForm is a jQuery object encapsulating the form element.  To access the 
+      // DOM element for the form do this: 
+      // var formElement = jqForm[0]; 
+   
+      //alert('About to submit: \n\n' + queryString); 
+   
+      // here we could return false to prevent the form from being submitted; 
+      // returning anything other than false will allow the form submit to continue
+      if(validatesource() == true)         
+        return true;
+      else
+        return false; 
+  } 
+   
+  // post-submit callback 
+  function showResponseSource(responseText, statusText, xhr, $form)  { 
+      // for normal html responses, the first argument to the success callback 
+      // is the XMLHttpRequest object's responseText property 
+   
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'xml' then the first argument to the success callback 
+      // is the XMLHttpRequest object's responseXML property 
+   
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'json' then the first argument to the success callback 
+      // is the json data object returned by the server 
+   
+      //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+      //    '\n\nThe output div should have already been updated with the responseText.');
+      var newsource = $($form).find("#source_name").val();
+      var o = new Option(newsource, responseText);
+      /// jquerify the DOM object 'o' so we can use the html method
+      
+      if(responseText == "exists")
+      {
+       $("#show_err").html('Source already exists.');
+      }
+      else
+      {
+       $("#show_err").html('');
+       $(o).html(newsource);
+       $(o).prop('selected', true)
+       $("#deal_deal_source").append(o);
+
+       $($form).find("#source_name").val("");
+       $("#sourceModal").modal('hide');
+       window.location.href = "/users";
+      }
+             
+   }

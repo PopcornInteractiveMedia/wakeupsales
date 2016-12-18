@@ -1,0 +1,36 @@
+-if user_signed_in?
+  /=javascript_include_tag "bootstrap-datetimepicker"
+  /=stylesheet_link_tag "bootstrap-datetimepicker"
+  #taskModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+    .modal-dialog
+      .modal-content
+        
+        .modal-footer
+          .pull-left
+            =f.submit "Create Task", :class=> "btn btn-primary"
+         
+  #output2.hide
+  :javascript
+    $(document).ready(function(data) {
+      $('#new_task_form').bind('ajax:success', function(evt, data, status, xhr){
+      $('#loader').hide();
+      $("#taskModal").modal('hide');
+      //window.location.href ="/tasks";
+      });
+
+      $('#new_task_form').bind('ajax:before', function(evt, data, status, xhr){
+      $('#loader').show();
+      });
+
+      $("#new_task_form").bind("ajax:complete", function(evt, data, status, xhr) {
+      if(data.responseText !== " "){
+      $("#alert-msg").show();
+      $("#msg_div").html(data.responseText);
+      }
+      $('#loader').hide();
+      });
+      
+      $('#due_date').datepicker({
+        format: 'yyyy-mm-dd hh:ii'
+      });
+    });

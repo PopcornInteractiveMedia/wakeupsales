@@ -1,0 +1,150 @@
+:css
+  .minicolors-theme-default .minicolors-swatch{top: 8px;}
+#labelModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "sourceModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal",} ×
+
+        %h4.modal-title Add New Label
+      .modal-body
+
+
+        - label = UserLabel.new
+        = form_for(label,:action=>save_label_path,:url=>"/settings/save_label", :html=>{:class => "form",:method=>"post",:id=>"new_label"}) do |f|
+          .row
+            .form-group.col-md-6
+              =f.text_field :name, :required => true ,:class=> "col-md-8 form-control",:html=>{:maxlength=> "100"},:placeholder=>"Label Name"
+
+            .form-group.col-md-6
+              =f.text_field :color, :required => true ,:class=> "minicolors minicolors-input demo col-md-12 form-control ",:html=>{:maxlength=> "100"}, :size=>30, "data-control" => "hue",:placeholder=>"Label Color",:style=>"height:34px;min-width: 260px;width:auto;"
+            
+          .cb
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit", "data-disable-with" => "Saving..."} Save
+
+
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+
+                %span.c_links
+                  Cancel
+:javascript
+  $('#user_label_color.minicolors').minicolors();
+   
+
+  $('.demo').each( function() {
+            //
+            // Dear reader, it's actually very easy to initialize MiniColors. For example:
+            //
+            //  $(selector).minicolors();
+            //
+            // The way I've done it below is just for the demo, so don't get confused 
+            // by it. Also, data- attributes aren't supported at this time...they're 
+            // only used for this demo.
+            //
+    $(this).minicolors({
+      control: $(this).attr('data-control') || 'hue',
+      defaultValue: $(this).attr('data-defaultValue') || '',
+      inline: $(this).attr('data-inline') === 'true',
+      letterCase: $(this).attr('data-letterCase') || 'lowercase',
+      opacity: $(this).attr('data-opacity'),
+      position: $(this).attr('data-position') || 'bottom left',
+      change: function(hex, opacity) {
+        if( !hex ) return;
+        if( opacity ) hex += ', ' + opacity;
+        try {
+          console.log(hex);
+        } catch(e) {}
+      },
+      theme: 'bootstrap'
+    });
+            
+    });
+  var options = { 
+      target:        '#output2',   // target element(s) to be updated with server response 
+      beforeSubmit:  showRequestlabel,  // pre-submit callback 
+      success:       showResponselabel,  // post-submit callback 
+
+      // other available options: 
+      //url:       ""         // override for form's 'action' attribute 
+      //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+      //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+      //clearForm: true,        // clear all form fields after successful submit 
+      //resetForm: true        // reset the form after successful submit 
+
+      // $.ajax options can be used here too, for example: 
+      //timeout:   3000 
+  }; 
+
+  // bind to the form's submit event 
+  $('#new_label').submit(function() { 
+      // inside event callbacks 'this' is the DOM element so we first 
+      // wrap it in a jQuery object and then invoke ajaxSubmit 
+      
+      
+        $(this).ajaxSubmit(options); 
+        
+      // !!! Important !!! 
+      // always return false to prevent standard browser submit and page navigation 
+        return false; 
+      //}
+  
+  }); 
+  function validatelabel()
+  {
+    if($("#label_name").val() != "")
+      return true;
+    else
+      return false;
+  }
+  // pre-submit callback 
+  function showRequestlabel(formData, jqForm, options) { 
+      // formData is an array; here we use $.param to convert it to a string to display it 
+      // but the form plugin does this for you automatically when it submits the data 
+      var queryString = $.param(formData); 
+   
+      // jqForm is a jQuery object encapsulating the form element.  To access the 
+      // DOM element for the form do this: 
+      // var formElement = jqForm[0]; 
+   
+      //alert('About to submit: \n\n' + queryString); 
+   
+      // here we could return false to prevent the form from being submitted; 
+      // returning anything other than false will allow the form submit to continue
+      if(validatelabel() == true)         
+        return true;
+      else
+        return false; 
+  } 
+   
+  // post-submit callback 
+  function showResponselabel(responseText, statusText, xhr, $form)  { 
+      // for normal html responses, the first argument to the success callback 
+      // is the XMLHttpRequest object's responseText property 
+   
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'xml' then the first argument to the success callback 
+      // is the XMLHttpRequest object's responseXML property 
+   
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'json' then the first argument to the success callback 
+      // is the json data object returned by the server 
+   
+      //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+      //    '\n\nThe output div should have already been updated with the responseText.');
+      
+      //var newlabel = $($form).find("#label_name").val();
+      //var o = new Option(newlabel, responseText);
+      /// jquerify the DOM object 'o' so we can use the html method
+      
+      //$(o).html(newlabel);
+      //$(o).prop('selected', true)
+      //$("#deal_deal_label").append(o);
+      //alert($($form).find("#label_name").val());
+      //$($form).find("#label_name").val("");
+      //$("#labelModal").modal('hide');
+      window.location.reload();
+      
+       
+   }

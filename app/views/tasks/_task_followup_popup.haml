@@ -1,0 +1,10 @@
+-if user_signed_in?
+  #taskFollowModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+    .modal-dialog
+      .modal-content
+        #alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal", onclick: "$('#alert-msg').hide();$('#loader').hide();"} ×
+          #msg_div
+        #followform_content
+
+

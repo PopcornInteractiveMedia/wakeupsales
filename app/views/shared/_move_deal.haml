@@ -1,0 +1,187 @@
+#dealmoveModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      -@deal= DealMove.new
+      = form_for(@deal,:url=>move_lead_path,  :remote => true,:html=>{:class => "form",:method=>"post",:id=>"move_deal_popup"}) do |f|
+        =hidden_field_tag :new_initr_id
+        =hidden_field_tag :new_assign_id
+        =hidden_field_tag :mass_deal_ids
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal", "onclick"=>'$("#finish_working").hide();'} ×
+          %h4.modal-title Move Deal
+        .modal-body
+          %input{:type=>"hidden",:name=>"deal_id",:value=>"",:id=>"deal_id_move"}
+          %input{:type=>"hidden",:name=>"flag_id",:value=>"0",:id=>"flag_id"}
+          %div{id:"chk_radio_act",class: "error",style: "display:none;margin-top:-14px;"}
+
+          .cb
+            %br
+            -dealstatuses = current_user.organization.deal_statuses
+            - dealstatuses.each do |ds|
+              .form-group.col-md-6.p0{:class => "show_all deal_s_#{ds.id}"}
+
+                %label.radio.inline{style: "margin:-10px 0 0px"}
+                  =f.radio_button :deal_status ,ds.id,:required=>true,:onclick => "change_assign_drop(#{ds.original_id});"
+                  =ds.name
+
+          .cb#finish_working{style: "display:none"}
+
+            .col-md-4.p0
+              .form-group
+                =f.check_box :is_current ,:class=> ""
+                Finished working
+          .cb
+            .form-group#mv_dl_asign
+              .col-md-3.p0
+                %label
+                  Assign User   
+              .col-md-9.p0                
+                /-@assign_people = current_user.organization.users.where("invitation_token IS ? and is_active = ?", nil,true).order("first_name ASC")
+                /= select_tag "assigned_to_user", options_from_collection_for_select(@assign_people, "id", "full_name"), :prompt =>  '- Users -', :class=>"col-md-3 form-control", :required => true
+                = select_tag "assigned_to_user", options_for_select(all_org_users.collect {|c| [ c.full_name, c.id ]}), :prompt => '- Users -',:class=>"col-md-3 form-control", :required => true
+          .cb
+            .form-group
+              %label
+                Note
+              =f.text_area :note ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "80"}, :style=> "resize: none;",:rows=>"3" 
+          .cb
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit", "data-disable-with" => "Saving...", onclick: "return chk_radiobtn();"} Save
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+
+:javascript
+  $('#dealmoveModal').on('show.bs.modal', function (e) {
+    $("#deal_move_note").val("")
+  });
+  $('#move_deal_popup').bind('ajax:complete', function(evt, data, status, xhr){
+    //alert('complete')
+    $("#dealmoveModal").modal('hide');
+    if($("li#incoming_tab" ).hasClass("active")){
+      get_deals('incoming');
+      var dtype="incoming";
+    }else if($("li#qualify_tab" ).hasClass("active")){
+      get_deals('qualify');
+      var dtype="qualify";
+    }else if($("li#won_tab" ).hasClass("active")){
+      get_deals('won');
+      var dtype="won";
+    }else if($("li#lost_tab" ).hasClass("active")){
+      get_deals('lost');
+      var dtype="lost";
+    }else if($("li#not_qualified_tab" ).hasClass("active")){
+      get_deals('not_qualify');
+      var dtype="not_qualify";
+    }else if($("li#junk_tab" ).hasClass("active")){
+      get_deals('junk');
+      var dtype="junk";
+    }else if($("li#no_contact_tab" ).hasClass("active")){
+      get_deals('no_contact');
+      var dtype="no_contact";
+    }else if($("li#follow_up_required_tab" ).hasClass("active")){
+      get_deals('follow_up_required');
+      var dtype="follow_up_required";
+    }else if($("li#follow_up_tab" ).hasClass("active")){
+      get_deals('follow_up');
+      var dtype="follow_up";
+    }else if($("li#quoted_tab" ).hasClass("active")){
+      get_deals('quoted');
+      var dtype="quoted";
+    }else if($("li#meeting_scheduled_tab" ).hasClass("active")){
+      get_deals('meeting_scheduled');
+      var dtype="meeting_scheduled";
+    }else if($("li#forecasted_tab" ).hasClass("active")){
+      get_deals('forecasted');
+      var dtype="forecasted";
+    }else if($("li#waiting_for_project_requirement_tab" ).hasClass("active")){
+      get_deals('waiting_for_project_requirement');
+      var dtype="waiting_for_project_requirement";
+    }else if($("li#proposal_tab" ).hasClass("active")){
+      get_deals('proposal');
+      var dtype="proposal";
+    }else if($("li#estimate_tab" ).hasClass("active")){
+      get_deals('estimate');
+      var dtype="estimate";
+    }else if($("li#all_tab" ).hasClass("active")){
+      get_deals('all');
+      var dtype="all";
+    }
+    else {
+      get_deals('all');
+      var dtype="all";
+    }
+    //alert(JSON.stringify( data));
+    //alert(data.responseJSON.stag_name)
+    //alert(data.responseJSON.deal_org_id);
+    //alert(data.responseJSON.total_deal)
+    changed_target_header_count(data.responseJSON.deal_org_id, data.responseJSON.total_deal);
+  });
+  function change_assign_drop(obj)
+  {
+    var ini_id = $("#new_initr_id").val();
+    var assn_id = $("#new_assign_id").val();
+    $("#flag_id").val(1);
+    if(obj == 4 || obj == 5 ){$('#mv_dl_asign').fadeOut("slow");}else{$('#mv_dl_asign').fadeIn("slow");}
+    if(obj == 6){$('#assigned_to_user').val(ini_id);}else{ $('#assigned_to_user').val(assn_id); }
+    if($("#flag_id").val() == "1")
+    {
+      $("#chk_radio_act").hide();
+    }
+    if(obj == 3 || obj == 5 || obj == 6){
+     $('#deal_move_note').prop('required',true);
+     }else{$('#deal_move_note').prop('required',false);}
+  }
+  function chk_radiobtn()
+  {
+    var chak_flag = $("#flag_id").val();
+    if(chak_flag == "0")
+    {
+      $("#chk_radio_act").show();
+      $("#chk_radio_act").html('Please select an option from below!')
+      return false;
+    }
+    
+  }
+  function changed_target_header_count(target_tab, target_value){
+    
+    var dtype="";
+    if(target_tab == 1){
+      dtype = "incoming";
+    }else if(target_tab == 2){
+      dtype = "qualified";
+    }else if(target_tab == 3){
+      dtype = "not_qualified";
+    }else if(target_tab == 4){
+      dtype= "won";
+    }else if(target_tab == 5){
+      dtype= "lost";
+    }else if(target_tab == 6){
+      dtype= "junk";
+    }else if(target_tab == 7){
+      dtype= "no_contact";
+    }else if(target_tab == 8){
+      dtype= "follow_up_required";
+    }else if(target_tab == 9){
+      dtype= "follow_up";
+    }else if(target_tab == 10){
+      dtype= "quoted";
+    }else if(target_tab == 11){
+      dtype= "meeting_scheduled";
+    }else if(target_tab == 12){
+      dtype= "forecasted";
+    }else if(target_tab == 13){
+      dtype= "waiting_for_project_requirement";
+    }else if(target_tab == 14){
+      dtype= "proposal";
+    }else if(target_tab == 15){
+      dtype= "estimate";
+    }
+    
+    present_count = $("#badge_" + dtype).text().replace ( /[^\d.]/g, '' );
+    if(present_count != ""){
+      newval = parseInt(present_count) + parseInt(target_value);
+      $("#badge_"+dtype).text('(' + newval + ')');
+    }
+  }

@@ -1,0 +1,146 @@
+.container
+  .row
+    .panel.panel-default.widget
+      .panel-heading
+        %span.glyphicon.glyphicon-comment
+        %h3.panel-title
+          Activity Stream
+        /%span.label.label-info
+        /  = @contact.attachments.count
+      .panel-body
+        %ul.list-group
+          / - if !@contact.attachments.nil? && !@contact.attachments.blank?
+          /  - @contact.attachments.order("created_at desc").each do |attachment|
+          - activities = get_deal_activity_stream(@deal.id)
+          - activities.each do |activity|
+            / *********** Notes
+            /=activity.class.name
+            -if(activity.class.name == "Note")
+              -attachment = activity
+              %li.list-group-item
+                .row
+                  .col-xs-2.col-md-1
+                    - if !attachment.user.image.nil?
+                      - img_path = attachment.user.image.image.url(:icon)
+                    - else
+                      - img_path = "/assets/no_user.png"
+                    %img.img-circle.img-thumbnail.img-responsive{alt: "", src: img_path}/
+                  .col-xs-8.col-md-10
+                    %div
+                      %span.linkspan
+                        = attachment.notes
+                      .mic-info
+                        By:
+                        %span.linkspan
+                          /= attachment.user.name
+                          =#{(attachment.created_by == current_user.id ? "me" : attachment.user.full_name}
+                      .mic-info
+                        Created
+                        = format_date(attachment.created_at)                        
+                    
+                  .col-xs-2.col-md-1      
+                    %h5
+                      %span.label.label-warning
+                        Notes
+            / *********** DealMove
+            -if(activity.class.name == "DealMove")
+              -dealmove = activity
+              %li.list-group-item
+                .row
+                  .col-xs-2.col-md-1
+                    - if !dealmove.user.image.nil?
+                      - img_path = dealmove.user.image.image.url(:icon)
+                    - else
+                      - img_path = "/assets/no_user.png"
+                    %img.img-circle.img-thumbnail.img-responsive{alt: "", src: img_path}/
+                  .col-xs-8.col-md-10
+                    %div
+                      %span.linkspan
+                        = dealmove.attachment.notes
+                      .mic-info
+                        By:
+                        %span.linkspan
+                          #{dealmove.user.id == current_user.id ? "me" : dealmove.user.full_name}
+                      .mic-info
+                        Created
+                        = format_date(dealmove.created_at)                        
+                    
+                  .col-xs-2.col-md-1      
+                    %h5
+                      %span.label.label-success
+                        =dealmove.deal_status.name   
+            / *********** Task
+            -if(activity.class.name == "Deal")
+              -deal = activity
+              %li.list-group-item
+                .row
+                  .col-xs-2.col-md-1
+                    - if !deal.assigned_user.image.nil?
+                      - img_path = deal.assigned_user.image.image.url(:icon)
+                    - else
+                      - img_path = "/assets/no_user.png"
+                    %img.img-circle.img-thumbnail.img-responsive{alt: "", src: img_path}/
+                  .col-xs-8.col-md-10
+                    %div
+                      = link_to deal.title, lead_path(deal)
+                      .mic-info
+                        By:
+                        %span.linkspan
+                          #{(user_name=User.find(deal.initiated_by).id) == current_user.id ? "me" : deal.initiator.full_name}
+                          /= deal.initiator.full_name
+                        
+                      .mic-info
+                        Created
+                        = format_date(deal.created_at)                        
+                    
+                  .col-xs-2.col-md-1      
+                    %h5
+                      %span.label.label-danger.labe_imp
+                        Deal
+            / *********** Task
+            -if(activity.class.name == "Task")
+              -task = activity
+              %li.list-group-item
+                .row
+                  .col-xs-2.col-md-1
+                    - if !task.user.image.nil?
+                      - img_path = task.user.image.image.url(:icon)
+                    - else
+                      - img_path = "/assets/no_user.png"
+                    %img.img-circle.img-thumbnail.img-responsive{alt: "", src: img_path}/
+                  - if task.is_completed
+                    - style_text="text-decoration:line-through; "
+                  .col-xs-8.col-md-10{style: style_text}
+                    %div
+                      %a{href: "javascript:"}
+                        - deal= Deal.find(task.deal_id)
+                        = link_to deal.title+" / "+task.title, lead_path(deal)
+                        /= task.title
+                      .mic-info
+                        Assigned To:
+                        %span.linkspan
+                          = task.user.full_name
+                        &nbsp;&nbsp;
+                        %b • 
+                        Created By:
+                        #{(user_name=User.find(task.created_by).id) == current_user.id ? "me" : task.initiator.full_name}
+                        &nbsp;&nbsp;
+                        %b • 
+                        %span.due_date
+                          Due on  #{task.due_date.strftime("%a %d %b %Y @ %H:%M") if task.due_date.present?}
+                      .mic-info
+                        Created
+                        = format_date(task.created_at)                        
+                    
+                  .col-xs-2.col-md-1      
+                    %h5
+                      %span.label.label-info.pull-left
+                        Task  
+          /- else
+          /  %li.list-group-item
+          /    No data found !!!
+        /%a.btn.btn-primary.btn-sm.btn-block{href: "#", role: "button"}
+        /  %span.glyphicon.glyphicon-refresh
+        /  More
+
+        

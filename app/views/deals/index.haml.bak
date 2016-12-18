@@ -1,0 +1,2012 @@
+:css
+  #deal_label_menu .dropdown-menu::after {
+    position: absolute;
+    top: -6px;
+    left: 6px;
+    display: inline-block;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #9C9FA2;
+    border-left: 6px solid transparent;
+    content: '';
+  }
+  .dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: block;
+    margin-top: -1px;
+  }
+  .dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+  }
+  #deal_popup_menu:hover .dropdown-menu {
+    display: block;
+  }
+  .actions .dropdown-menu {
+    border: 1px solid darkOrange;
+  }
+  .actions .dropdown-menu a:hover {
+    background-color:#FFBD5C;
+    font-weight:bold
+  }
+  .actions .dropdown-menu::after {
+    position: absolute;
+    top: -6px;
+    left: 16px;
+    display: inline-block;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #FF8C00;    
+    border-left: 6px solid transparent;
+    content: '';
+  }
+  .dropdown-menu-arrow::before {
+    border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    content: "";
+    display: inline-block;
+    left: 9px;
+    position: absolute;
+    top: -7px;
+  }
+
+  .dropdown-menu-arrow::after {
+    border-bottom: 6px solid #FFFFFF;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    content: "";
+    display: inline-block;
+    left: 10px;
+    position: absolute;
+    top: -6px;
+  }
+  .label_arrow{
+    background: none;
+    padding: 2px 5px 0px;
+    border-radius: 3px;
+    border: 1px solid #cccccc;
+    color: #333333;
+    font-size: 10px;
+    width: 23px;
+  }
+
+  .label_arrow_active{
+    background: #fff;
+    padding: 2px 5px 0px;
+    border-radius: 3px;
+    border: 1px solid #fff;
+    color: #000;
+    font-size: 10px;
+    width: 23px;
+  }
+  .actions .dropdown-menu {min-width: 105px;top: 25px;}
+  .actions .dropdown-menu > li > a {padding: 2px 9px;}
+  .inactive_contact{color: #CCC;cursor: default;}
+  .dataTables_length{margin-left: 215px;margin-top: -15px;display:none;}
+  /*.table-condensed thead > tr > th{padding: 8px;}*/
+  /*.w-box {margin-top: -6px;}*/
+  .wbox-customize{margin: -7px -12px -1px -20px;}
+  #deal_label_menu .DataTables_sort_wrapper{position:relative}
+  .dropdown-submenu {
+      position: relative;
+  }
+
+  .dropdown-submenu>.dropdown-menu {
+      top: 0;
+      left: 100%;
+      margin-top: -6px;
+      margin-left: -1px;
+      -webkit-border-radius: 0 6px 6px 6px;
+      -moz-border-radius: 0 6px 6px;
+      border-radius: 0 6px 6px 6px;
+  }
+
+  .dropdown-submenu:hover>.dropdown-menu {
+      display: block;
+  }
+
+  .dropdown-submenu>a:after {
+      display: block;
+      content: " ";
+      float: right;
+      width: 0;
+      height: 0;
+      border-color: transparent;
+      border-style: solid;
+      border-width: 5px 0 5px 5px;
+      border-left-color: #ccc;
+      margin-top: 5px;
+      margin-right: -10px;
+  }
+
+  .dropdown-submenu:hover>a:after {
+      border-left-color: #fff;
+  }
+
+  .dropdown-submenu.pull-left {
+      float: none;
+  }
+
+  .dropdown-submenu.pull-left>.dropdown-menu {
+      left: -100%;
+      margin-left: 10px;
+      -webkit-border-radius: 6px 0 6px 6px;
+      -moz-border-radius: 6px 0 6px 6px;
+      border-radius: 6px 0 6px 6px;
+  }
+  #nav {
+      line-height: 2em;
+      border: 1px solid #ccc;
+      padding: 0;
+      margin: 0;
+      overflow: scroll;
+      overflow-x: hidden;
+  }
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      #alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+        %button.close{onclick: "$('#alert-msg').hide();$('#task_loader').hide();"} x
+        #msg_div
+      #filter_msgdeals.col-md-offset-0{style: "text-align: center;display:none"}
+      =hidden_field_tag "individual_filter_present", @filter_msg.present?
+      - if @filter_msg.present?
+        #individual_filter_msg.col-md-offset-0{style: "text-align: center"}
+          =@filter_msg.html_safe
+          =link_to "RESET", "/deals", class: "btn btn-xs btn-warning"
+      %ul.tag_filter{style: "margin-left:0px;text-align:center;display:none;"}
+        %li#show_filter_dealmsg
+
+        %li.created_by_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#created_by_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('created_by','cre_by_c');"} x
+        %li.assigned_to_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#assigned_to_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('assigned_to','asg_by_c');"} x
+        %li.location_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#location_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('location','country_c');"} x
+        %li.priority_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#priority_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('priority','priority_c');"} x
+        %li.next_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#next_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('next','next_c');"} x
+        %li.date_range_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#from_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('date_range','any_time');"} x
+            
+        %li.last_touch_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#last_touch_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('last_touch','lst_tch');"} x
+        
+        %li.date_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#date_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('date','any_time');"} x
+            
+        %li.opportunity_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#opportunity_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('opportunity','opportunity');"} x
+        %li.deal_tag.com_cls{style: "display: none;"}
+          .tag_dd
+            %span#deal_tag_txt
+            %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_deal_filter('tag','tag');"} x            
+        
+        %li.reset_tag.com_cls
+          %div
+            %a{href: "javascript:void(0);", onclick: "reset_all_deal_filter();reset_filter_val();", class: "btn btn-xs btn-warning"} RESET
+
+      .navbar-right
+        %span#hide_main
+          .btn-group          
+            %button.btn.btn-default.dropdown-toggle.f_menu{"data-toggle" => "dropdown", type: "button",onclick: "reser_all_submenu();add_class_menu();"}
+
+              %span.glyphicon.glyphicon-filter
+              Filter
+            %ul.dropdown-menu.main_menu{role: "menu"}
+              %li.arrow_top{style: "margin-left:87px;z-index:99"}
+              %li.dropdown-submenu
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "display_hide_submenu('created');"} Created By
+                #cr{style: "display: none;position:absolute;left:145px;top:-11px;"}
+                  .arrow_left.cre_arw{style: "display:none;"}
+                  %ul#cre_by_app.dropdown-menu{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                    - all_org_users.each do |cre_by|
+                      %li
+                        %a{href: "#",onclick: "chk_radio_button(#{cre_by.id},'created')",class: "filterSelectDropdow"}
+                          %input{id:"cre_by_#{cre_by.id}", class: "cre_by_c",type: "checkbox", value: "#{cre_by.id}",c_name: "#{cre_by.full_name}",style: "margin-left:-10px;cursor:pointer;",name: "created_by"}
+                            =cre_by.full_name
+                      %li.divider
+
+              %li.divider
+
+              %li.dropdown-submenu
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "display_hide_submenu('assigned');"} Assigned To
+                #asg{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.asg_arw{style: "display:none;"}
+                  %ul.dropdown-menu{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                    - select_all_org_users.each do |assg_by|
+                      %li
+                        - assg_by.is_active == false ? sty = "background-color:#f0f0f0;" : sty = ""
+                        %a{href: "javascript:void(0)",onclick: "chk_radio_button(#{assg_by.id},'assigned')",class: "filterSelectDropdow", style:sty}
+                          %input{id:"assg_by_#{assg_by.id}", class: "asg_by_c",type: "checkbox", value: "#{assg_by.id}",a_name: "#{assg_by.full_name}",style: "margin-left:-10px;cursor:pointer;",name: "assg_by"}
+                            =assg_by.full_name
+                      %li.divider
+              %li.divider
+
+              %li.dropdown-submenu
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "display_hide_submenu('location');"} Location
+                #lo{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.loc_arw{style: "display:none;"}
+                  %ul.dropdown-menu.col-md-3{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                    - Country.all.each do |cn|
+                      %li
+                        %a{href: "javascript:void(0)",onclick: "chk_radio_button(#{cn.id},'loc')",class: "filterSelectDropdow"}
+                          %input{id:"country_#{cn.id}", class: "country_c",type: "checkbox", value: "#{cn.id}",coun_name: "#{cn.name}",style: "margin-left:-10px;cursor:pointer;",name: "coun"}
+                          =cn.name
+                      %li.divider
+              %li.divider
+              %li.dropdown-submenu{onclick: "display_hide_submenu('priority');"}
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown"} Priority
+                #pr{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.pri_arw{style: "display:none;"}
+                  %ul.dropdown-menu{style: "display:inline-block;position:relative;"}
+                    -@current_user.organization.priority_types.each do |pri|
+                      %li
+                        %a{href: "javascript:void(0)",onclick: "chk_radio_button(#{pri.id},'priority')",class: "filterSelectDropdow"}  
+                          %input{id:"priority_#{pri.id}", class: "priority_c",type: "checkbox", value: "#{pri.id}",prio_name: "#{pri.name}",style: "margin-left:-10px;cursor:pointer;",name: "prio"}
+                          =pri.name
+                      %li.divider
+              %li.divider
+              %li.dropdown-submenu{onclick: "display_hide_submenu('next');"}
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown"} Next Action
+                #nex{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.next_arw{style: "display:none;"}
+                  %ul.dropdown-menu{style: "display:inline-block;position:relative;"}
+                    -@current_user.organization.task_types.each do |ty|
+                      %li
+                        %a{href: "javascript:void(0)",onclick: "chk_radio_button(#{ty.id},'next')",class: "filterSelectDropdow"}  
+                          %input{id:"next_#{ty.id}", class: "next_c",type: "checkbox", value: "#{ty.id}",next_name: "#{ty.name}",style: "margin-left:-10px;cursor:pointer;",name: "next"}
+                          =ty.name
+                      %li.divider
+              %li.divider
+              %li
+                %a{name: "li_opportunity" ,class: "filterSelectDropdow", href: "javascript:void(0)"} Opportunities
+              %li.divider
+              %li.dropdown-submenu{onclick: "display_hide_submenu('anytime');"}
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown"} Anytime
+                #any{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.any_arw{style: "display:none;"}
+                  %ul.dropdown-menu{style: "display:inline-block;position:relative;"}
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('past_week','any')",class: "filterSelectDropdow"}  
+                        %input{id:"past_week", class: "any_time",type: "radio", value: "Past Week",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Past Week
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('past_two_weeks','any')",class: "filterSelectDropdow"}  
+                        %input{id:"past_two_weeks", class: "any_time",type: "radio", value: "Past Two Weeks",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Past Two Weeks
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('past_three_weeks','any')",class: "filterSelectDropdow"}  
+                        %input{id:"past_three_weeks", class: "any_time",type: "radio", value: "Past Three Weeks",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Past Three Weeks
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('past_month','any')",class: "filterSelectDropdow"}  
+                        %input{id:"past_month", class: "any_time",type: "radio", value: "Past Month",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Past Month
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('past_year','any')",class: "filterSelectDropdow"}  
+                        %input{id:"past_year", class: "any_time",type: "radio", value: "Past Year",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Past Year
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('cu_date','any')",class: "filterSelectDropdow"} 
+                        %input{id:"cu_date", class: "any_time",type: "radio", value: "Custom Date",style: "margin-left:-10px;cursor:pointer;",name: "anytime"}
+                        Custom Date
+                    %li#custom_date{style: "display:none;margin:4px;"}
+                      =text_field_tag "deal_from","",value: "",class: "form-control typeahead",placeholder: "From"
+                      .cb10
+                      =text_field_tag "deal_to","",value: "",class: "form-control typeahead",placeholder: "To"
+                      .cb10
+                      %button.btn.btn-primary{class: "filterSelectDropdow",type: "button",rel: "tooltip", title: "Filter" } 
+                        Search
+
+              %li.divider
+              %li.dropdown-submenu{onclick: "display_hide_submenu('last');"}
+                %a{href: "javascript:void(0)","data-toggle"=>"dropdown"} Last Touch
+                #lat{style: "display: none;position: absolute;left:145px;top:-11px;"}
+                  .arrow_left.lst_arw{style: "display:none;"}
+                  %ul.dropdown-menu{style: "display:inline-block;position:relative;"}
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('last_week','last')",class: "filterSelectDropdow"}  
+                        %input{id:"last_week", class: "lst_tch",type: "radio", value: "Last Week",style: "margin-left:-10px;cursor:pointer;",name: "last_touch"}
+                        Last Week
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('last_two_weeks','last')",class: "filterSelectDropdow"}  
+                        %input{id:"last_two_weeks", class: "lst_tch",type: "radio", value: "Last Two Weeks",style: "margin-left:-10px;cursor:pointer;",name: "last_touch"}
+                        Last Two Weeks
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('last_three_weeks','last')",class: "filterSelectDropdow"}  
+                        %input{id:"last_three_weeks", class: "lst_tch",type: "radio", value: "Last Three Weeks",style: "margin-left:-10px;cursor:pointer;",name: "last_touch"}
+                        Last Three Weeks
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('last_month','last')",class: "filterSelectDropdow"}  
+                        %input{id:"last_month", class: "lst_tch",type: "radio", value: "Last Month",style: "margin-left:-10px;cursor:pointer;",name: "last_touch"}
+                        Last Month
+                    %li.divider
+                    %li
+                      %a{href: "javascript:void(0)",onclick: "chk_radio_button('last_three_months','last')",class: "filterSelectDropdow"}  
+                        %input{id:"last_three_months", class: "lst_tch",type: "radio", value: "Last Three Months",style: "margin-left:-10px;cursor:pointer;",name: "last_touch"}
+                        Last Three Months
+        %a#additional_links{"data-toggle" => "modal", href: "#dealModal", onclick: "$('#new_deal')[0].reset();$('.error').html('');", style: "text-decoration:none;"}
+          %button.btn.btn-primary.p5{type: "button",rel: "tooltip", title: "Add a Deal" }
+            %span.glyphicon.glyphicon-plus-sign
+            Add a deal
+        %a#additional_links{"data-toggle" => "modal", href: "#BulkLeadModal", rel: "popup", title: "Bulk lead upload", style: "background-color: white;"}
+          %button.btn.btn-default{type: "button",rel: "tooltip", title: "Bulk Lead Upload" } 
+            %span.glyphicon.glyphicon-import
+            Bulk Lead Upload
+
+      .tablisting.task_tab
+        %ul.nav.nav-tabs     
+          - if params[:type] == "inactive_deals"
+            %li#inactive_deals.active
+              %a{"data-toggle" => "tab", href: "#junk_deals",onclick: "get_deals('inactive_deals');" , id: "inactive_dealsDeals"} 
+
+                %span.badge#badge_junk
+                  = attention_deals_count
+                Deals need attention
+          -else
+            %li#incoming.active
+
+              %a{"data-toggle" => "tab", href: "#incoming_deals", style: "font-size: 14px;",onclick: "get_deals('incoming');", id: "incomingDeals"} 
+                = DealStatus.get_deal_name('1',@current_user.organization.id).name
+                %span#badge_incomming 
+                /  (
+                /  = @new_deals
+                /  )
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.pipeline?)
+              %li#qualify
+                %a{"data-toggle" => "tab", href: "#qualify_deals",onclick: "get_deals('qualify');", id: "qualifyDeals"} 
+                  = DealStatus.get_deal_name('2',@current_user.organization.id).name
+                  %span#badge_qualified
+                  /  (
+                  /  =@qualified_deals
+                  /  )
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.won? && @current_user.is_admin?)
+              %li#won_deals_tab
+
+
+                %a{"data-toggle" => "tab", href: "#won_deals",onclick: "get_deals('won');", id:"wonDeals"} 
+                  = DealStatus.get_deal_name('4',@current_user.organization.id).name
+
+
+                  %span#badge_won
+                  /  (
+                  /  = @won_deals
+                  /  )
+
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.lost? && @current_user.is_admin?)
+              %li#lost_deals_tab
+
+
+                %a{"data-toggle" => "tab", href: "#lost_deals",onclick: "get_deals('lost');", id:"lostDeals"} 
+                  = DealStatus.get_deal_name('5',@current_user.organization.id).name
+
+
+                  %span#badge_lost
+                  /  (
+                  /  =@lost_deals
+                  /  )
+
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.not_qualify?)
+              %li#not_qualified_tab
+
+
+                %a{"data-toggle" => "tab", href: "#notqualify_deals",onclick: "get_deals('not_qualify');", id:"not_qualifyDeals"}
+                  = DealStatus.get_deal_name('3',@current_user.organization.id).name
+
+
+                  %span#badge_not_qualified
+                  /  (
+                  /  = @not_qualify_deals
+                  /  )
+
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.junk?)
+              %li#junk_tab
+
+
+                %a{"data-toggle" => "tab", href: "#junk_deals",onclick: "get_deals('junk');", id:"junkDeals"} 
+                  = DealStatus.get_deal_name('6',@current_user.organization.id).name
+
+
+                  %span#badge_junk
+                  /  (
+                  /  = @junk_deals
+                  /  )
+            -if(@current_user.is_super_admin? || @current_user.is_admin?  )
+              %li#un_assigned_tab
+
+
+                %a{"data-toggle" => "tab", href: "#un_assigned_deals",onclick: "get_deals('un_assigned');", id:"un_assignedDeals"} 
+                  Un-assigned 
+
+
+                  %span#badge_un_assigned
+                  /  (
+                  /  = @un_assigned_deals
+                  /  )
+
+            %li
+              %a{"data-toggle" => "modal", href: "#dealsettingModal", rel: "popup", title: "Tab Settings"}
+                .plus_deal
+                .cb
+        #filter_options.filter_box{style: "display:none"}
+          .col-md-12.deal_filter
+            .row
+              .col-md-2
+                =select_tag "filter_created_by", options_from_collection_for_select(all_org_users, "id", "full_name"), :class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Created by -"
+              .col-md-2
+                =select_tag "filter_assigned_to", options_from_collection_for_select(all_org_users, "id", "full_name"), :class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Assigned to -"
+              .col-md-2
+                =select_tag "filter_location", options_from_collection_for_select(Country.all, "id", "name"),:class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Location -"
+              .col-md-2
+                =select_tag "filter_priority", options_from_collection_for_select(@current_user.organization.priority_types, "id", "name"),:class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Priority -"
+              .col-md-2
+                = select_tag "filter_date", options_for_select(["Past Week","Past Two Weeks","Past Three Weeks", "Past Month", "Past Year"]),:class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Any time -"
+              .col-md-2
+                = select_tag "filter_last_touch", options_for_select(["Last Week","Last Two Weeks","Last Three Weeks","Last Month","Last Three Months"]),:class=>"col-md-12 form-control filterSelectDropdow", :prompt => "- Last touch -"
+
+        .cb10.get-space{style: "left:0"}
+
+        .tab-content
+          =hidden_field_tag "incoming_div_val","1"
+          =hidden_field_tag "un_assigned_div_val","0"
+          =hidden_field_tag "working_div_val","0"
+          =hidden_field_tag "qualify_div_val","0"
+          =hidden_field_tag "won_div_val","0"
+          =hidden_field_tag "lost_div_val","0"
+          =hidden_field_tag "not_qualify_div_val","0"
+          =hidden_field_tag "junk_div_val","0"
+          =hidden_field_tag "filter_get_val","0"
+          =hidden_field_tag 'hdndeals', 'mydeals'
+          =hidden_field_tag 'opp'
+          - if params[:type] == "inactive_deals"
+            #inactive_deals_content.w-box.tab-pane.in.active
+          - else
+            #incoming_deals.w-box.tab-pane.in.active
+
+              /- unless @deals.nil? || @deals.blank?
+              /= render :partial => "deal_incoming"
+
+              /- else
+              /  No Deals found 
+            #working_deals.w-box.tab-pane.in
+            #un_assigned_deals.w-box.tab-pane.in
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.pipeline?) 
+              #qualify_deals.w-box.tab-pane.in
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.won?)
+              #won_deals.w-box.tab-pane.in
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.lost?)
+              #lost_deals.w-box.tab-pane.in
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.not_qualify?)              
+              #notqualify_deals.w-box.tab-pane.in
+            -if(!@current_user.deal_setting.nil? && @current_user.deal_setting.junk?)
+              #junk_deals.w-box.tab-pane.in
+      
+                                                           
+        .cb
+        /.dtPagination.fr
+        /  .dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_bootstrap
+        /    .fl.page_gry
+        /      Deals   
+        /      %span 1
+        /      of 50
+        /    %ul.pagination
+        /      %li.prev.disabled
+        /        %a{href: "#", style: "padding:6px"}
+        /          .fl.page_prv
+        /      %li.next
+        /        %a{href: "#", style: "padding:6px"}
+        /          .fl.page_nxt                          
+
+=hidden_field_tag "deal_quarter"
+=hidden_field_tag "deal_year"
+= render :partial => "tab_settings"
+= render :partial => "shared/label"
+= render :partial => "shared/move_deal"
+= render :partial => "deals/change_assignee"
+= render :partial => "deals/confirm_deal_delete"
+#quickeditModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "quickeditModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title Edit Deal
+      .modal-body
+        #deal_content{style: "margin-left: 12px;"}
+:javascript
+  if("#{params[:type].present?}" == "false")
+    get_deals('incoming');
+  q = $('#deal_quarter').val("#{params[:q]}");
+  y = $('#deal_year').val("#{params[:y]}");
+  document.cookie="deal_quarter="+q.val();
+  document.cookie="deal_year="+y.val();
+  $('html').click(function() {
+   $('.main_menu').hide(); 
+  });
+
+  $('#hide_main').click(function(event){
+     event.stopPropagation();
+  });
+
+  //$(document).on('click', function( e ) {
+   //$('.main_menu').hide();
+    //reser_all_submenu();
+  //});
+  function reset_deal_cookie()
+  {
+   $.each(["cre_by","cre_by_val","cre_by_txt","daterange","dt_range","dt_range_txt","asg_by","asg_by_val","asg_by_txt","loc","loc_val","loc_txt","priority","priority_val","priority_txt","next","next_val","next_txt","last_touch","last_tch","last_touch_txt","dtrange_from","dt_range_from","dt_range_frm_txt","dtrange_to","dt_range_to","dt_range_to_txt","page_tab","tag"], function( index, value ) {
+    $.removeCookie(value);   
+   });
+    $(".tag_dd").hide();
+    $(".reset_tag").hide();
+    $('#filter_created_by').prop('selectedIndex',0);
+    $('#filter_assigned_to').prop('selectedIndex',0);
+    $('#filter_location').prop('selectedIndex',0);
+    $('#filter_priority').prop('selectedIndex',0);
+    $('#filter_date').prop('selectedIndex',0);
+    $('#filter_last_touch').prop('selectedIndex',0);
+    $('#deal_from').val('');
+    $('#deal_to').val('');
+  }
+  function select_filter_from_cookies(){
+    if(("#{cookies[:cre_by]}" == "true" ) || ("#{cookies[:asg_by]}" == "true" ) || ("#{cookies[:loc]}" == "true" ) || ("#{cookies[:priority]}" == "true" ) || ("#{cookies[:next]}" == "true" ) || ("#{cookies[:daterange]}" == "true" ) || ("#{cookies[:last_tch]}" == "true" )|| ("#{cookies[:opportunity]}" == "true" ) || ("#{cookies[:dtrange_from]}" == "true" && "#{cookies[:dtrange_to]}" == "true") || ("#{cookies[:tag]}" != '')){
+      if("#{cookies[:cre_by]}" == "true" ){
+        var cre_split = "#{cookies[:cre_by_val]}".slice(0,-1).split('|');
+        for(var i=0;i<cre_split.length;i++)
+        {
+          $("#cre_by_"+cre_split[i]).prop("checked", true)
+        }        
+
+        //$('#filter_created_by').val("#{cookies[:cre_by_val]}");
+        //$("#cre_by_"+"#{cookies[:cre_by_val]}").prop("checked", true)
+        $(".tag_filter").show();
+        $(".created_by_tag").show();
+        $("#created_by_tag_txt").html("#{cookies[:cre_by_txt]}".split('|').join(','));
+      }
+      if("#{cookies[:asg_by]}" == "true" ){
+        var asg_split = "#{cookies[:asg_by_val]}".slice(0,-1).split('|');
+        for(var i=0;i<asg_split.length;i++)
+        {
+          $("#assg_by_"+asg_split[i]).prop("checked", true)
+        }
+      
+        //$('#filter_assigned_to').val("#{cookies[:asg_by_val]}");
+        //$("#assg_by_"+"#{cookies[:asg_by_val]}").prop("checked", true)
+        $(".tag_filter").show();
+        $(".assigned_to_tag").show();
+        $("#assigned_to_tag_txt").html("#{cookies[:asg_by_txt]}".split('|').join(','));
+      }
+
+      if("#{cookies[:loc]}" == "true" ){
+        var loc_split = "#{cookies[:loc_val]}".slice(0,-1).split('|');
+        for(var i=0;i<loc_split.length;i++)
+        {
+          $("#country_"+loc_split[i]).prop("checked", true)
+        }      
+        //$('#filter_location').val("#{cookies[:loc_val]}");
+        //$("#country_"+"#{cookies[:loc_val]}").prop("checked", true)
+        $(".tag_filter").show();
+        $(".location_tag").show();
+        $("#location_tag_txt").html("#{cookies[:loc_txt]}".split('|').join(','))
+      }
+      if("#{cookies[:priority]}" == "true" ){
+        var prio_split = "#{cookies[:priority_val]}".slice(0,-1).split('|');
+        for(var i=0;i<prio_split.length;i++)
+        {
+          $("#priority_"+prio_split[i]).prop("checked", true)
+        }      
+        //$('#filter_priority').val("#{cookies[:priority_val]}");
+        //$("#priority_"+"#{cookies[:priority_val]}").prop("checked", true)
+        $(".tag_filter").show();
+        $(".priority_tag").show();
+        $("#priority_tag_txt").html("#{cookies[:priority_txt]}".split('|').join(','));
+      }
+      if("#{cookies[:next]}" == "true" ){
+        var next_split = "#{cookies[:next_val]}".slice(0,-1).split('|');
+        for(var i=0;i<next_split.length;i++)
+        {
+          $("#next_"+next_split[i]).prop("checked", true)
+        }        
+        //$('#filter_priority').val("#{cookies[:priority_val]}");
+        //$("#next_"+"#{cookies[:next_val]}").prop("checked", true)
+        $(".tag_filter").show();
+        $(".next_tag").show();
+        $("#next_tag_txt").html("#{cookies[:next_txt]}".split('|').join(','));
+      }
+      if("#{cookies[:daterange]}" == "true" ){
+        //$('#filter_date').val("#{cookies[:dt_range]}");
+        var daterange_id = "#{cookies[:dt_range]}".toLowerCase().split(' ').join('_');
+        $("#"+daterange_id).prop("checked", true)
+        $(".tag_filter").show();
+        $(".date_tag").show();
+        $("#date_tag_txt").html("#{cookies[:dt_range_txt]}")
+      }
+      if("#{cookies[:last_tch]}" == "true" ){
+        //$('#filter_last_touch').val("#{cookies[:last_touch]}");
+        var lastouch_id = "#{cookies[:last_touch]}".toLowerCase().split(' ').join('_');
+        $("#"+lastouch_id).prop("checked", true)
+        $(".tag_filter").show();
+        $(".last_touch_tag").show();
+        $("#last_touch_tag_txt").html("#{cookies[:last_touch_txt]}");
+      }
+      if("#{cookies[:opportunity]}" == "true" ){
+        $("#opp").val(1);
+        $(".tag_filter").show();
+        $(".opportunity_tag").show();
+        $("#opportunity_tag_txt").html("Opportunities");
+      }
+      if("#{cookies[:dtrange_from]}" == "true" ){
+        //$('#filter_assigned_to').val("#{cookies[:asg_by_val]}");
+        $(".tag_filter").show();
+        $(".date_range_tag").show();
+        $("#deal_from").val("#{cookies[:dt_range_from]}");
+        $("#deal_to").val("#{cookies[:dt_range_to]}");
+        $("#from_tag_txt").html("#{cookies[:dt_range_frm_txt]} to #{cookies[:dt_range_to_txt]}");
+      }
+      if("#{cookies[:tag]}" != '')
+      {
+        $(".tag_filter").show();
+        $(".deal_tag").show();
+        $("#deal_tag_txt").html("#{cookies[:tag]}");
+      }
+      $("#filter_get_val").val(1)
+      //$(".filter_box").show();
+      $(".tag_filter").show();
+      $("#incoming_div_val").val("0");
+      $("#working_div_val").val("0");
+      $("#qualify_div_val").val("0");
+      $("#won_div_val").val("0");
+      $("#lost_div_val").val("0");
+      $("#not_qualify_div_val").val("0");
+      $("#junk_div_val").val("0");
+      $("#un_assigned_div_val").val("0");
+    }
+  }
+  function remove_datatable_cookie(){
+    if('#{cookies[:SpryMedia_DataTables_dataTableWon_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTableWon_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTablePipeline_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTablePipeline_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTableIncoming_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTableIncoming_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTableJunk_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTableJunk_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTableNotQualify_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTableNotQualify_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTableLost_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTableLost_deals");
+    }
+    if('#{cookies[:SpryMedia_DataTables_dataTable_un_assigned_deals]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_dataTable_un_assigned_deals");
+    }
+  }
+  $(function() {
+    $('#deal_from').datepicker({dateFormat: 'dd-mm-yy',autoclose: true})
+    $('#deal_to').datepicker({dateFormat: 'dd-mm-yy',autoclose: true})
+
+    select_filter_from_cookies()
+    $('#SendEmailModal').on('shown.bs.modal', function () {
+      //$('#SendEmailModal').animate({ scrollTop: 1 }, 'slow');
+      $('#SendEmailModal').css({"margin-top":"-33px"})
+      //$('#message').wysihtml5();  
+    });    
+    //$('#message').wysihtml5();
+    $("div#deal_label_menu ul > li > input:checkbox").click(function(e) {
+        e.stopPropagation();
+    });
+    $('#editable_label').editable({
+      url: '/settings/save_label' ,
+      pk: 1,
+      placement: 'bottom',
+      title: 'Enter Label',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+ Label",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Label';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#user_labels").append(o);
+        
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('#editable_label').on('hidden', function(e, editable) {
+      $("#editable_label").text("+ Add Label");
+      editable.text = "";
+    });
+    
+    if(#{params[:type].present?} == true){
+      $("##{params[:type]}Deals").click()
+    }
+  });
+
+  function addLabelToDeal(obj)
+  {
+    var deals = $("#mass_deal_ids").val();
+    var labels= [];
+    $(obj).parent('ul').find('input:checked').each(function() {
+      labels.push($(this).val());
+    });
+    //$(".tab-pane.active").find('#deallist').find('input:checked').each(function() {
+      //deals.push($(this).val());
+    //});
+    var posturl= "/deals/apply_label_to_deal";
+    var qstring= "?deals="+deals+"&labels="+labels;
+    $.ajax( {
+      type: "POST",
+      url: posturl + qstring,
+      success: function(result) {
+        window.location.reload();
+        //alert(result);
+      }
+    });
+  }
+  
+  function applylabel_deal(obj)
+  {
+   var labels_deal= [];
+   var s_deal = $("#deal_id_for_label").val();
+   $(obj).parent('span').find('input:checked').each(function() {
+      labels_deal.push($(this).val());
+    });
+    var posturl= "/deals/apply_label_to_single_deal";
+    var qstring= "?deal="+s_deal+"&labels="+labels_deal;
+    $.ajax( {
+      type: "POST",
+      url: posturl + qstring,
+      success: function(result) {
+        window.location.reload();
+        //alert(result);
+      }
+    });
+  }
+  function task_deal(deal_id)
+  {
+  $("#task_taskable_type").val('Deal');
+  $("#task_taskable_id").val(deal_id);
+  }
+  function note_deal(deal_id)
+  {
+  $("#task_taskable_type").val('Deal');
+  $("#task_taskable_id").val(deal_id);
+  }
+  
+  
+  function showlabelicons(data,type)
+  {
+    var str= "";
+    if (typeof type === "undefined" || type === null) { 
+      type = "incoming"; 
+    }
+    for(var i=0;i<data.length;i++)
+    {
+      str=str+ '<a href=\'#\' style="text-decoration:none" onclick="filterbylabel(\''+ data[i][2]+'\',\''+ type +'\')"><span style=\'font-weight:bold;border:1px solid ' + data[i][0]+';color:' + data[i][0]+ ';font-size: 11px;margin: 2px;\' class=\'btn-xs\'>' + data[i][1] + '</span></a>';
+    }
+    return str;
+  }
+  
+  function display_opportunity(data,type)
+  {
+    var str= "";
+    if (typeof type === "undefined" || type === null) { 
+      type = "incoming"; 
+    }
+    if(data == "true")
+    {
+      //str= '<a rel=\'tooltip\' title=\'You have already done business with this customer. Chances to close this deal is high.\' href=\'#\' style="text-decoration:none;" onclick="filterbyopportunity(\''+ type +'\')"><span  class= \'labelTaskType\' style=\'font-weight:bold;border:1px solid;font-size: 11px;margin: 2px;color:white;background-color: green;opacity: 0.7;display:block\' class=\'btn-xs\'>' + 'Opportunity' + '</span></a>';
+      //str += '<span title=\'You have already done business with this customer. Chances to close this deal is high.\' style=\'cursor:pointer\'> ' + '<img src=\'/assets/question.jpg\'  style=\'height: 12px;margin-left: -3px;\'/>' + '</span>'
+      str= '<div onclick="filterbyopportunity(\''+ type +'\')"  title=\'You have already done business with this customer. Chances to close this deal is high.\'  class= \'labelTaskType\' style=\'border:1px solid;font-size: 12px;margin: 2px;color:white;background-color: green;opacity: 0.7;display:block;cursor:pointer\' class=\'btn-xs\'>' + 'Opportunity' + '</div>';
+      
+    }
+    return str;
+  }
+  
+  function filterbylabel(labelid,dtype)
+  {
+    $("#"+dtype+"_div_val").val(0);
+    get_deals(dtype,'label',labelid);
+  }
+  function filterbypriority(priorityid,dtype)
+  {
+    get_deals(dtype,'priority',priorityid);
+  }
+  
+  function filterbyopportunity(dtype)
+  {
+    get_deals(dtype,'opportunity','opportunity');
+  }
+  
+  function get_deals(dtype,filter,filtervalue)
+  {
+    document.cookie="page_tab="+dtype;
+    window.history.pushState(null, "Title", "/deals?type="+dtype+"");    
+    var divid="incoming_deals";
+    var posturl="get_incoming_deals";
+    var my_deals="";
+    var my_created_deals="";
+    if (typeof filter === "undefined" || filter === null) { 
+      filter = "label"; 
+    }
+    if (typeof filtervalue === "undefined" || filtervalue === null) { 
+      filtervalue = 0; 
+    }
+      if(dtype=="incoming")
+      { posturl="get_incoming_deals";
+        divid="incoming_deals";
+        if($("#individual_filter_present").val() == true || $("#individual_filter_present").val() == "true"){
+          my_deals="#{params[:assigned_to]}"
+          my_created_deals="#{params[:created_by]}"
+        }
+        $("#filterNow").show();
+
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }
+      }
+      else if(dtype=="working")
+
+
+
+      { posturl="get_working_on_deals";
+        divid='working_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+        //reset_all_deal_filter();
+        $("#filter_options").hide();
+        $(".tag_filter").hide();
+      } 
+      else if(dtype=="won")
+      { posturl="get_won_deals";
+        divid='won_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          //$("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      } 
+      else if(dtype=="lost")
+      { posturl="get_lost_deals";
+        divid='lost_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          $("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      } 
+      else if(dtype=="junk")
+      { posturl="get_junk_deals";
+        divid='junk_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          $("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      }
+      else if(dtype=="un_assigned")
+      { posturl="get_un_assigned_deals";
+        divid='un_assigned_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          $("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      }
+      else if(dtype=="qualify")
+      { posturl="get_qualify_deals";
+        divid='qualify_deals';
+        
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          $("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      } 
+      else if(dtype=="not_qualify")
+      { posturl="get_not_qualify_deals";
+        divid='notqualify_deals';
+        $("#filterNow").show();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        if($("#filter_get_val").val() == "1")
+        {
+          //$("#filter_options").show();
+          $(".tag_filter").show();
+        }else{
+          $("#filter_options").hide();
+          $(".tag_filter").hide();
+        }
+      }
+      else if(dtype == "inactive_deals")
+      {
+        posturl="get_inactive_deals";
+        divid='inactive_deals_content';
+        $("#filterNow").hide();
+        //reset_filter_tabs();
+
+        //reset_all_deal_filter();
+        $("#filter_options").hide();
+        $(".tag_filter").hide();
+        
+        $("#filterNow").show();
+      }
+    if(!$('.tag_dd').is(':visible')){
+      $('.tag_filter').hide();
+    }
+    
+    if($("#filter_get_val").val() == "1"){
+      $('#task_loader').show();
+      setTimeout('multi_filter_deals()', 1000);
+    }else if($("#"+divid).html().trim() == "" || filtervalue != 0 || ($("#"+divid).html().trim() != "" && filtervalue == 0) ) 
+    { 
+     //alert($("#"+dtype+"_div_val").val())
+     //if($("#"+dtype+"_div_val").val() != "1"){
+     //   alert('calling ajax')
+      $.ajax( {
+        type: "POST",
+        url: posturl ,
+        data: {filtertype: filter,filtervalue: filtervalue, assigned_to: my_deals, created_by: my_created_deals},
+        success: function(result) {
+          
+          $("#"+divid).html(result);
+          
+          //if(filter == "opportunity"){
+          //  $(".tag_filter").show();
+          //  //$(".reset_tag com_cls").hide()
+          //  //alert($(".reset_tag com_cls").is(":visible"))
+          //  //$("#show_filter_dealmsg").html('').html("Filtered deals with opportunity <a class=\"btn btn-xs btn-warning\" href=\"javascript:void(0);\" onclick=\"reset_all_deal_filter();reset_filter_val();\">RESET</a>" );            
+          //  $("#show_filter_dealmsg").html("Filtered deals with opportunity" );
+          //  $(".reset_tag com_cls")
+          //}
+          
+        }
+      });
+      //}
+    }
+  }
+  
+  function multi_filter_deals()
+  {
+    remove_datatable_cookie();
+    $('#individual_filter_msg').hide();
+    $('#individual_filter_msg').html('');
+    $('#individual_filter_present').val(false);
+    var tag_val = "#{cookies[:tag]}"
+    var cre_by_val = "";
+    var asg_by_val = "";
+    var loc_val = "";
+    var priority_val = "";
+    var next_val = "";
+    $("input:checkbox[name='created_by']:checked").each(function(i) {
+      var values = $(this).val() + "|";
+      cre_by_val += values;
+    });    
+    $("input:checkbox[name='assg_by']:checked").each(function(i) {
+      var assg_vals = $(this).val() + "|";
+      asg_by_val += assg_vals;
+    });
+    $("input:checkbox[name='coun']:checked").each(function(i) {
+      var loc_vals = $(this).val() + "|";
+      loc_val += loc_vals;
+    });
+    $("input:checkbox[name='prio']:checked").each(function(i) {
+      var pri_val = $(this).val() + "|";
+      priority_val += pri_val;
+    });   
+    $("input:checkbox[name='next']:checked").each(function(i) {
+      var nxt_val = $(this).val() + "|";
+      next_val += nxt_val;
+    });
+    var dt_range = $("input:radio[name='anytime']:checked").val();
+    var last_touch = $("input:radio[name='last_touch']:checked").val();
+    var dt_range_from = $("#deal_from").val();
+    var dt_range_to = $("#deal_to").val();
+    if(dt_range == "Custom Date")
+      $("#custom_date").show();
+    else
+      $("#custom_date").hide();
+      
+    if($("li#incoming" ).hasClass("active")){
+     
+      var dtype="incoming";}
+    else if($("li#qualify" ).hasClass("active"))
+      var dtype="qualify";
+    else if($("li#won_deals_tab" ).hasClass("active"))
+      var dtype="won";
+    else if($("li#lost_deals_tab" ).hasClass("active"))
+      var dtype="lost";
+    else if($("li#not_qualified_tab" ).hasClass("active"))
+      var dtype="not_qualify";
+    else if($("li#junk_tab" ).hasClass("active"))
+      var dtype="junk";
+    else if($("li#un_assigned_tab" ).hasClass("active"))
+      var dtype="un_assigned";      
+    if("#{params[:type] == 'inactive_deals'}"  == "true"){
+      var dtype="inactive_deals";
+      var divid = "inactive_deals_content";
+      var posturl="get_inactive_deals";
+      
+    }else if(dtype == "qualify"){
+      var dtype="qualify"
+      var divid="qualify_deals";
+      var posturl="get_qualify_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      
+    }else if(dtype == "incoming"){
+      var dtype="incoming"
+      var divid="incoming_deals";
+      var posturl="get_incoming_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      //window.history.pushState(null, "Title", "/deals?type="+dtype+"");
+      
+    }else if(dtype == "won"){
+      var dtype="won"
+      var divid="won_deals";
+      var posturl="get_won_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      //window.history.pushState(null, "Title", "/deals?type="+dtype+"");
+      
+    }else if(dtype == "lost"){
+      var dtype="lost"
+      var divid="lost_deals";
+      var posturl="get_lost_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      //window.history.pushState(null, "Title", "/deals?type="+dtype+"");
+      
+    }else if(dtype == "junk"){
+      var dtype="junk"
+      var divid="junk_deals";
+      var posturl="get_junk_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      //window.history.pushState(null, "Title", "/deals?type="+dtype+"");
+      
+    }else if(dtype == "un_assigned"){
+      var dtype="un_assigned"
+      var divid="un_assigned_deals";
+      var posturl="get_un_assigned_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      
+    }
+    
+    else if(dtype == "not_qualify"){
+      var dtype="not_qualify"
+      var divid="notqualify_deals";
+      var posturl="get_not_qualify_deals";
+      $("#filter_get_val").val(1);
+      //history.replaceState({}, '', '/deals');
+      //window.history.pushState(null, "Title", "/deals?type="+dtype+"");
+    }
+    var my_deals="";
+    var my_created_deals="";
+    var cre_by = false;
+    var asg_by = false;
+    var loc = false;
+    var priority = false;
+    var next = false;
+    var daterange = false;
+    var last_tch = false;
+    var dtrange_from = false;
+    var dtrange_to = false;
+
+
+    if(cre_by_val != "" && typeof cre_by_val != 'undefined'){
+
+
+      cre_by = true;
+      //cre_by_txt=$('#cre_by_'+cre_by_val).attr("c_name");
+      var cre_by_txt = "";
+      $("input:checkbox[name='created_by']:checked").each(function(i) {
+        cre_by_txt += $('#cre_by_'+$(this).val()).attr("c_name") + '|';
+      });
+      cre_by_txt = cre_by_txt.slice(0,-1);
+      document.cookie="cre_by=true"
+      document.cookie="cre_by_val="+cre_by_val;
+      document.cookie="cre_by_txt="+cre_by_txt;
+      $(".tag_filter").show();
+      $(".created_by_tag").show();
+      $("#created_by_tag_txt").html(cre_by_txt.split('|').join(','));
+    }
+    if(is_opportunity == "true"){
+      $(".tag_filter").show();
+      $(".opportunity_tag").show();
+      $("#opportunity_tag_txt").html("Opportunities");
+    }else{
+      //$.removeCookie("opportunity");
+    }
+    if(dt_range != "" && typeof dt_range != 'undefined'){
+     if(dt_range != "Custom Date"){    
+      $("#deal_from").val('');
+      $("#deal_to").val('');
+      $(".date_range_tag").hide();
+      $.removeCookie("dtrange_from");
+      $.removeCookie("dt_range_from");
+      $.removeCookie("dt_range_frm_txt");
+      $.removeCookie("dtrange_to");
+      $.removeCookie("dt_range_to");
+      $.removeCookie("dt_range_to_txt");
+      daterange = true;
+      date_txt=dt_range
+
+      document.cookie="daterange=true";
+      document.cookie="dt_range="+dt_range;
+      document.cookie="dt_range_txt="+date_txt;
+      $(".tag_filter").show();
+      $(".date_tag").show();
+      $("#date_tag_txt").html(date_txt)
+    }
+    else
+    {
+     if(dt_range_from != "" && dt_range_to != ""){
+     daterange = false;  
+     $(".date_tag").hide();
+     $.removeCookie("daterange");
+     $.removeCookie("dt_range");
+     $.removeCookie("dt_range_txt");
+     dtrange_from = true;
+     dtrange_to = true;
+     from_date=$("#deal_from").val();
+     to_date=$("#deal_to").val();
+     
+     document.cookie="dtrange_from=true";
+     document.cookie="dt_range_from="+dt_range_from;
+     document.cookie="dt_range_frm_txt="+from_date;
+     
+     document.cookie="dtrange_to=true";
+     document.cookie="dt_range_to="+dt_range_to;
+     document.cookie="dt_range_to_txt="+to_date;
+     $(".tag_filter").show();
+     $(".date_range_tag").show();
+     $("#from_tag_txt").html(from_date +" to "+ to_date);
+    }else{
+     $(".date_range_tag").hide();
+     $.removeCookie("dtrange_from");
+     $.removeCookie("dt_range_from");
+     $.removeCookie("dt_range_frm_txt");
+     $.removeCookie("dtrange_to");
+     $.removeCookie("dt_range_to");
+     $.removeCookie("dt_range_to_txt");
+    }
+    }
+    }else if(dt_range_from == "" || dt_range_to === 'undefined'){
+       daterange = false;  
+
+       $(".date_tag").hide();
+       $.removeCookie("daterange");
+       $.removeCookie("dt_range");
+       $.removeCookie("dt_range_txt");
+       $(".date_range_tag").hide();
+       $.removeCookie("dtrange_from");
+       $.removeCookie("dt_range_from");
+       $.removeCookie("dt_range_frm_txt");
+       $.removeCookie("dtrange_to");
+       $.removeCookie("dt_range_to");
+       $.removeCookie("dt_range_to_txt");
+       //document.cookie='daterange=false';
+    }
+    
+    if(last_touch != "" && typeof last_touch != 'undefined')
+
+    {
+      last_tch = true;
+      last_touch_txt=last_touch;
+      document.cookie="last_tch=true";
+      document.cookie="last_touch="+last_touch;
+      document.cookie="last_touch_txt="+last_touch_txt;
+      $(".tag_filter").show();
+      $(".last_touch_tag").show();
+      $("#last_touch_tag_txt").html(last_touch_txt)
+    }
+    else if(last_touch == "" || typeof last_touch === 'undefined')
+
+    {
+      last_tch = false;  
+      $(".last_touch_tag").hide();
+      $.removeCookie("last_tch");
+      $.removeCookie("last_touch");
+      $.removeCookie("last_touch_txt");
+    }
+    if(cre_by_val == "" || typeof cre_by_val === 'undefined'){    
+
+      $(".created_by_tag").hide();
+      $.removeCookie("cre_by");
+      $.removeCookie("cre_by_val");
+      $.removeCookie("cre_by_txt");
+    //document.cookie='cre_by=false';
+    }
+    if(asg_by_val != "" && typeof asg_by_val != 'undefined'){
+
+      asg_by = true;
+      //asg_by_txt=$('#assg_by_'+asg_by_val).attr("a_name");
+      
+      var asg_by_txt = "";
+      $("input:checkbox[name='assg_by']:checked").each(function() {
+        asg_by_txt += $('#assg_by_'+$(this).val()).attr("a_name") + '|';
+      });
+      asg_by_txt = asg_by_txt.slice(0,-1);
+      document.cookie="asg_by=true";
+      document.cookie="asg_by_val="+asg_by_val;
+      document.cookie="asg_by_txt="+asg_by_txt;
+      $(".tag_filter").show();
+      $(".assigned_to_tag").show();
+      $("#assigned_to_tag_txt").html(asg_by_txt.split('|').join(','))
+    }
+    if(asg_by_val == "" || typeof asg_by_val === 'undefined'){    
+
+      $(".assigned_to_tag").hide();
+      $.removeCookie("asg_by");
+      $.removeCookie("asg_by_val");
+      $.removeCookie("asg_by_txt");
+    //document.cookie='asg_by=false';
+    }
+    if(loc_val != "" && typeof loc_val != 'undefined'){
+
+      loc = true;
+      //loc_txt=$('#country_'+loc_val).attr("coun_name");
+      var loc_txt = "";
+      $("input:checkbox[name='coun']:checked").each(function() {
+        loc_txt += $('#country_'+$(this).val()).attr("coun_name") + '|';
+      });      
+      loc_txt = loc_txt.slice(0,-1);
+      document.cookie="loc=true";
+      document.cookie="loc_val="+loc_val;
+      document.cookie="loc_txt="+loc_txt;
+      $(".tag_filter").show();
+      $(".location_tag").show();
+      $("#location_tag_txt").html(loc_txt.split('|').join(','))
+    }
+    if(loc_val == "" || typeof loc_val === 'undefined'){
+
+      $(".location_tag").hide();
+    //document.cookie='loc=false';
+     $.removeCookie("loc");
+     $.removeCookie("loc_val");
+     $.removeCookie("loc_txt");
+    }
+    if(priority_val != "" && typeof priority_val != 'undefined'){
+
+      priority = true;
+      //priority_txt=$('#priority_'+priority_val).attr("prio_name");
+
+      var priority_txt = "";
+      $("input:checkbox[name='prio']:checked").each(function() {
+        priority_txt += $('#priority_'+$(this).val()).attr("prio_name") + '|';
+      });
+      priority_txt = priority_txt.slice(0,-1);
+      document.cookie="priority=true";
+      document.cookie="priority_val="+priority_val;
+      document.cookie="priority_txt="+priority_txt;
+      $(".tag_filter").show();
+      $(".priority_tag").show();
+      $("#priority_tag_txt").html(priority_txt.split('|').join(','));
+    }
+    if(priority_val == "" || typeof priority_val === 'undefined'){
+
+      $(".priority_tag").hide();
+      $.removeCookie("priority");
+      $.removeCookie("priority_val");
+      $.removeCookie("priority_txt");
+    //document.cookie='priority=false';
+    }
+    if(next_val != "" && typeof next_val != 'undefined'){
+      next = true;
+      //next_txt=$('#next_'+next_val).attr("next_name");
+      
+      var next_txt = "";
+      $("input:checkbox[name='next']:checked").each(function() {
+        next_txt += $('#next_'+$(this).val()).attr("next_name") + '|';
+      });
+      next_txt = next_txt.slice(0,-1);
+      document.cookie="next=true";
+      document.cookie="next_val="+next_val;
+      document.cookie="next_txt="+next_txt;
+      $(".tag_filter").show();
+      $(".next_tag").show();
+      $("#next_tag_txt").html(next_txt.split('|').join(','));
+    }
+    else if(next_val == "" || typeof next_val === 'undefined')
+
+    {
+      $(".next_tag").hide();
+      $.removeCookie("next");
+      $.removeCookie("next_val");
+      $.removeCookie("next_txt");
+    }
+
+    $( "#task_header .nav-tabs li" ).each(function() {
+      if ($(this).hasClass("active"))
+        dtype=$(this).attr("id")
+    });
+    var opp_val = $("#opp").val();
+    
+    if(cre_by_val == "" && asg_by_val == "" && loc_val == "" && priority_val == "" && next_val == "" && opp_val != 1 && (last_touch == "" || typeof last_touch === 'undefined') && dt_range_from == "" && dt_range_to == "" && tag_val == "" && ((dt_range == "" || typeof dt_range === 'undefined') && dt_range != "Custom Date")){
+      $('.reset_tag').hide();
+      $(".tag_filter").hide();
+      
+      //document.cookie='daterange=false';
+      //document.cookie='cre_by=false';
+      //document.cookie='asg_by=false';
+      //document.cookie='loc=false';
+      //document.cookie='priority=false';
+      $("#incoming_div_val").val("0");
+      $("#working_div_val").val("0");
+      $("#qualify_div_val").val("0");
+      $("#won_div_val").val("0");
+      $("#lost_div_val").val("0");
+      $("#not_qualify_div_val").val("0");
+      $("#junk_div_val").val("0");
+      $("#un_assigned_div_val").val("0");
+    }
+    else if(dt_range == "Custom Date" &&(dt_range_from == "" && dt_range_to == ""))
+    {
+     $('.reset_tag').hide();
+    }
+    
+    else if(typeof cre_by_val === 'undefined' && typeof asg_by_val === 'undefined' && typeof loc_val === 'undefined' && typeof priority_val === 'undefined' && typeof next_val === 'undefined' && typeof dt_range === 'undefined' && typeof last_touch === 'undefined' && (typeof dt_range_from === 'undefined' || dt_range_from == "") && (typeof dt_range_to === 'undefined' || dt_range_to == ""))
+    {
+      
+      $('.reset_tag').hide();
+    }
+    else{
+      
+
+      $('.reset_tag').show();
+
+      $(".tag_dd").show();
+    }
+    var is_opportunity = "#{cookies[:opportunity]}";
+    //alert("start")
+    //alert(cre_by_val)
+    //alert(asg_by_val)
+    //alert(loc_val) 
+    //alert(priority_val)
+    //alert(dt_range)
+    //alert(dt_range_from)
+    //alert(dt_range_to)
+    if((typeof cre_by_val != "undefined" || cre_by_val != "") || (typeof asg_by_val != "undefined" || asg_by_val != "") || (typeof loc_val != "undefined" || loc_val != "") || (typeof priority_val != "undefined" || priority_val != "") || (typeof next_val != "undefined" || next_val != "") || (typeof dt_range != 'undefined' && dt_range != "Custom Date") || tag_val != "")
+    { 
+ 
+      $.ajax( {
+        type: "POST",
+        url: posturl ,
+        data: {cre_by: cre_by, cre_by_val: cre_by_val, asg_by: asg_by, asg_by_val: asg_by_val, loc: loc, loc_val: loc_val, priority: priority, priority_val: priority_val,next: next, next_val: next_val, daterange: daterange, dt_range: dt_range, last_touch: last_touch, dtrange_from: dtrange_from,dt_range_from: dt_range_from,dtrange_to: dtrange_to,dt_range_to: dt_range_to,is_opportunity: is_opportunity,tag:tag_val},
+        success: function(result) {
+          //alert(result)
+          $("#"+divid).html(result);
+        }
+      });
+     }
+    else if(dt_range_from != "" && dt_range_to != "")
+    {
+       
+       $.ajax( {
+        type: "POST",
+        url: posturl ,
+        data: {cre_by: cre_by, cre_by_val: cre_by_val, asg_by: asg_by, asg_by_val: asg_by_val, loc: loc, loc_val: loc_val, priority: priority, priority_val: priority_val,next: next, next_val: next_val, daterange: daterange, dt_range: dt_range, last_touch: last_touch, dtrange_from: dtrange_from,dt_range_from: dt_range_from,dtrange_to: dtrange_to,dt_range_to: dt_range_to,is_opportunity: is_opportunity,tag:tag_val},
+        success: function(result) {
+          //alert(result)
+          $("#"+divid).html(result);
+        }
+      });
+    }
+    else if(cre_by_val == "" && asg_by_val == "" && loc_val == "" && priority_val == "" && next_val == "" && dt_range == "" && (dt_range_from == "" || dt_range_to == ""))
+    {
+      
+       $.ajax( {
+        type: "POST",
+        url: posturl ,
+        data: {cre_by: cre_by, cre_by_val: cre_by_val, asg_by: asg_by, asg_by_val: asg_by_val, loc: loc, loc_val: loc_val, priority: priority, priority_val: priority_val,next: next, next_val: next_val, daterange: daterange, dt_range: dt_range, last_touch: last_touch, dtrange_from: dtrange_from,dt_range_from: dt_range_from,dtrange_to: dtrange_to,dt_range_to: dt_range_to, is_opportunity: is_opportunity,tag:tag_val},
+        success: function(result) {
+          //alert(result)
+          $("#"+divid).html(result);
+        }
+      });
+
+    }
+    else if(typeof cre_by_val === 'undefined' && typeof asg_by_val === 'undefined' && typeof loc_val === 'undefined' && typeof priority_val === 'undefined' && typeof next_val === 'undefined' && typeof dt_range === 'undefined' && (dt_range_from == "" || dt_range_to == ""))
+    {
+       $.ajax( {
+        type: "POST",
+        url: posturl ,
+        data: {cre_by: cre_by, cre_by_val: cre_by_val, asg_by: asg_by, asg_by_val: asg_by_val, loc: loc, loc_val: loc_val, priority: priority, priority_val: priority_val,next: next, next_val: next_val, daterange: daterange, dt_range: dt_range, last_touch: last_touch, dtrange_from: dtrange_from,dt_range_from: dt_range_from,dtrange_to: dtrange_to,dt_range_to: dt_range_to, is_opportunity: is_opportunity,tag:tag_val},
+        success: function(result) {
+          //alert(result)
+          $("#"+divid).html(result);
+        }
+      });
+
+    }
+  }
+  
+  
+  function move_work_deal(deal_id)
+  {
+    $("#finish_working").show();
+    $("#deal_id_move").val(deal_id);
+    $("#deal_move_is_current").attr("checked", true);
+    $("#incoming_move").hide();
+    $("#pipeline_move").show();
+    
+  }
+  function move_wonorlost_deal(deal_id)
+  {
+    $("#finish_working").hide();
+    $("#deal_move_is_current").attr("checked", true);
+    $("#deal_id_move").val(deal_id);
+    $("#incoming_move").hide();
+    $("#pipeline_move").show();
+    
+  }
+  
+  function reset_pop()
+  {
+    $("#deal_move_note").val('');
+    $("input:radio").attr('checked',false);
+    $("#chk_radio_act").hide();
+  }
+  function move_deal(deal_id)
+  {
+   
+   $("#deal_id_move").val(deal_id);
+   $("#incoming_move").show();
+   $("#pipeline_move").hide();
+  }
+  function check_apply(obj, deal_tab)
+  {
+    var deals = [];
+    var labels= [];
+    $(obj).parent('div').parent('li').parent('ul').find('input:checked').each(function() {
+      labels.push($(this).val());
+    });
+    $(".tab-pane.active").find('#deallist').find('input:checked').each(function() {
+      deals.push($(this).val());
+    });
+    if(deals.length == 0 && labels.length == 0)
+    {
+      $("#"+deal_tab+"_applylabel_li").hide();
+      $("."+deal_tab+"_mng_lbl_li").show();
+    }
+    else
+    {
+      $("#"+deal_tab+"_applylabel_li").show();
+      $("."+deal_tab+"_mng_lbl_li").hide();
+    }
+  }
+  $( "#filterNow" ).click(function() {
+    //$("#filter_options").slideToggle( "slow" );
+    $("#filter_icon").toggleClass('icon-chevron-down icon-chevron-up');
+  });
+  
+  $(".filterSelectDropdow").click(function(){
+    //alert(this.name == "li_opportunity")
+    if(this.name == "li_opportunity"){
+      document.cookie="opportunity=true";
+      $(".tag_filter").show();
+      $(".opportunity_tag").show();
+      $("#opportunity_tag_txt").html("Opportunities")
+      
+      $(".reset_tag").show();
+      $("#opp").val(1);
+      
+    }
+    multi_filter_deals();
+  });
+ 
+  function reset_deal_filter(id,class_n){
+
+    $('.'+id+"_tag").hide();
+    //$('#filter_'+id).prop('selectedIndex',0);
+    if(id == "date_range")
+    {
+      $('.'+class_n).removeAttr('checked');
+      $('#deal_from').val('');
+      $('#deal_to').val('');
+    }
+    else
+    {
+      $('.'+class_n).removeAttr('checked');
+    }
+    $("#show_filter_dealmsg").html('');
+
+    $("#filter_get_val").val(0);
+    
+    if(id == "opportunity"){
+      $("#opp").val(0);
+      $('.opportunity_tag').hide();
+      $.removeCookie("opportunity");
+    }
+    if(id == "tag"){
+      $('.deal_tag').hide();
+      $.removeCookie("tag");
+      $.removeCookie("page_tab");
+    }    
+    if(!$('.tag_dd').is(':visible')){
+      $('.tag_filter').hide();
+    }
+    multi_filter_deals();
+  }
+  
+  
+  
+  
+  function reset_all_deal_filter(){
+    $("#filter_get_val").val(0);
+
+    $('.created_by_tag').hide();
+    $('.assigned_to_tag').hide();
+    $('.location_tag').hide();
+    $('.priority_tag').hide();
+    $('.opportunity_tag').hide();
+    $('.reset_tag').hide();
+    $('.com_cls').hide();
+    $('.tag_filter').hide();
+    $('.next_tag').hide();
+    $("#show_filter_dealmsg").html('')
+    $('.cre_by_c').removeAttr('checked'); 
+    $('.asg_by_c').removeAttr('checked'); 
+    $('.country_c').removeAttr('checked'); 
+    $('.priority_c').removeAttr('checked'); 
+    $('.any_time').removeAttr('checked'); 
+    $('.lst_tch').removeAttr('checked'); 
+    $('.next_c').removeAttr('checked');
+
+    //$('#filter_created_by').prop('selectedIndex',0);
+    //$('#filter_assigned_to').prop('selectedIndex',0);
+    //$('#filter_location').prop('selectedIndex',0);
+    //$('#filter_priority').prop('selectedIndex',0);
+    //$('#filter_date').prop('selectedIndex',0);
+    //$('#filter_last_touch').prop('selectedIndex',0);
+    $('#deal_from').val('');
+    $('#deal_to').val('');
+    $("#opp").val(0);
+    $.each(["cre_by","cre_by_val","cre_by_txt","daterange","dt_range","dt_range_txt","asg_by","asg_by_val","asg_by_txt","loc","loc_val","loc_txt","priority","priority_val","priority_txt","next","next_val","next_txt","last_touch","last_tch","last_touch_txt","dtrange_from","dt_range_from","dt_range_frm_txt","dtrange_to","dt_range_to","dt_range_to_txt","page_tab","opportunity","tag"], function( index, value ) {
+       $.removeCookie(value);
+    });
+    //var cookies = document.cookie.split(";");
+    //for(var i=0; i < cookies.length; i++) {
+      //var equals = cookies[i].indexOf("=");
+      //var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
+      //$.removeCookie("+ name +");
+    //}
+    //document.cookie='daterange=false';
+    //document.cookie='cre_by=false';
+    //document.cookie='asg_by=false';
+    //document.cookie='loc=false';
+    //document.cookie='priority=false';
+    multi_filter_deals();
+  }
+  function reset_filter_tabs(){
+    $('.created_by_tag').hide();
+    $('.assigned_to_tag').hide();
+    $('.location_tag').hide();
+    $('.priority_tag').hide();
+    $('.reset_tag').hide();
+    $('.last_touch_tag').hide();
+    $('#filter_created_by').prop('selectedIndex',0);
+    $('#filter_assigned_to').prop('selectedIndex',0);
+    $('#filter_location').prop('selectedIndex',0);
+    $('#filter_priority').prop('selectedIndex',0);
+    $('#filter_date').prop('selectedIndex',0);
+    $('#filter_last_touch').prop('selectedIndex',0);
+    $('#individual_filter_msg').hide();
+    $('#individual_filter_msg').html('');
+    $('#individual_filter_present').val(false);
+  }
+  function reset_filter_val(){
+    $("#filter_get_val").val(0);
+  }
+
+  function reset_all_checkbox()
+  {
+   $('.label_chk_box:checkbox').each(function() 
+   { 
+    this.checked = false; 
+   }); 
+  }
+  //Changing the assignee function for multiple deals selected
+  function changeAssignee(obj)
+  {
+    var deals = $("#mass_deal_ids").val();
+    var labels= [];
+    $(obj).parent('ul').find('input:checked').each(function() {
+      labels.push($(this).val());
+    });
+    //$(".tab-pane.active").find('#deallist').find('input:checked').each(function() {
+      //deals.push($(this).val());
+    //});
+    var posturl= "/deals/apply_label_to_deal";
+    var qstring= "?deals="+deals+"&labels="+labels;
+    $.ajax( {
+      type: "POST",
+      url: posturl + qstring,
+      success: function(result) {
+        window.location.reload();
+        //alert(result);
+      }
+    });
+  }
+  function quick_edit(id){    
+    $.ajax({
+      type: "POST",
+      url: "/quick_deal",
+      dataType: 'json',
+      async: false,
+      data: {deal_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#quickeditModal").modal("show");        
+        $("#deal_content").html(data.responseText);
+        $("#task_loader").hide();
+        
+      }
+    });
+  }
+  function display_hide_submenu(type)
+  {
+    if(type == "created")
+    {
+      //$('#cre_by_app').html('<li><div class="editableform-loading"></div></li>')
+      $('.cre_arw').show();
+      $('#cr').show();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+      //$.ajax( {
+        //type: "POST",
+        //url: "/created_by_user" ,
+        //data: '',
+        //dataType:'json',
+        //success: function(result) {
+          //var prdObject = eval('(' + JSON.stringify(result) + ')');
+          //$('#cre_by_app').html('');
+          //for (var i=0; i<prdObject.length; i++)
+          //{     
+           //var u_id = prdObject[i].id
+           //var f_name = prdObject[i].fname
+         
+          
+          //$('#cre_by_app').append('<li><a href="#">&nbsp;<input type="radio" value="'+u_id+'" style="margin-left:-10px;cursor:pointer;" name="created_by" id="cre_by_'+u_id+'" class="cre_by_c filterSelectDropdow" c_name="'+f_name+'">'+f_name+'</a></li><li class="divider"></li>');
+          
+          //}
+          //if("#{cookies[:cre_by]}" == "true" ){
+          
+          //$("#cre_by_"+"#{cookies[:cre_by_val]}").prop("checked", true);
+          //}
+          //$(".filterSelectDropdow").click(function(){
+          // multi_filter_deals();
+          //});
+        //}
+      //});
+    }
+    else if(type == "assigned")
+    {
+      //$('#asg_by_app').html('<li><div class="editableform-loading"></div></li>')
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').show();
+      $('#asg').show();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+      //$.ajax( {
+        //type: "POST",
+        //url: "/created_by_user" ,
+        //data: '',
+        //dataType:'json',
+        //success: function(result) {
+          //var prdObject = eval('(' + JSON.stringify(result) + ')');
+          //$('#asg_by_app').html('');
+          //for (var i=0; i<prdObject.length; i++)
+          //{     
+           //var u_id = prdObject[i].id
+           //var f_name = prdObject[i].fname
+     
+          //$('#asg_by_app').append('<li><a href="#">&nbsp;<input type="radio" value="'+u_id+'" style="margin-left:-10px;cursor:pointer;" name="assg_by" id="assg_by_'+u_id+'" class="asg_by_c filterSelectDropdow" a_name="'+f_name+'">'+f_name+'</a></li><li class="divider"></li>');
+          //}
+          //if("#{cookies[:asg_by]}" == "true" ){
+          //$("#assg_by_"+"#{cookies[:asg_by_val]}").prop("checked", true);
+          //}
+          //$(".filterSelectDropdow").click(function(){
+           //multi_filter_deals();
+          //});
+        //}
+      //});
+    }
+    else if(type == "location")
+    {
+      //$('#loc_by_app').html('<li><div class="editableform-loading"></div></li>')
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').show();
+      $('#lo').show();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+      //$.ajax( {
+        //type: "POST",
+        //url: "/deal_location_filter" ,
+        //data: '',
+        //dataType:'json',
+        //success: function(result) {
+          //var prdObject = eval('(' + JSON.stringify(result) + ')');
+          //$('#loc_by_app').html('');
+          //for (var i=0; i<prdObject.length; i++)
+          //{     
+           //var u_id = prdObject[i].id
+           //var f_name = prdObject[i].cname
+          
+          //$('#loc_by_app').append('<li><a href="#">&nbsp;<input type="radio" value="'+u_id+'" style="margin-left:-10px;cursor:pointer;" name="coun" id="country_'+u_id+'" class="country_c filterSelectDropdow" coun_name="'+f_name+'">'+f_name+'</a></li><li class="divider"></li>');
+          //}
+          //if("#{cookies[:loc]}" == "true" || "#{cookies[:loc]}" == true){
+          //$("#country_"+"#{cookies[:loc_val]}").prop("checked", true)
+          //}
+          //$(".filterSelectDropdow").click(function(){
+           //multi_filter_deals();
+          //});
+        //}
+      //});
+
+    }
+    else if(type == "priority")
+    {
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').show();
+      $('#pr').show();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+    }
+    else if(type == "anytime")
+    {
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').show();
+      $('#any').show();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+    }
+    else if(type == "last")
+    {
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.next_arw').hide();
+      $('#nex').hide();
+      $('.lst_arw').show();
+      $('#lat').show();
+    }
+   else if(type == "next")
+    {
+      $('.cre_arw').hide();
+      $('#cr').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.loc_arw').hide();
+      $('#lo').hide();
+      $('.pri_arw').hide();
+      $('#pr').hide();
+      $('.any_arw').hide();
+      $('#any').hide();
+      $('.lst_arw').hide();
+      $('#lat').hide();
+      $('.next_arw').show();
+      $('#nex').show();
+    }
+  }
+  function reser_all_submenu()
+  {
+   $('.cre_arw').hide();
+   $('#cr').hide();
+   $('.asg_arw').hide();
+   $('#asg').hide();
+   $('.loc_arw').hide();
+   $('#lo').hide();
+   $('.pri_arw').hide();
+   $('#pr').hide();
+   $('.any_arw').hide();
+   $('#any').hide();
+   $('.lst_arw').hide();
+   $('#lat').hide();
+   $('.next_arw').hide();
+   $('#nex').hide();
+  }
+  function scrollbtm(obj)
+  {
+   if($(obj).closest('tr').next().length == 0){$('html, body').animate({scrollTop: $(document).height()}, 800);}
+  }
+  function chk_radio_button(id,type)
+  {
+    remove_datatable_cookie();
+    if(type == "created")
+    {
+      $("input:checkbox[name='created_by']:checked").each(function() {
+        var values = $(this).val();
+        $("#cre_by_"+values).attr("checked", true);
+      });       
+    }
+    else if(type == "assigned")
+    {
+     $("input:checkbox[name='assg_by']:checked").each(function() {
+      var values = $(this).val();
+      $("#assg_by_"+values).prop("checked", true);
+     });
+    }
+    else if(type == "loc")
+    {
+     $("input:checkbox[name='coun']:checked").each(function() {
+       var values = $(this).val();
+       $("#country_"+values).attr("checked", true);
+     });       
+    }
+    else if(type == "priority")
+    {
+     $("input:checkbox[name='prio']:checked").each(function() {
+       var values = $(this).val();
+       $("#priority_"+values).attr("checked", true);
+     });     
+    }
+    else if(type == "any")
+    {
+     $("#"+id).prop("checked", true);
+    }
+    else if(type == "last")
+    {
+     $("#"+id).prop("checked", true);
+    }
+    else if(type == "next")
+    {
+     $("input:checkbox[name='next']:checked").each(function() {
+       var values = $(this).val();
+       $("#next_"+values).attr("checked", true);
+     });        
+    }
+  }

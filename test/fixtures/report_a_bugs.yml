@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  email: MyString
+  bug_type: MyString
+  description: MyText
+  bug_status: MyString
+
+two:
+  email: MyString
+  bug_type: MyString
+  description: MyText
+  bug_status: MyString

@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  email: MyString
+  invited_by: 1
+  is_verified: false
+  is_approved: false
+  is_registered: false
+
+two:
+  email: MyString
+  invited_by: 1
+  is_verified: false
+  is_approved: false
+  is_registered: false

@@ -1,0 +1,117 @@
+#inviteBetaCon.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "inviteBetaCon", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      - @beta_user = BetaAccount.new
+      = form_for @beta_user, :html => { :class => 'form-inline' } do |f|    
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+          %h4.modal-title Invite Beta User
+        .modal-body
+          .row
+            .form-group.col-md-12
+              = f.email_field "email", :class => "form-control", :style=>"height: 40px;", :required => true, :autocomplete => "on", :placeholder => "Email address"
+              %span#validation_message.displaynone{style: "color:red;margin-left:10px;"}
+                
+                  
+          %br/
+          .modal-footer
+            .pull-left
+              =f.submit "Submit", :class=>"btn btn-primary btn-large", :disable_with => "Submitting....", :id => "submit_beta_user", :onclick=> "return chk_validemail('beta_account_email')"
+              
+              
+#output_beta_user
+:javascript
+  // prepare the form when the DOM is ready 
+  $(document).ready(function() { 
+    var options = { 
+        target:        '#output_beta_user',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_beta_user,  // pre-submit callback 
+        success:       showResponse_beta_user // post-submit callback 
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        //clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind to the form's submit event 
+    $('#new_beta_account').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+ 
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+  }); 
+ 
+  // pre-submit callback 
+  function showRequest_beta_user(formData, jqForm, options) { 
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+    $("#validation_message").html("")
+    $('#submit_beta_user').prop("disabled", true).html("Please wait...");
+
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+ 
+    //alert('About to submit: \n\n' + queryString); 
+    //formValidation();
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    //return true; 
+  } 
+ 
+  // post-submit callback 
+  function showResponse_beta_user(responseText, statusText, xhr, $form)  { 
+    // for normal html responses, the first argument to the success callback 
+    // is the XMLHttpRequest object's responseText property 
+ 
+    // if the ajaxForm method was passed an Options Object with the dataType 
+    // property set to 'xml' then the first argument to the success callback 
+    // is the XMLHttpRequest object's responseXML property 
+ 
+    // if the ajaxForm method was passed an Options Object with the dataType 
+    // property set to 'json' then the first argument to the success callback 
+    // is the json data object returned by the server 
+    $('#submit_beta_user').removeAttr("disabled").html("Save");
+    //alert(responseText)
+    if(responseText == "success"){
+     window.location.reload(true);
+    }
+    else 
+    {
+      //alert(responseText)
+      $("#validation_message").show().html(responseText)
+    }
+    //else{
+    //  //window.location.href = "/contacts/"+ responseText +"/edit";
+    //}
+    //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+    //    '\n\nThe output div should have already been updated with the responseText.'); 
+  } 
+  function chk_validemail(type)
+  {
+    var email_id=$("#"+type+"").val();
+    var atpos=email_id.indexOf("@");
+    var dotpos=email_id.lastIndexOf(".");
+    if (email_id != '' && (atpos<1 || dotpos<atpos+2 || dotpos+2>=email_id.length))
+      {
+       $("#validation_message").show().html('Please enter a valid email address.')
+       $("#"+type+"").focus();
+       return false;
+      }
+    else
+    {
+      return true;
+    }
+  } 

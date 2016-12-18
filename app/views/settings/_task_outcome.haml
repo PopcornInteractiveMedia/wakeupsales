@@ -1,0 +1,265 @@
+=stylesheet_link_tag "easyui","icon"
+=javascript_include_tag "jquery.easyui.min","jquery.edatagrid"
+.mtop30
+  .navbar-right
+    %a#addnewlabel.easyui-linkbutton{href: "#", style:"padding-top: 6px;"}
+      %button.btn.btn-primary.pad2{type: "button"}
+        %span.glyphicon.glyphicon-plus-sign
+        New Task Outcome     
+  %h4 Task Outcomes 
+.table-responsive.mtop30            
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    #collapse4.body
+      %input{:type=>"hidden",:id=>"labelmsg"}
+      %div.table-responsive
+        #dataTabletask
+:javascript
+  $(function(){
+    $('.combo-text').attr("readonly", true)
+    
+    var url = document.location.toString();
+    if (url.match('#')) {
+        $('.nav-tabs a[href=#'+url.split('#')[1]+']').tab('show') ;
+    } 
+    
+    // Change hash for page-reload
+    $('.nav-tabs a').on('shown', function (e) {
+        window.location.hash = e.target.hash;
+    })
+    //alert('initializeing2');
+    var t_types = [
+          {task_type_id:'Appointment',name:'Appointment'},
+          {task_type_id:'Billing',name:'Billing'},
+          {task_type_id:'Call',name:'Call'},
+          {task_type_id:'Documentation',name:'Documentation'},
+          {task_type_id:'Email',name:'Email'},
+          {task_type_id:'Follow-up',name:'Follow-up'},
+          {task_type_id:'Meeting',name:'Meeting'},
+          {task_type_id:'None',name:'None'},
+          {task_type_id:'Quote',name:'Quote'},
+          {task_type_id:'Thank-you',name:'Blue'},
+    ];
+    var t_dura = [
+          {task_duration:'1 Day',name:'1 Day'},
+          {task_duration:'2 Day',name:'2 Day'},
+          {task_duration:'1 Week',name:'1 Week'},
+          {task_duration:'2 Week',name:'2 Week'},
+          {task_duration:'1 Month',name:'1 Month'},
+    ];
+
+    $('#dataTabletask').datagrid({
+      title:'Task Outcomes',
+      iconCls:'icon-edit',
+      width:808,
+      height:250,
+      singleSelect: true,
+      idField: 'id',   
+      url: '/settings/get_task_outcome_label',
+      saveUrl: '/settings/save_task_outcome_label',
+      updateUrl: '/settings/update_task_outcome_label',
+      destroyUrl: 'settings/delete_taskoutcome',
+      columns:[[
+        {field:'id',title:'Id',hidden:true
+        },
+        {field:'name',title:'Task Outcome Name',width:200,sortable:true,required:true,class:'easyui-validatebox',editor:{
+            type:'text',
+            options:{
+              valueField:'name',
+              textField:'name',
+              required:true
+            }
+          }
+        },
+        {field:'task_out_type',title:'Task Outcome Type',width:200,sortable:true,required:true,class:'easyui-validatebox',editor:{
+            type:'combobox',
+            options:{
+              valueField:'task_type_id',
+              textField:'name',
+              data:t_types,
+              required:true,
+             
+              name:'demo'
+            }
+          },styler:function(value,row,index){
+            return {class:'c1',style:'font-weight:bold;color:'+value}
+          }
+        },
+        {field:'task_duration',title:'Duration',width:200,sortable:true,required:true,class:'easyui-validatebox',editor:{
+            type:'combobox',
+            options:{
+              valueField:'task_duration',
+              textField:'name',
+              data:t_dura,
+              name:'demo'
+            }
+          },styler:function(value,row,index){
+            return {class:'c1',style:'font-weight:bold;color:'+value}
+          }
+        },
+        {field:'action',title:'Action',width:80,align:'center',
+          formatter:function(value,row,index){
+            if (row.editing){
+              var s = '<a href="javascript:void(0)" onclick="savetaskoutcomerow(this)" class="savedg">Save</a> ';
+              var c = '<a href="javascript:void(0)" onclick="canceltaskoutcomerow(this)" class="canceldg">Cancel</a>';
+              return s+c;
+            } else {
+              var e = '<a href="javascript:void(0)" onclick="edittaskoutcomerow(this)"  class="editdg">Edit</a> ';
+              //var d = '<a href="javascript:void(0)" onclick="deletetaskoutcomeRow(this)"  class="deletedg" >Delete</a>';
+              //return e+d;
+              return e;
+            }
+          }
+        }
+        
+      ]],
+      onBeforeEdit:function(index,row){
+        row.editing = true;
+        updatelabelActions(index);
+      },
+      onAfterEdit:function(index,row){
+        row.editing = false;
+        updatelabelActions(index);
+      },
+      onCancelEdit:function(index,row){
+        row.editing = false;
+        updatelabelActions(index);
+      }
+    });
+    $('#dataTabletask').datagrid('reload');
+    //$( "#addnewlabel" ).on("click", function() {
+    //  $('#dataTabletask').datagrid('reload');
+    //});
+     $( ".mylabels" ).on("click", function() {
+      $('#dataTabletask').datagrid('reload');
+    });
+  });
+  function updatelabelActions(index){
+    $('#dataTabletask').datagrid('updateRow',{
+      index: index,
+      row:{}
+    });
+  }
+  function getRowIndex(target){
+    var tr = $(target).closest('tr.datagrid-row');
+    return parseInt(tr.attr('datagrid-row-index'));
+  }
+  function edittaskoutcomerow(target){
+    $('#dataTabletask').datagrid('beginEdit', getRowIndex(target));
+    $(".combo-panel").find("div.combobox-item").each(function(e){
+      $(this).attr("style","background:"+$(this).attr("value"));
+    });
+  }
+  function deletetaskoutcomeRow(target){
+    $.messager.confirm('Confirm','Do you want to delete the label?',function(r){
+    var id = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html();
+      if (r){
+        $('#dataTabletask').datagrid('deletetaskoutcomeRow', getRowIndex(target));
+        $.ajax({
+        type: "POST",
+        async: false,
+        url: "settings/delete_taskoutcome?id="+id,
+        success: function(dt){
+        if(id == "")
+        {
+          $("#groupmsg").val(dt);
+          //alert('saved successfully');
+        }
+        }
+        });
+      }
+    });
+  }
+  function savetaskoutcomerow(target){
+    var task_out_name = $(target).closest('tr.datagrid-row').children("td[field='name']").children("div:first").children("table:first").find("input.datagrid-editable-input").val();
+    var id = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html();
+    var task_type_name = $(target).closest('tr.datagrid-row').children("td[field='task_out_type']").children("div:first").children("table:first").find("input.combo-text").val();
+    var task_duration_name = $(target).closest('tr.datagrid-row').children("td[field='task_duration']").children("div:first").children("table:first").find("input.combo-text").val();
+    
+    //var org = "#{current_user.organization.id}";
+    //alert($(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html());
+    var data = "name=" + task_out_name + "&task_type_name="+task_type_name + "&task_duration_name="+task_duration_name;
+    var iddiv = $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first");
+    
+    //alert(id);
+    if(id != "")
+    {
+      data = data + "&id=" + id ;
+    }
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: 'POST',
+      async: false,
+      url: '/settings/save_task_outcome_label',
+      data: data,
+      success: function(dt){
+        //alert(dt)
+        if(id == "")
+        {
+          $("#labelmsg").val(dt);
+          //alert('saved successfully');
+        }
+      }
+    });
+    
+    $('#dataTabletask').datagrid('endEdit', getRowIndex(target));
+    //var newid =$("#labelmsg").val();
+    //alert(newid);
+    //alert($(target).parent("div").html());
+    //if(newid != "")
+    //  {
+    //    //alert(dt);
+    //    $(target).closest('tr.datagrid-row').children("td[field='id']").children("div:first").html(newid);
+    //    //$(iddiv).html(dt);
+    //  }
+    $('#dataTabletask').datagrid('reload');
+  }
+  function canceltaskoutcomerow(target){
+    $('#dataTabletask').datagrid('cancelEdit', getRowIndex(target));
+  }
+  function insertlabel(){
+    var row = $('#dataTabletask').datagrid('getSelected');
+    
+    if (typeof(row) != "undefined"){
+      var index = $('#dataTabletask').datagrid('getRowIndex', row);
+    } else {
+      index = 0;
+    }
+    if (index == -1)
+      {index = 0;}
+      
+    
+    $('#dataTabletask').datagrid('insertRow', {
+      index: index,
+      row:{
+        status:'P'
+      }
+    });
+    
+    $('#dataTabletask').datagrid('selectRow',index);    
+    $('#dataTabletask').datagrid('beginEdit',index);
+    $(".combo-panel").find("div.combobox-item").each(function(e){
+      $(this).attr("style","background:"+$(this).attr("value"));
+    });
+    //alert($(row).closest('tr.datagrid-row').children("td[field='name']").children("div:first").children("table:first").find("input.datagrid-editable-input").val());
+    //$("a.savedg" ).on("click","a",savelabelrow(e.target));
+    //$("a.savedg" ).on("click", function(e) {
+    //  //savelabelrow(e.source);
+    //  alert($(e.target).html());
+    // savelabelrow(e.target);
+    //  e.preventDefault();
+    //  e.stopPropagation();
+    //});
+  }
+  
+  $( "#addnewlabel.easyui-linkbutton" ).on("click", function() {
+    insertlabel();
+  });
+  //$( ".editdg" ).on("click",editlabelrow,this);
+  //$( ".savedg" ).on("click",savelabelrow,this);
+  //$( ".deletedg" ).on("click",deletelabelrow(this));
+  //$( ".canceldg" ).on("click",cancellabelrow(this));
+  //$( ".savedg" ).on("click", function() {
+  //  alert(event.data);
+  //  //savelabelrow(this)
+  //});
+   

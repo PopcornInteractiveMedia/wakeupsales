@@ -1,0 +1,295 @@
+:css
+  .dataTables_paginate { float: right; margin-top:-18px; }
+  .dataTables_length{margin-left: 215px;margin-top: -15px;display:none;}
+%div.table-responsive
+  -if @current_user.is_admin?
+    - as_to = cookies[:task_assigned_to]
+  -else
+    - as_to = current_user.id
+  %table.table.white-table.table-hover{cellspacing: "40", id: "taskList", style: "border: 1px solid #E0DEDE","data-source"=>tasks_url(format: 'json',params: {cuser: current_user.id, deal_id: (!@deal.nil? ? @deal.id : 0), deal_type: cookies[:deal_type_val], asg_to: cookies[:asg_to_val], task_type: cookies[:task_type_val] , task_status: params[:task_status], dt_range: cookies[:dt_range], assigned_to: as_to,y: cookies[:task_year],q: cookies[:task_quarter], t_type: cookies[:t_type]})}
+
+    %thead
+      %tr
+        %th
+        %th
+          Detail
+        -unless params[:task_status] == "today" || params[:task_status] == "upcoming" || params[:task_status] == "overdue" 
+          %th
+            Outcome
+        %th
+          Contact            
+        %th
+          Type
+        //%th
+        //  Action
+    %tbody
+  =render :partial => "tasks/task_edit_popup"
+  =render :partial => "tasks/task_followup_popup"
+   
+:javascript
+  //$(document).ready(function() {
+  //if("#{params[:task_status]}" != "today" || "#{params[:task_status]}" != "upcoming" || "#{params[:task_status]}" != "overdue" ){col="{sClass: 'check_box_col_width'},{sClass: 'col-md-7'},  null" }else{col="sClass: 'check_box_col_width'},{sClass: 'col-md-7'}, null, null"}
+   if("#{params[:task_status]}" == "today" || "#{params[:task_status]}" == "upcoming" || "#{params[:task_status]}" == "overdue" ){
+       $('#taskList').dataTable({
+        oLanguage: {"sLengthMenu": "_MENU_" },
+        sPaginationType: "bootstrap",
+        bJQueryUI: true,
+        bServerSide: true,
+        "bStateSave": true,
+        aLengthMenu: [[20, 25, 50, 100], [20, 25, 50, 100]],
+        iDisplayLength: 20,
+        bProcessing: display_loader(),
+        aoColumns: [{sClass: 'check_box_col_width'},{sClass: 'col-md-8'},null],
+        "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+        sAjaxSource: $('#taskList').data('source'),
+        bLengthChange: true,
+        bFilter: false,
+        bSort: false,
+        aoColumnDefs: [
+          {
+            aTargets: [0],
+              mRender: function(data, type, row ){
+                
+                $("#"+$("#task_status_value").val()+"Badge").html('(' + row[14] + ')')
+                if(row[14] > 25){
+                 $(".dataTables_length").show();
+                 $('.dataTables_length select').addClass('form-control');
+                }
+                 $('.dataTables_length select').addClass('form-control');
+                str = "<div class='priority_border' style='background:"+row[0]+"'></div><div class='navbar-left' style='width:36px'>"+row[2]+"";
+                str += "<div class='dropdown fr'><div class='deal_set fl dropdown-toggle' data-toggle='dropdown' href='javascript:' rel='tooltip' title='Actions'></div>";
+                var cldurl= "#{ENV['cl	oudfront']}"
+                if(row[11] == "false"){
+                 str += "<ul class='dropdown-menu' style='margin:13px 0 0'><li class='arrow_top'></li><li><a href='javascript:void(0)' onclick=\"$('#taskEditModal').modal('show');edit_popup('"+row[3]+"');\" rel='tooltip' title='Edit'><span class='glyphicon glyphicon-edit' style='margin-right:5px;'></span>Edit</a></li><li><a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" title='Follow-up'><span class='add_i_flow'></span>Follow Up</a></li><li><a  href='javascript:' onclick=\"delete_task('"+row[3]+"', check_active_tab(),'"+row[18]+"');\"rel='tooltip nofollow'  rel='tooltip nofollow' title='Delete'><span class='glyphicon glyphicon-trash' style='margin-right:5px;'></span>Delete</a></li></ul>";
+                  }else{
+                    str+= "<ul class='dropdown-menu' style='margin:13px 0 0'><li class='arrow_top'></li><li><a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" rel='tooltip' title='Follow-up'><span class='add_i_flow'></span>Follow Up</a></li></ul>";
+                }            
+                return str + "</div></div>";
+              }
+          },
+          {aTargets: [1],
+              mRender: function(data, type, row ){
+                return "<div style="+row[13]+"> \
+                      <span class='task_list'> \
+                        <span> \
+                          <a class='link_n' href='"+row[12]+"'>"+row[4]+"</a> \
+                          <b>&nbsp;&nbsp;&bull;</b> \
+                          <span class='due_date'> \
+                            Due on &nbsp;"+row[5]+" \
+                          </span> \
+                          <br> \
+                          <span class='assigned_user'> \
+                            Assigned to "+row[6]+" \
+                            <b>&nbsp;&nbsp;&bull;</b> \
+                            <font class='created_by'> \
+                              Created \
+                              "+row[7]+" \
+                              <b>&nbsp;&nbsp;&bull;</b> \
+                              By "+row[8]+" \
+                            </font> \
+                          </span> \
+                        </span> \
+                      </span> \
+                    </div>"
+                }},
+     
+          {aTargets: [2],
+              mRender: function(data, type, row ){
+                return "<div>"+row[19]+"</div> \
+                        <div style='font-size: 12px;font-style: italic;'>"+row[20]+"</div>"
+                }},
+          {aTargets: [3],
+              mRender: function(data, type, row ){
+                return "<div style="+row[13]+"> \
+                        <div class='label"+row[10]+" labelTaskType'>"+row[10]+"</div> \
+                        <br><div style='font-size: 12px;font-style: italic;'>"+row[16]+"</div> \
+                        </div>"
+                
+                }}
+         
+        ],
+        fnPreDrawCallback: function() { $('#task_loader').show();},
+        fnDrawCallback: function() {$('#task_loader').hide();$('div').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});},
+        fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {      
+          $(nRow).addClass('task_row');
+           $(nRow).hover(
+            function() {
+            $(this).find("div.action_task").show();
+            }, function() {
+            $(this).find("div.action_task").hide();
+           });
+           
+        }
+        
+      });  
+   
+   }else{
+      $('#taskList').dataTable({
+        oLanguage: {"sLengthMenu": "_MENU_" },
+        sPaginationType: "bootstrap",
+        bJQueryUI: true,
+        bServerSide: true,
+        "bStateSave": true,
+        aLengthMenu: [[20, 25, 50, 100], [20, 25, 50, 100]],
+        iDisplayLength: 20,
+        bProcessing: display_loader(),
+        aoColumns: [{sClass: 'check_box_col_width'},{sClass: 'col-md-7'}, null, null],
+        "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+        sAjaxSource: $('#taskList').data('source'),
+        bLengthChange: true,
+        bFilter: false,
+        bSort: false,
+        aoColumnDefs: [
+          {
+            aTargets: [0],
+              mRender: function(data, type, row ){
+                
+                $("#"+$("#task_status_value").val()+"Badge").html('(' + row[14] + ')')
+                if(row[14] > 25){
+                 $(".dataTables_length").show();
+                 $('.dataTables_length select').addClass('form-control');
+                }
+                str = "<div class='priority_border' style='background:"+row[0]+"'></div><div class='navbar-left' style='width:36px'>"+row[2]+"";
+                str += "<div class='dropdown fr'><div class='deal_set fl dropdown-toggle' data-toggle='dropdown' href='javascript:' rel='tooltip' title='Actions'></div>";
+                var cldurl= "#{ENV['cl	oudfront']}"
+                if(row[11] == "false"){
+                 str += "<ul class='dropdown-menu' style='margin:13px 0 0'><li class='arrow_top'></li><li><a href='javascript:void(0)' onclick=\"$('#taskEditModal').modal('show');edit_popup('"+row[3]+"');$('#clicked_button_ref').val(check_active_tab());\" rel='tooltip' title='Edit'><span class='glyphicon glyphicon-edit' style='margin-right:5px;'></span>Edit</a></li><li><a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" title='Follow-up'><span class='add_i_flow'></span>Follow Up</a></li><li><a href='javascript:' onclick=\"delete_task('"+row[3]+"', check_active_tab(),'"+row[18]+"');\"rel='tooltip nofollow' title='Delete'><span class='glyphicon glyphicon-trash' style='margin-right:5px;'></span>Delete</a></li></ul>";
+                  }else{
+                    str+= "<ul class='dropdown-menu' style='margin:13px 0 0'><li class='arrow_top'></li><li><a href='javascript:void(0)' onclick=\"$('#taskFollowModal').modal('show');follow_popup('"+row[3]+"')\" rel='tooltip' title='Follow-up'><span class='add_i_flow'></span>Follow Up</a></li></ul>";
+                }            
+                return str + "</div></div>";
+              }
+          },
+          {aTargets: [1],
+              mRender: function(data, type, row ){
+                str = "<div style="+row[13]+"> \
+                      <span class='task_list'> \
+                        <span> \
+                          <a class='link_n' href='"+row[12]+"'>"+row[4]+"</a> \
+                          <b>&nbsp;&nbsp;&bull;</b> \
+                          <span class='due_date'> \
+                            Due on &nbsp;"+row[5]+" \
+                          </span> \
+                          <br> \
+                          <span class='assigned_user'> "
+                          if(row[11] == "true"){
+                           str +=" Completed on &nbsp;<i>"+row[15] +"</i>\
+                            <b>&nbsp;&nbsp;&bull;</b> "
+                           }
+                           str += " Assigned to "+row[6]+" \
+                            <b>&nbsp;&nbsp;&bull;</b> \
+                            <font class='created_by'> \
+                              Created \
+                              "+row[7]+" \
+                              <b>&nbsp;&nbsp;&bull;</b> \
+                              By "+row[8]+" \
+                            </font> \
+                          </span> \
+                        </span> \
+                      </span> \
+                    </div>"
+                    return str 
+                }},
+          {aTargets: [2],
+              mRender: function(data, type, row ){
+              //if("#{params[:task_status]}" != "today" || "#{params[:task_status]}" != "upcoming" || "#{params[:task_status]}" != "overdue" ){
+                return "<div style='color:green'>"+row[9]+"</div>";
+               // }
+                
+                }},
+          {aTargets: [3],
+              mRender: function(data, type, row ){
+                return "<div>"+row[19]+"</div> \
+                        <div style='font-size: 12px;font-style: italic;'>"+row[20]+"</div>"
+                
+                }},
+          {aTargets: [4],
+              mRender: function(data, type, row ){
+                str = "<div style="+row[13]+"> \
+                        <div class='label"+row[10]+" labelTaskType'>"+row[10]+"</div> "   
+                 if(row[11] == "false"){
+                    str+="  <br><div style='font-size: 12px;font-style: italic;'>"+row[17]+"</div> "
+                 }
+                  str += "   </div>"
+                return str
+                }}
+        ],
+        fnPreDrawCallback: function() { $('#task_loader').show();},
+        fnDrawCallback: function() {$('#task_loader').hide();$('div').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});},
+        fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {      
+          $(nRow).addClass('task_row');
+           $(nRow).hover(
+            function() {
+            $(this).find("div.action_task").show();
+            }, function() {
+            $(this).find("div.action_task").hide();
+           });
+           
+        }
+        
+      });
+  }
+  $('#taskList').on( 'xhr', function ( e, o, json ) { 
+    $("#"+$("#task_status_value").val()+"Badge").html('(' + json.iTotalDisplayRecords + ')');
+    if("#{cookies[:t_type]}" != ""){
+      $('#filter_msg').show().html('Filtered ' + json.iTotalDisplayRecords + ' tasks from ' +  json.iTotalRecords + ' tasks <a href="/tasks?type=all" class="btn btn-xs btn-warning" onclick="reset_all_task_filter()">RESET</a>')      
+      $.removeCookie("t_type");      
+    }else{
+      $('#filter_msg').hide()
+    }
+  });
+  function display_loader(){
+    //$("#task_loader").show();
+    //if($("#"+$("#task_status_value").val()+"Task").hasClass("active"))
+      //$("#"+$("#task_status_value").val()+"Badge").html(0)
+    
+  }
+  //});
+  
+  function edit_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/edit_task",
+      dataType: 'json',
+      async: true,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#form_content").html(data.responseText);
+        $("#task_loader").hide();
+        $('#clicked_button_ref').val(check_active_tab());
+        
+      }
+    });
+  }
+  function follow_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/follow_up_task",
+      dataType: 'json',
+      async: true,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#followform_content").html(data.responseText);
+        $("#task_loader").hide();
+        $('#clicked_button_ref').val(check_active_tab());
+      }
+    });
+  }

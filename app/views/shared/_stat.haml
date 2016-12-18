@@ -1,0 +1,60 @@
+= javascript_include_tag "main"
+.text-center
+  %ul.stats_box
+    %li
+      .sparkline.line_day
+      .stat_text
+        %strong> 165
+        Last 24 Hours
+        %span.percent.up
+          %i.icon-caret-up
+          +23%
+    %li
+      .sparkline.bar_week
+      .stat_text
+        %strong> 2.345
+        Last 7 Days
+        %span.percent.down
+          %i.icon-caret-down
+          \-16%
+    %li
+      .sparkline.pie_week
+      .stat_text
+        %strong> $2 345.00
+        Last Month
+        %span.percent 10%
+    %li
+      .sparkline.stacked_month
+      .stat_text
+        %strong> $678.00
+        Total
+        %span.percent.down
+          %i.icon-caret-down
+          \-10%
+- if params[:action] == "deals"
+  %hr/
+  .text-center
+    %a{class: "quick-btn  #{(var == 'deals') ? 'qbtn_selected' : ''}", href: "/leads"}
+      %i.icon-thumbs-up.icon-2x
+      %span New Deals
+      %span.label.label-warning +25
+    %a{class: "quick-btn  #{(var == 'dealPipeline') ? 'qbtn_selected' : ''}", href: "/dealPipeline"}
+      %i.icon-check.icon-2x
+      %span Qualify
+      %span.label.label-danger 56
+    %a{class: "quick-btn #{(var == 'dealClosed') ? 'qbtn_selected' : ''}", href: "/dealClosed"}
+      %i.icon-minus-sign.icon-2x
+      %span Not Qualify
+      %span.label.btn-metis-4 15
+    %a{class: "quick-btn #{(var == 'dealLost') ? 'qbtn_selected' : ''}", href: "/dealLost"}
+      %i.icon-remove-circle.icon-2x
+      %span Lost
+      %span.label.label-default 224.456
+    %a{class: "quick-btn #{(var == 'dealWon') ? 'qbtn_selected' : ''}", href: "/dealWon"}
+      %i.icon-trophy.icon-2x
+      %span Won
+      %span.label.label-success 4
+    %a{class: "quick-btn #{(var == 'dealJunk') ? 'qbtn_selected' : ''}", href: "/dealJunk"}
+      %i.icon-bug.icon-2x
+      %span Junk
+      %span.label.btn-metis-3 10

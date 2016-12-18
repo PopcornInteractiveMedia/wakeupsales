@@ -1,0 +1,106 @@
+%html{lang: "en"}
+  %meta{charset: "utf-8"}
+  = javascript_include_tag "jquery"
+  
+
+  /=javascript_include_tag "https://apis.google.com/js/client.js"
+
+  :javascript
+    // function onClientLoad()
+    // {
+      // gapi.client.setApiKey('AIzaSyA_C6r0dT5Wti1kViGEHZ-qfaUmiBAl1cI');
+
+      // var restRequest = gapi.client.request({
+      // 'path': '/users/messages',
+      // 'params': {'query': '', 'orderBy': 'best'}
+      // });
+      // gapi.client.load('gmail','v1',function(){});
+      // gapi.client.request('https://www.googleapis.com/upload/gmail/v1/users/messages/list','GET');
+    // }
+    $(document).ready(function() {
+      //handleClientLoad();
+      // listMessages('krishna.sahoo@andolasoft.com','',showResults);
+    })
+    //var clientId= '376013845018-jd2qfkd6b35p7n0ijne8ags5rf47eusv.apps.googleusercontent.com';
+      
+    // function listMessages(userId, query, callback) {
+      // var getPageOfMessages = function(request, result) {
+        // request.execute(function(resp) {
+          // result = result.concat(resp.messages);
+          // var nextPageToken = resp.nextPageToken;
+          // if (nextPageToken) {
+            
+            // //gapi.client.setApiKey('376013845018-jd2qfkd6b35p7n0ijne8ags5rf47eusv.apps.googleusercontent.com');
+            // request = gapi.client.gmail.users.messages.list({
+              // 'userId': userId,
+              // 'pageToken': nextPageToken,
+              // 'q': query
+            // });
+            // getPageOfMessages(request, result);
+          // } else {
+            // callback(result);
+          // }
+        // });
+      // };
+      // onClientLoad();
+      // gapi.client.setApiKey('AIzaSyA_C6r0dT5Wti1kViGEHZ-qfaUmiBAl1cI'); 
+      // window.setTimeout(checkAuth,1);    
+      // var initialRequest = gapi.client.gmail.users.messages.list({
+        // 'userId': userId,
+        // 'q': query
+      // });
+      // getPageOfMessages(initialRequest, []);
+    // }
+    //localhost:3001
+    //var clientId= '376013845018';
+    //var apiKey= 'AIzaSyA_C6r0dT5Wti1kViGEHZ-qfaUmiBAl1cI';
+    var clientId= '376013845018';
+    var apiKey= 'AIzaSyBwhvm4zOMRUEimGn3SzzT6JU3ktRr2Ou0';
+    var scopes = 'https://www.googleapis.com/gmail/v1/users/krishna.sahoo@andolasoft.com/messages';
+    
+    function handleClientLoad() {
+          gapi.client.setApiKey(apiKey);
+          window.setTimeout(checkAuth,1);
+        }
+
+    function checkAuth() {
+      gapi.auth.authorize({client_id: clientId, scope: scopes, immediate: true}, handleAuthResult);
+    }
+    function handleAuthResult(authResult) {
+          var authorizeButton = document.getElementById('authorize-button');
+          if (authResult && !authResult.error) {
+            authorizeButton.style.visibility = 'hidden';
+            makeApiCall();
+          } else {
+            authorizeButton.style.visibility = '';
+            authorizeButton.onclick = handleAuthClick;
+          }
+        }
+    function showResults(data)
+    {
+      alert(data);
+    }
+    function makeApiCall() {
+          gapi.client.load('gmail', 'v1', function() {
+            var request = gapi.client.gmail.users.messages.list.get({
+              'userId': 'me'
+            });
+            request.execute(function(resp) {
+              alert(resp);
+              var heading = document.createElement('h4');
+              var image = document.createElement('img');
+              image.src = resp.image.url;
+              heading.appendChild(image);
+              heading.appendChild(document.createTextNode(resp.displayName));
+
+              document.getElementById('content').appendChild(heading);
+            });
+          });
+        }
+  %body
+    %button#authorize-button{:value=>"Authorize",:style=>"visibility: hidden"}
+      Authorize
+    /=javascript_include_tag "https://apis.google.com/js/client.js?onload=handleClientLoad"
+    #content
+    Retrieves your profile name 
+  

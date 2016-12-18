@@ -1,0 +1,54 @@
+:css
+  .cms-file-input input[type="file"] {
+    position: fixed;
+    z-index: 2;
+    opacity: 0;
+    margin-top: 26px;
+    filter: alpha(opacity=0);
+  }
+  .row{
+    margin-top: 3px;
+  }
+  .file_hid_block{
+    height:90px;
+    position: absolute !important;
+    top: -26px;
+    vertical-align: middle;
+    width:85px;
+    cursor:pointer;
+  }
+  .file_upld{
+    display:table-cell;
+    background:#ffffff;
+    border-radius:1px;
+    text-align:center;
+    border: 1px solid #e9e9e9;
+    vertical-align: middle;
+    padding:3px;
+    width:90px;
+    height:90px;
+  } 
+  .click_img{
+    background:#000000;
+    color: #FFFFFF;
+    font-size: 12px;
+    opacity: 0.5;
+    position: relative;
+    text-align: center;
+    top: -18px;
+    width:90px;
+  }
+  .mt10{margin-top:6px;margin-left:0px;}
+  .mt20{margin-top:10x;margin-left:0px;}
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+#editPopContactModal.modal.fade.bs-example-modal-lg{"aria-hidden" => "true", "aria-labelledby" => "editPopContactModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal",} ×
+        %h4.modal-title Contact Edit
+      .modal-body
+        #edit-contact-alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+          %button.close{onclick: "$('#edit-contact-alert-msg').hide();$('#loader').hide();"} x
+          #edit-contact_msg_div
+        #contact_append

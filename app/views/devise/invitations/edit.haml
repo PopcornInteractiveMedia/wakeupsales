@@ -1,0 +1,30 @@
+:css
+  .well {
+    background-color: #F5F5F5;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    margin-bottom: 20px;
+    min-height: 20px;
+    padding: 19px;
+  #error_explanation{color: #9C0D0D;}
+%br
+%br
+.row.contact_row
+  .col-md-4.contact_div
+    .well
+
+      %legend
+        = t 'devise.invitations.edit.header'
+      = form_for resource, :as => resource_name, :url => invitation_path(resource_name), :html => { :method => :put } do |f| 
+        = devise_error_messages!
+        = f.hidden_field :invitation_token
+        .form-group      
+          = f.password_field :password, :required => true, :class=>"form-control", :placeholder=>"Password", :style=>"height:50px;font-size: 17px;"
+        .form-group
+          = f.password_field :password_confirmation, :required => true, :class=>"form-control", :placeholder=>"Confirm new password", :style=>"height:50px;font-size: 17px;"
+        .form-group
+          = f.submit t("devise.invitations.edit.submit_button"), class: "btn btn-primary"
+
+=stylesheet_link_tag "home"
+

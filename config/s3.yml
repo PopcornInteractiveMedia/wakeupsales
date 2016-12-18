@@ -1,0 +1,14 @@
+production:
+  #bucket: SalesCafe_Live
+  bucket: xxxxxx
+  access_key_id: xxxxxx
+  secret_access_key: xxxxxx
+  
+development:
+  bucket: xxxxxx
+  access_key_id: xxxxxx
+  secret_access_key: xxxxxx
+staging:
+  bucket: xxxxxx
+  access_key_id: xxxxxx
+  secret_access_key: xxxxxx

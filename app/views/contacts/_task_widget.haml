@@ -1,0 +1,57 @@
+= javascript_include_tag 'jquery.nicescroll.min'
+
+.tabbable.task_tab{style: "margin-top: 15px;padding-top:0px;"}
+  %ul.nav.nav-tabs{style: "margin-left: -1px;"}
+    %li#activity.active
+      %a{"data-toggle" => "tab", href: "#activity", onclick: "widget_contact('activity')"}
+        Tasks
+  .panel.panel-default{style: "margin-top: 0px;"}
+    #task_info.panel-body{style: "padding: 15px 20px 15px 20px;height:500px; overflow: auto"}
+      -if @today_tasks.present? ||  @overdue_tasks.present? || @upcoming_tasks.present? || @completed_tasks.present?
+        .row.rpadding{style: "padding-top: 0px;"}
+          - if @today_tasks.present?
+            %b
+              Today
+            .panel.panel-default{style: "border:0;margin-bottom:0px"}
+              .panel-body{style: "padding: 5px 20px 0px 20px;"}
+                .row.rpadding
+                  -@tasks=@today_tasks
+                  =render partial: "deals/widget_task_list", objects: @tasks
+          - if @overdue_tasks.present?
+            %b
+              Overdue
+            .panel.panel-default{style: "border:0;margin-bottom:0px"}
+              .panel-body{style: "padding: 5px 20px 0px 20px;"}
+                .row.rpadding
+                  -@tasks=@overdue_tasks
+                  =render partial: "deals/widget_task_list", objects: @tasks
+          - if @upcoming_tasks.present?
+            %b
+              Upcoming
+            .panel.panel-default{style: "border:0;margin-bottom:0px"}
+              .panel-body{style: "padding: 5px 20px 0px 20px;"}
+                .row.rpadding
+                  -@tasks=@upcoming_tasks
+                  =render partial: "deals/widget_task_list", objects: @tasks
+          - if @completed_tasks.present?
+            %b
+              Completed
+            .panel.panel-default{style: "border:0;margin-bottom:0px"}
+              .panel-body{style: "padding: 5px 20px 0px 20px;"}
+                .row.rpadding
+                  -@tasks=@completed_tasks
+                  =render partial: "deals/widget_task_list", objects: @tasks
+      - else
+        %span
+          No task has been created yet.
+          - if (@contact.contact_status && ((@contact.is_public?) || ((@contact.created_by == current_user.id) || (current_user.is_admin?))))
+            %a{"data-toggle" => "modal", href: "#taskModal",onclick: "$('#task_referrer').val('Tasks Widget');$('#task_form')[0].reset();setTimeout(\"$('#deal_title').val('#{@contact.title}');$('#hfield').val('#{@contact.id}');task_deal('#{@contact.id}')\",1000);$('#deal_title').attr('disabled', true);$('#taskable_id').val(\"#{@contact.id}\");$('#taskable_type').val(\"#{@contact.class.name}\");", "data-id" => @contact.id,rel: "tooltip", title: "Add a task"} 
+              Create now
+          - else
+            %span.linkspan
+              Create now
+:javascript
+    $(function()
+  {
+    $('#task_info').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+  });

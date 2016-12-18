@@ -1,0 +1,991 @@
+-@title= "hellllo"
+-@deal_org=@deal
+-content_for :title,@deal.title
+= javascript_include_tag "skypeCheck"
+= javascript_include_tag "jquery.uploadfile.min"
+= stylesheet_link_tag "uploadfile.min"
+:css
+  .con-box1{margin-bottom: 10px;}
+  span.upload {
+    overflow: hidden;
+  }
+  span.upload input {
+      display: block !important;
+      opacity: 0 !important;
+      overflow: hidden !important;
+  } 
+  textarea {
+      color: #444;
+      padding: 5px;
+  }
+  
+  .txtstuff {
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+      overflow: hidden;
+      padding: 11px;
+  }
+  
+  .hiddendiv {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+  }
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+  /* these must be the same for both */
+  .common {
+      width: 500px;
+      min-height: 47px;
+
+      overflow: hidden;
+  }
+  .lbr {
+      line-height: 3px;
+  }  
+  .glyphicon-fullscreen, .glyphicon-pencil{color:#555555}  
+  #note_notes-wysiwyg-iframe{width:668px !important;}
+
+  a {
+      color: #0254EB
+  }
+  a:visited {
+      color: #0254EB
+  }
+  a.morelink {
+      text-decoration:none;
+      outline: none;
+  }
+  .morecontent span {
+      display: none;
+  }
+  .morecomment {
+      background-color: #fcf8e3;
+      border: 1px solid #fbeed5;
+      color: #c09853;
+      margin-top: 11px;
+      padding: 0 35px 8px 14px;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+      display:none;
+  }
+  .visitoverflow {
+      max-height: 400px;
+      overflow-y: auto;
+  }  
+   
+/= subscribe_to "/messages/deals#{@deal.id}"
+.container        
+  = hidden_field_tag "deal_id_timeout", @deal.id
+  = hidden_field_tag "deal_assignid", @deal.assigned_to
+  = hidden_field_tag "deal_contacts_id", @deal.deals_contacts.select(:contactable_id).collect(&:contactable_id).join(",")
+  .row
+    .cb#reset_height
+    %span{:style=>"margin-left:15px;",:id=>"hide_back"}
+      %button.btn.btn_adcon.btn-default{:style=>"margin:2px 0 5px;",:type=>"button",:onclick=> "history.go(-1);"}
+        %i{:class=>"glyphicon glyphicon-arrow-left",:style=>"margin-right: 2px;margin-left: -18px;"}
+        Go Back
+    .cb
+    .col-md-8.show_del_icon
+      .con-box1
+        .col-md-10
+          .fl.glyphicon.glyphicon-usd{style: "font-size: 50px; color: green;position: relative;margin-left: -14px;"}
+          .fl{:style => "margin-top: -14px;"}
+            %h4{style: "font-size: 20px;"}
+              =@deal.title
+            %h4{style: "color: green"}
+              =(@deal.amount.present? || @deal.amount.to_i!=0) ? "#{number_with_delimiter(@deal.amount.to_i, :delimiter => ',')}"  : "No Price Set"
+          .cb
+          .fl.col-md-6.p0
+            .fl.grey_act Priority:
+            -if !@deal.priority_type.nil? 
+              -deal_cl =@deal.priority_type.name.downcase + "_pri"
+            .labelTaskType{class: deal_cl} 
+              -if !@deal.priority_type.nil?
+                =@deal.priority_type.name
+            .cb10
+            .fl.grey_act First Touch:
+            .fl 
+              =distance_of_time_in_words_to_now @deal.created_at
+              ago
+            .cb10
+            .fl.grey_act Created On:
+            .fl 
+              =distance_of_time_in_words_to_now @deal.created_at
+              ago
+            .cb10
+            .fl.grey_act Stage:
+            .fl 
+              - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+                - if(@deal.deal_status.present? && @deal.deal_status.original_id == 4)
+                  %span{style: "color: green"} 
+                    =@deal.deal_status_name
+                - else                
+                  .dropdown
+                    %a.dropdown-toggle#chng_stg{"data-toggle" => "dropdown", href: "#", style:"padding: 4px 7px 2px !important;", :onclick => "$('#add_note').val('')"}
+                      =@deal.deal_status_name
+                      %span.caret
+                    %ul.dropdown-menu{style: "", role: "menu"}
+                      %li.arrow_top{style: "display:block;margin-left:5px;z-index:99;top: -12px;"}
+                      -dealstatuses = @current_organization.deal_statuses.select("id,name,original_id")
+                      - dealstatuses.each do |ds|
+                        %li
+
+                          %a{href: "javascript:void(0)",onclick: "change_stage(#{ds.id}, #{@deal.id}, '#{ds.name}', #{ds.original_id})",class: "filterSelectDropdow"}
+                            =ds.name
+                        %li.divider
+              -else
+                =@deal.deal_status_name
+            .cb10            
+            .fl.grey_act Tags on the deal:
+            .fl 
+              - if @deal.tags.present?
+                - @deal.all_tags.split(',').each do |ta|
+                  - url = cookies[:page_tab].present? ? "#{leads_path(:type=>cookies[:page_tab],:tag =>ta)}" : "#{leads_path(:tag =>ta)}"
+                  %a.tag_tech.fl{href: "javascript:void(0);",onclick:"store_cookie('#{ta}','#{url}')",style: "margin-right:5px;position:relative;margin-top:2px"}
+                    =ta
+                    .caret_tag
+                  
+              -else
+                %span{style: "position:relative"}
+                  Not Avl.
+            .cb10
+            .fl.grey_act Source:
+            .fl 
+              - if @deal.deal_source.present? && @deal.deal_source.source.present? && @deal.deal_source.source.name.present?
+                - if @deal.deal_source.source.name.include?("http://")
+                  %a{href: "#{@deal.deal_source.source.name}", rel: "tooltip", title: "#{@deal.deal_source.source.name}", target: "_blank"}
+                    =@deal.deal_source.source.name
+                -else
+                  %a{href: "javascript:void(0)", rel: "tooltip", title: "#{@deal.deal_source.source.name}",style: "cursor:default;text-decoration:none;"}
+                    =@deal.deal_source.source.name
+              -else
+                Not Avl.
+            .cb10
+            - if @deal.visited.present?            
+              .fl.grey_act Pages visited:
+              .fl
+                %a{"data-toggle" => "modal", href: "#showVisited", rel: "tooltip", class:"",style: "text-decoration:none", title: "Show visited path",onclick: "#"}
+                  = @deal.visited.split(',').count
+              .cb10
+          .fl.col-md-6
+            .fl.grey_act Assigned To:
+            .fl 
+              - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+                - unassigned_txt = @deal.is_remote? ? "Yet to assign" : (@deal.assigned_user  ? (@deal.assigned_user == @current_user ? "Me" : @deal.assigned_user.full_name ) : "NA")
+                %a.lead_asgn_to{href: "#", id: @deal.id, "data-type" => "select", "data-value" => @deal.assigned_user  ? @deal.assigned_user.id : "" }
+                  =unassigned_txt
+              -else
+                =@deal.assigned_user  ? (@deal.assigned_user == @current_user ? "Me" : @deal.assigned_user.full_name ) : "NA"   
+            .cb10
+            .fl.grey_act Last Touch:
+            - if @deal.last_activity_date.present? 
+              .fl#last_touch_div
+                = distance_of_time_in_words_to_now(@deal.last_activity_date)
+                ago
+            - else
+              Not Avl.
+            .cb10
+            .fl.grey_act Created by:
+            .fl 
+              =@deal.initiator_name
+            .cb10
+            .fl.grey_act Visibility:
+            -if @deal.is_public?
+              .fl Everyone
+            -else
+              .fl Associate Users
+            
+            .cb10
+            - nxt_action = @deal.latest_task_type_id.present? ? @deal.last_task.name  : "No-Action"
+            .fl.grey_act Next Action:
+            .fl{:id=>"deal_#{@deal.id}"}
+              %div{class: "last_task_#{nxt_action}"}
+                .labelTaskType.tasktype{class: "label#{nxt_action}"} 
+                  = nxt_action
+            .cb10
+            -if @deal.duration.present?
+              .fl.grey_act Duration:
+              = @deal.deal_duration
+              = @deal.deal_duration_type
+              .cb10
+            -if @deal.billing_type.present?
+              .fl.grey_act Billing Type:
+              =@deal.billing_type
+
+              .cb10
+            - if @deal.payment_status.present? && @deal.deal_status.present? && @deal.deal_status.original_id == 4
+              .fl.grey_act Payment Status:
+              =@deal.payment_status
+              .cb10
+            - if @deal.referrer.present?
+              .fl.grey_act Referrer:
+              %a{href:@deal.referrer, target:"_blank"}
+                = @deal.referrer
+              .cb10              
+            - if @deal.location_by_api.present? && !@deal.location_by_api.include?('PRIVATE NETWORK')
+              .fl.grey_act Location:
+              = @deal.location_by_api
+              - if !@deal.location_by_api.include?('IP: 127.0.0.1')
+                %a{href: "https://maps.google.com/maps?q=#{@deal.location_by_api}", target: "_blank"}
+                  %img{src: "https://maps.google.com/maps/api/staticmap?&size=246x112&sensor=true&maptype=terrain&markers=size:small|color:red|#{@deal.location_by_api}", style: "max-height:400px; max-width: 100%"}
+              .cb10
+          /.fl.grey_act Tags on the deal:
+          /.fl
+          /  - if @deal.tags.present?
+          /    -@deal.tags.split(',').each do |ta|
+          /      %a.tag_tech.fl{style: "margin-right:5px;position:relative;margin-top:2px"}
+          /        =ta
+          /        .caret_tag
+          /        
+          /  -else
+          /    %span{style: "position:relative"}
+          /      Not Avl.
+                
+          /.cb10      
+          /.fl.grey_act Source:
+          /.fl{style: "word-break: break-all;"}
+          /  - if @deal.deal_source.present? && @deal.deal_source.source.present? && @deal.deal_source.source.name.present?
+          /    - if @deal.deal_source.source.name.include?("http://")
+          /      %a{href: "#{@deal.deal_source.source.name}", rel: "tooltip", title: "#{@deal.deal_source.source.name}", target: "_blank"}
+          /        //=@deal.deal_source.source.name
+          /    -else
+          /      %a{href: "javascript:void(0)", rel: "tooltip", title: "#{@deal.deal_source.source.name}",style: "cursor:default;text-decoration:none;"}
+          /        //=@deal.deal_source.source.name
+          /  -else
+          /    Not Avl.
+          .cb10
+          - if @deal.comments.present?   
+            .fl.grey_act.note_heading{style: "cursor:pointer"}
+              Initial Note:
+              /%span.span1{style: "font-size: 27px;position: relative;top: 4px;color: #BA4A49;"} &#x2B;
+            /%br
+            /%div.morecomment.more
+            /  =@deal.comments.html_safe
+            /%br
+            .cb10
+        .col-md-2.p0.del_icons_res{style: "margin-top:0px;text-align:right"}
+          -@con = @deal.contact_email.present? ? @deal.contact_email : ""
+          -@con_id = @deal.contacts_id.present? ? @deal.contacts_id : ""
+          -@c_type =@deal.contact_type.present? ? @deal.contact_type : ""
+          - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+            =link_to "#", class: "grey_act", style: "text-decoration:none;color:#999999 !important",onclick: "$('#send-mail-popup').get(0).reset();$('#to').val('"+@con +"');$('#mailer_id').val('#{@deal.id}');$('#mailer_type').val('Deal');$('#email_contact_id').val('#{@con_id}');$('#email_contact_type').val('"+ @c_type +"');reset_email_err_msg();", href: 'javascript:', "data-toggle"=>"modal", "data-target"=>"#SendEmailModal" do
+              %span.glyphicon.glyphicon-envelope{title: "Send Email", rel: "tooltip"} 
+          - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+            =link_to "#", class: "grey_act", style: "text-decoration:none;color:#999999 !important", "data-toggle" => "modal", href: "#taskModal",onclick: "$('#task_form')[0].reset();setTimeout(\"$('#deal_title_task').val('#{@deal.title}');$('#hfield').val('#{@deal.id}');task_deal('#{@deal.id}')\",1000);$('#deal_title_task').attr('disabled', true);$('#clicked_button_ref').val('taskwidget');", "data-id" => @deal.id do
+              %span.glyphicon.glyphicon-tasks{title: "Add Task", rel: "tooltip"} 
+          - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+            =link_to edit_lead_url, style: "margin-left: 2%;text-decoration:none;background:none;color:#555555", class: "grey_act", :onclick=>"$('#editDealModal').modal('show');edit_deal_popup('#{@deal.id}')", :remote => true do
+              %span.glyphicon.glyphicon-pencil{title: "Edit", rel: "tooltip"}
+            -if (@deal.deal_status.present? && @deal.deal_status.original_id != 4)
+              - if @deal.created_by == @current_user.id || @current_user.is_admin? || @current_user.is_super_admin?
+                - deal_delete_url = @deal.is_remote? ? lead_path(@deal,:type=>'unassigned') : lead_path(@deal)
+                =link_to deal_delete_url, :method => :delete, :confirm => "Do you want to delete the lead?" ,class: "grey_act", style: "text-decoration:none" do
+                  %span.glyphicon.glyphicon-trash{title: "Delete", rel: "tooltip"}
+            /%a.grey_act.movedealincomepop{"data-toggle" => "modal", "data-target" => "#dealmoveModal", style: "text-decoration:none;cursor:pointer",rel: "popup", title: "Move Deal",onclick: "$('#move_deal').get(0).reset();$('.show_all').show();$('.deal_s_'+#{@deal.deal_status_id}).hide();$('#assigned_to_user').val(#{@deal.assigned_to});$('#new_initr_id').val(#{@deal.initiated_by});$('#new_assign_id').val(#{@deal.assigned_to});move_deal_status_wise(#{@deal.id},#{@deal.deal_status.original_id},#{@deal.is_current})", "data-id" => @deal.id}
+            / %span.glyphicon.glyphicon-fullscreen{title: "Move Deal", rel: "tooltip"}
+        .cb
+        - if @deal.comments.present?
+          .col-md-12.p0
+            %div.morecomment.more{:style=>"display:none;"}
+              = @deal.comments.html_safe
+        .cb
+        /.dtPagination.fr
+        /  .dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_bootstrap
+        /    .fl.page_gry{style:"margin:0 10px;"}
+        /      Deals   
+        /      %span 1
+        /      of 50
+        /    %ul.pagination{style:"margin:0px;"}
+        /      %li.prev.disabled
+        /        %a{href: "#", style: "padding:6px"}
+        /          .fl.page_prv
+        /      %li.next
+        /        %a{href: "#", style: "padding:6px"}
+        /         .fl.page_nxt 
+        .cb 
+      .col-md-12.p0
+        //- if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+        .con-box1.msg_ok{style: "min-height:50px;height:auto;"}
+          %h4#show_nt_deal_div{style: "margin-top:0px;cursor:pointer"}
+            %span.glyphicon.glyphicon-paperclip{style: "color:#4C5264;"}
+            Notes & Attachment
+          .form-group#deal_note_div{style: "display:none;margin-bottom: 0px;"}
+            - note = Note.new()
+            = form_for(note,:url=>"/add_notes", :remote=>true,:html=>{:class => "form",:method=>"post",:id=>"new-notes-popup",:multipart => true}) do |f|
+              = hidden_field_tag :notable_type, "Deal"
+              = hidden_field_tag :notable_id, @deal.id
+              = hidden_field_tag :remove_file_ids
+              %label.col-sm-1.control-label{style: "padding-left: 11px;padding-top: 11px;"}
+                .fl
+                  - if @current_user.image.present? && @current_user.image.image.present?
+                    = image_tag @current_user.image.image.url(:thumb), :alt=>"",:class=> "profile-circle fl"
+                  - else
+                    = image_tag "no_user30.png", :alt=>"dummy user",:class=>"profile-circle"
+              .col-sm-11{style: "padding:0"}
+                =hidden_field_tag "hidden_note","",name: "note[notes]"
+                =f.text_area :notes, :required => true ,name:"not", :class=> "form-control",:style =>"height:50px;width:660px;background:#fcfcfc;padding-right:40px;", :onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", placeholder: "Write something"
+              
+                /%a{href: "javascript:void(0)"}
+                /  %span.glyphicon.glyphicon-paperclip.file_cus.upload{style: "width:3%;"}
+                /    =f.file_field :attachment,:multiple=> true,:class=>"form-control btn-metis-7 btn-file btn_upload",:style=>"margin-top: -26px;width: 5%;cursor:pointer", :onchange => "set_required_for_file_descrption(this)"
+                =hidden_field_tag "note_from_deal", true
+                =hidden_field_tag "temp_file_ids"
+                #fileuploader
+                  Upload
+                .cb
+                #show_file_name{style: "background: #f1f5fa;padding: 10px;width: 65%;margin: 5px;display:none"}
+                %br
+                %button.btn.btn-primary{type: "submit", disable_with: "Please wait...", id: "notes_submit_btn",onclick: "getd('hidden_note');"} Add Note
+                %button.btn.btn-default{type: "button",onclick: "remove_note();"} Cancel
+                
+          .cb
+      .cb
+      .con-box1{style: "padding:10px 0"}
+        .fl.ic_act_stm{style: "margin-left:10px"}
+        .fl.head_font Activity Stream
+        #time_line_id.cmn_cl
+          %div{style: "text-align:center;padding-top: 60px"}
+            %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}
+        .cb10
+        /.navbar-right{style: "margin-right:10px"}
+        /  .fl.ic_act_stm
+        /  .fl.v_more
+        /    %a{href: "#"} View more
+        .cb
+
+    .col-md-4
+      #deal_detail_contacts_div
+        %div{:class=>"loader_img",:id=>"show_loader",:style=>"width:100%;text-align:center;display:block;vertical-align:middle;margin: 50px 0px 50px 0px;"}
+          %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}       
+      .cb
+      .con-box1{ class: "task_widget_#{@deal.id}"}
+        .fl.ic_t_list
+        .fl.head_font Task List
+        - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+          .fr
+            %a{"data-toggle" => "modal", href: "#taskModal",onclick: "$('#task_form')[0].reset();setTimeout(\"$('#deal_title_task').val('#{@deal.title}');$('#hfield').val('#{@deal.id}');task_deal('#{@deal.id}')\",1000);$('#deal_title_task').attr('disabled', true);$('#clicked_button_ref').val('taskwidget');", "data-id" => @deal.id,rel: "tooltip", title: "Add a task"} 
+              %button.btn.btn_adcon.btn-default{type: "button", style:"margin:0"}
+                %i.add_u_task{:style=>"margin-right: 2px;margin-left: -18px;"}
+                Add Task			
+        .cb10
+        %input{:type=>"hidden", :id=>"deal_id" ,:value=>@deal.id}
+        #task_header.task_dealdtl
+          =render :partial=>"deals/widget_task_header" ,:objects=>{deal: @deal}
+        .cb10
+        
+        
+      .cb
+      .con-box1{style: "min-height: 90px;"}
+        .fl
+          %h4{style: "margin-top: 2px;margin-bottom: -5px;"}
+            %span.glyphicon.glyphicon-paperclip
+        .fl.head_font Files
+        .cb10
+        #notes_attach{style: "line-height: 0.1;"}
+          %div{style: "text-align:center;padding-top: 6px"}
+            %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}        
+        .cb10     
+        
+        
+  = render :partial => "shared/move_deal",:cache=> true      
+#showVisited.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1","data-replace"=>"true"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+        %h4.modal-title Visitor Path
+      .modal-body.visitoverflow
+        .row
+          .form-group.col-md-6
+            Page
+        .row
+          .form-group.col-md-12
+            - i=0
+            %table.table.table-striped
+              - if @deal_org.visited.present?
+                - @deal_org.visited.split(',').each do |visit|
+                  %tr{:height=>"30px"}
+                    %td
+                      = i += 1
+                    %td{:width => "10px"}
+                    %td
+                      = visit
+              
+        .modal-footer
+          .pull-left
+            /%button.btn.btn-primary{type: "submit",id: "add_con","data-disable-with" => "Saving...", onclick: "return chk_con_id();"} Save  
+            %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+              %span.c_links
+                Close
+
+#addCon.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+
+      = form_tag(add_contact_path,:id=>"associate_con", :remote => true) do |f|
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+          %h4.modal-title Add Contact
+        .modal-body
+          .row 
+            .form-group.col-md-6
+              =text_field_tag :first_name,"",:class=>"col-md-12 form-control typeahead",:onkeypress=>"clear_value()", "data-provide"=> "typeahead" , :autocomplete=>"off", :required => true, :placeholder => "Contact"
+              %div{id: "show_er",class: "error",style: "display:none;"}
+              =hidden_field_tag 'contactable_id'
+              =hidden_field_tag 'contactable_type'
+              =hidden_field_tag "deal_id","#{params[:id]}"
+              //%input{:type=>"hidden",:id=>"extension_contact_popup",:name=> "extension_contact_popup"}
+            .form-group.col-md-6
+              %input#email.inp_txt{name: "email", class: "form-control",type: "email", value: "", required: "true", placeholder: "Email"}/
+              %div{id: "show_er_deal_em",class: "error",style: "display:none;"}
+          .row
+            .form-group.col-md-6
+              =text_field_tag "company_value", "",:size=>"32" ,:class=>"col-md-12 form-control company_value_typeahead", "data-provide"=> "typeahead", :id=>"comp_name", :autocomplete=>"off", :placeholder => "Company name",onkeypress:"$('#comp_id').val('')",onkeyup:"$('#text_loader').show()"
+              =hidden_field_tag "comp_id"
+            .form-group.col-md-6
+              = time_zone_select :time_zone, "contact", ActiveSupport::TimeZone.us_zones,{}, {:class=>"col-md-12 form-control", :default=> @current_user.time_zone}
+          .row
+            .form-group.col-md-6
+              - @coun = Country.find(:all)
+              = select_tag "country", options_from_collection_for_select(@coun, "id", "name"), :prompt => "- Country -", :class => 'form-control', :required => true, :onchange => "prefill_extension(this.value,'extension_for_contact_deal','extension_contact_popup')"
+            .form-group.col-md-6 
+              .input-group
+                %span.input-group-addon#extension_for_contact_deal +1
+                = text_field_tag :work_phone,"", :id=>"work_phone",:value=>"", :class => "form-control bfh-phone","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :required => true
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit",id: "add_con","data-disable-with" => "Saving...", onclick: "return chk_con_id();"} Save  
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+                  
+#dealmoveshow.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content{style: "padding: 10px;"}
+      -@deal= DealMove.new
+      = form_for(@deal,:url=>move_lead_path, :remote => true,  :html=>{:class => "form",:method=>"post",:id=>"move_deal_stage"}) do |f|
+        .modal-header{style: "padding: 5px;"}
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+          %h4.modal-title Change Deal Stage
+        .modal-body{style: "padding: 5px;"}
+          .row#user_change_stage 
+            .form-group.col-md-6{style: "line-height:3" }
+              %label
+                Assigned User
+                = select_tag "assigned_to_user", options_for_select(all_org_users.collect {|c| [ c.full_name, c.id ]}), :prompt => '- Users -',:class=>"col-md-3 form-control", :required => true
+          .cb
+            .form-group
+              %label
+                Note
+              =f.text_area :note ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "80"}, :style=> "resize: none;",:rows=>"3", :id =>"add_note" 
+          .cb
+             
+          %input{:type=>"hidden",:name=>"deal_id",:value=>"",:id=>"deal_id_show"}
+          = f.hidden_field :deal_status
+          //%input{:type=>"hidden",:id=>"extension_contact_popup",:name=> "extension_contact_popup"}
+        
+          
+        .modal-footer{style: "margin-bottom:15px"}
+          .pull-left
+            %button.btn.btn-primary{type: "submit",id: "add_con","data-disable-with" => "Saving...", onclick: "return chk_con_id();"} Save  
+            %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+              %span.c_links
+                Cancel
+=hidden_field_tag 'deal_show', 'dealshow'
+:javascript
+  //$(document).ready(function() {
+  //  $('#note_notes').wysiwyg({
+  //  rmUnusedControls: true,
+  //  controls: {
+  //      bold: { visible : true },
+  //      underline: { visible: true },
+  //      italic: { visible: true },
+  //      insertOrderedList: { visible: true },
+  //      insertUnorderedList: { visible: true }
+  //      
+  //  }
+  //  });
+  //});
+  $(document).ready(function() {
+    initial_more_link();
+    
+    $('#addCon').on('show.bs.modal', function (e) {      
+      $("#comp_name").val("").prop("readonly",false).removeAttr("disabled");
+    });
+    $("#comp_name").prop("readonly",false);
+    if(history.length > 1){
+      $('#hide_back').show();
+    }
+     else{
+      $('#reset_height').addClass("cb10");
+      $('#hide_back').hide();
+     }
+  
+      reload_deal_contacts();
+     
+      $.ajax({
+        type: "GET",
+        url: "/lead_files",
+        data: {dealid: $("#deal_id").val()},
+        async: true,
+        beforeSend: function(){
+          //$("#task_loader").show();
+        },
+        success: function(data)
+        {
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          $("#notes_attach").html(data.responseText);
+        }
+      });
+      $('a.lead_asgn_to').editable({
+        url: '/change_assigned_to',    
+        pk: 1,
+        type: 'select',
+        source: '/get_user_list_lead?from=deal_detail',
+        title: 'Select User',   
+        data: {custom: 'Select User'}, 
+        validate: function(value) {
+          if($.trim(value) == '')
+            return 'Please select user';
+        },
+        success: function(response, newValue) {
+           $("#last_touch_div").html("less than a minute ago")
+           timeout_trigger();
+        }
+      });
+   });
+   function initial_more_link(){
+    var showChar = 200;
+    var ellipsestext = "...";
+    var moretext = "more";
+    var lesstext = "less";
+    $('.more').each(function() {
+        $('.morecomment').show();
+        var content = $(this).html();
+        if(content.length > showChar) {
+            var c = content.substr(0, showChar);
+            var h = content.substr(showChar, content.length - showChar);
+            var html = c + '<span class="moreellipses">' + ellipsestext+ '&nbsp;</span><span class="morecontent"><span>' + h + '</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
+            $(this).html(html);
+        }
+    });
+  
+    $(".morelink").click(function(){
+        if($(this).hasClass("less")) {
+            $(this).removeClass("less");
+            $(this).html(moretext);
+        } else {
+            $(this).addClass("less");
+            $(this).html(lesstext);
+        }
+        $(this).parent().prev().toggle();
+        $(this).prev().toggle();
+        return false;
+    });
+   }  
+   Array.prototype.removeByValue = function(val) {
+      for(var i=0; i<this.length; i++) {
+          if(this[i] == val) {
+              this.splice(i, 1);
+              break;
+          }
+      }
+  } 
+  function store_cookie(tag,url)
+  {
+    document.cookie="tag="+tag+";path=/";
+    window.location.href = url;
+  }
+  
+  function clear_value(){
+    $('#contactable_id').val('');
+    $('#time_zone_contact').val('Hawaii');
+    $('#work_phone').val('');
+    $('#email').val('');
+    $('#country').val('');
+    $('#extension_for_contact_deal').html('+1');
+    $('#comp_name').val('').prop('readonly',false).removeAttr('disabled');
+    $('#show_er').html('');
+   }
+   function remove_note()
+   {
+    $('#note_notes').val('');
+    $("#deal_note_div").hide('slow');
+    $("#show_file_name").hide();
+    $(".ajax-file-upload-statusbar").remove();
+    $("#temp_file_ids").val("");
+   }
+   function reload_deal_contacts(){     
+      $.ajax({
+        type: "GET",
+        url: "/lead_detail_contacts",
+        data: {dealid: $("#deal_id").val()},
+        async: true,
+        beforeSend: function(){
+          //$("#task_loader").show();
+        },
+        success: function(data)
+        {
+          //$("#task_loader").hide();
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          $("#deal_detail_contacts_div").html(data.responseText);
+          $("#task_loader").hide();
+        }
+      });
+   }
+  $("#first_name").keypress(function() {
+  $('#first_name').addClass('loadinggif');
+   setTimeout(hideascontactload, 510);
+  });
+  
+  function reload_task_widget(){
+  
+    $.ajax({
+        type: "POST",
+        url: "/task_widget_reload",
+        dataType: 'json',
+        data: {deal_id: $("#deal_id").val()},
+        async: true,
+        beforeSend: function(){
+          $("#ajax-loader_task").show();
+		  
+        },
+        success: function(data)
+        {
+          
+         $("#ajax-loader_task").hide();
+        },
+        error: function(data) {
+          $("#ajax-loader_task").hide();
+        },
+        complete: function(data) {
+          
+          $("#task_header").html(data.responseText);
+          $("#ajax-loader_task").hide();
+          timeout_trigger();
+        }
+    });
+  
+  
+  }
+  function hideascontactload()
+  {
+    $('#first_name').removeClass('loadinggif');
+  }
+   $('#show_nt_deal_div').click(function () {
+     $('#deal_note_div').slideToggle('slow');
+   });
+  //$('.detail_note').hide();
+  $('.note_heading').click(function () {
+      $(this).parent().find('.detail_note').slideToggle();
+      if($(this).find('.span1').attr('id') == 'yes') {
+          $(this).find('.span1').attr('id', '').html('&#x2B;');
+      } else {
+          $(this).find('.span1').attr('id', 'yes').html('&#x96;');
+      }
+    });    
+  function getd(id){
+    $('#'+id).val($('textarea').val().replace(/\n/g, "<br />"));
+  }
+  $( window ).load(function() {
+    timeout_trigger();
+    $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+  });
+  //setTimeout('timeout_trigger()', 1000);
+  function timeout_trigger(){
+    deal_id = $('#deal_id_timeout').val();
+    $.get( "/fetch_activity?id="+deal_id, function( data ) {
+      $( "#time_line_id" ).html( data );
+    });
+  }
+  function chk_con_id()
+  {
+   var con_id = $("#contactable_id").val();
+   var name = $("#first_name").val();
+   var email = $("#email").val();
+   var deal_contacts_id = $("#deal_contacts_id").val();
+   var trainindIdArray = deal_contacts_id.split(',');
+   if(con_id != ""){
+   for(i = 0; i< trainindIdArray.length; i++){
+     if(trainindIdArray[i] == con_id) {
+       $("#show_er").show();
+       $("#show_er").html('Contact is already associated.');
+       return false
+     }
+     else
+     {
+      $("#show_er").show();
+     }
+   }
+   }
+   var atpos=email.indexOf("@");
+   var dotpos=email.lastIndexOf(".");
+   if (email != '' && (atpos<1 || dotpos<atpos+2 || dotpos+2>=email.length))
+  {
+   $("#show_er_deal_em").show();
+   $("#show_er_deal_em").html('Please enter a valid email address.');
+   return false;
+  }
+  else
+  {
+    $("#show_er_deal_em").hide();
+  }
+
+   //if(name != "" && con_id == "")
+   //{
+    //$("#show_er").html('Contact not found.');
+    //return false
+   //}
+   //else
+   //{
+    //$("#show_er").html('');
+   //}
+  }
+  $('#first_name.typeahead').typeahead([{
+    name: 'contacts',
+    valueKey: 'name',
+    remote: {url: '/get_contacts/'+ #{@current_user.organization_id}+ '?q=%QUERY'},
+    template: "<p style='word-wrap: break-word;'><strong>{{name}}</strong> - {{email}}</p>",
+    engine: Hogan
+    }]).on('typeahead:selected',onSelected).on('typeahead:opened',onOpened);
+  function onSelected($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    //    var hfield = document.getElementById('hfield');
+    var email = document.getElementById('email');
+    var country = document.getElementById('country');
+    var workphone = document.getElementById('work_phone');
+    var comp_name = document.getElementById('comp_name');
+    var time_zone = document.getElementById('time_zone_contact');
+    if((datum.company_type == "IndividualContact" && datum.company_name != "") || datum.company_type == "CompanyContact")
+    {
+      comp_name.value = datum.comp_name;
+      $("#comp_name").prop("readonly",true).prop("disabled",true);
+    }
+   console.log(datum.id);
+    //    hfield.value = datum.id;
+    $("#contactable_id").val(datum.id);
+    $("#contactable_type").val(datum.company_type);
+    email.value = datum.email;
+    country.value=datum.country_id;
+    workphone.value = datum.phone_no;
+    time_zone.value = datum.time_zone;
+    $("#country").trigger("change");
+  }
+  function onOpened($e){
+  //$("#contactable_id").val("")
+  console.log('Opned');
+  }
+  function hide_box()
+  {
+   $("#note_notes").animate({height:'40px'});
+   $(".other_note_fields").hide(400);
+   $(".btn_upload").hide(400);
+   $(".file_des").hide(400);
+   $(".sav_btn").hide(400);
+  }
+  $('textarea').focus(function(){
+      //$(this).animate({height:'100px'});
+      //$(".other_note_fields").show(400);
+      //$(".sav_btn").show(400);
+  });
+  
+  //$('#upld_file').click(function(){
+      //$(this).animate({height:'17px'});
+      //$(".btn_upload").show(400);
+      //$(".file_des").show(400);
+  //});
+  $('.company_value_typeahead').typeahead([{
+    name: 'company_contacts',
+    valueKey: 'company_name',
+    remote: {url: '/get_companies/'+ #{current_user.organization.id}+ '?q=%QUERY'},
+    template: '<p><strong>{{company_name}}</strong></p>',
+    engine: Hogan
+    }]).on('typeahead:selected',onSelectedCompTask).on('typeahead:opened',onCompOpened);
+   
+  function onSelectedCompTask($e,datum){
+    var hfield = document.getElementById('comp_id');
+    var ctime_zone = document.getElementById('time_zone_contact');
+    hfield.value = datum.id;
+    ctime_zone.value = datum.time_zone;
+  }
+  function onCompOpened($e){
+    //$("#comp_id").val("")
+  }
+  
+  
+  function onCompClosed($e){
+    //$("#comp_id").val("");
+  }  
+  $('textarea').blur(function(){
+     // var note_val = $("#note_notes").val();
+     //if(note_val == "")
+     //$(this).animate({height:'40px'});
+  }); 
+  function task_deal(deal_id)
+  {
+  $("#task_taskable_type").val('Deal');
+  $("#task_taskable_id").val(deal_id);
+  }
+  function move_deal_status_wise(deal_id,status,is_current)
+  {
+    $("#deal_move_note").val('');
+    $("#deal_id_move").val(deal_id);
+    if(status == 1 || status == 3 || status == 6)
+    {
+      $("#incoming_move").show();
+      $("#pipeline_move").hide();
+    }
+    else
+    {
+      $("#incoming_move").hide();
+      $("#pipeline_move").show();
+    }
+    if(is_current == true)
+    {
+      $("#deal_move_is_current").attr("checked", true);
+    }
+    else
+    {
+      $("#deal_move_is_current").attr("checked", false);
+    }
+  }
+
+  /*auto expandable textarea */
+  var txt = $('#note_notes'),
+      hiddenDiv = $(document.createElement('div')),
+      content = null;
+  
+  txt.addClass('txtstuff');
+  hiddenDiv.addClass('hiddendiv common');
+  
+  $('body').append(hiddenDiv);
+  
+  txt.on('keyup', function () {
+  
+      content = $(this).val();
+  
+      content = content.replace(/\n/g, '<br>');
+      hiddenDiv.html(content + '<br class="lbr">');
+  
+      $(this).css('height', hiddenDiv.height()+20);
+  
+  });
+
+  function change_stage(user, deal, name,obj){
+   if(obj == 4){$('select#assigned_to_user').val($("#deal_assignid").val());$("#user_change_stage").hide();}
+   else if(obj == 5){$('select#assigned_to_user').val("#{@current_user.id}");$("#user_change_stage").hide();}
+   else{
+     if(obj == 6)
+    {
+      $('select#assigned_to_user').val("#{@current_user.id}");
+     }else{$('select#assigned_to_user').val($("#deal_assignid").val());}
+     $("#user_change_stage").show();
+    }
+    if(obj == 3 || obj == 5 || obj == 6){
+      $('#add_note').attr('required',true);
+     }else{$('#add_note').attr('required',false);}
+   var asg_id = $("#deal_assignid").val();
+   $("#dealmoveshow").modal('show');
+   $("#deal_id_show").val(deal);
+   $("#deal_move_deal_status").val(user);
+  } 
+ 
+  function change_assign(user, deal,name){
+   
+   $("#deal_assignid").val(user)
+   $("#chng_asgn").html('<img src= "/assets/loading.gif"/><span class="caret"></span>');
+   var posturl= "/reassign_user_to_deals";
+    var qstring= "?reassign_deal_ids="+deal+"&reassigned_to="+user;
+    $.ajax( {
+      type: "POST",
+      url: posturl + qstring,
+      success: function(result) {
+        //window.location.reload();
+        //alert(result);
+        $("#chng_asgn").delay(1000).html(name + '<span class="caret"></span>');
+      }
+    });
+ 
+  }
+  function edit_deal_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/edit_lead",
+      dataType: 'json',
+      async: true,
+      data: {id:id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#edit_deal").html(data.responseText);
+        $("#task_loader").hide();
+      }
+    });
+  }
+  
+  $('#associate_con').bind('ajax:complete', function(evt, data, status, xhr){
+    $("#addCon").modal('hide');
+    $("#show_loader").show();
+    reload_deal_contacts();
+    $("#show_loader").hide();
+    $(document).trigger("add-alerts", [{'message': data.responseText ,'priority': 'success'}]);
+  });
+  function delete_contact(id){
+    if(confirm("Do you want to delete the contact?")){
+      $.ajax({
+        type: "DELETE",
+        url: "/delete_lead_con",
+        dataType: 'json',
+        async: true,
+        data: {id:id},
+        beforeSend: function(){
+          $("#show_loader").show();
+        },
+        success: function(data)
+        {
+          //$("#task_loader").hdie();
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          $("#show_loader").show();
+          reload_deal_contacts();
+          $("#show_loader").hide();
+          $(document).trigger("add-alerts", [{'message': "Contact has been deleted successfully." ,'priority': 'success'}]);
+        }
+      });
+    } else {
+        return false;
+    }
+  }
+  $('#move_deal_stage').bind('ajax:complete', function(evt, data, status, xhr){
+    $("#dealmoveshow").modal('hide');
+    if(data.responseJSON.deal_org_id == 4)
+     $("a#chng_stg").html(data.responseJSON.stag_name).removeAttr("href").removeAttr("class").removeAttr("data-toggle").css({	"color":"green",	"text-decoration":"none"});
+    else
+      $("a#chng_stg").html(data.responseJSON.stag_name + '<span class="caret"></span>');
+    $("#last_touch_div").text(data.responseJSON.last_touch);    
+    $('.lead_asgn_to').text(data.responseJSON.assigned_user).attr("data-value", data.responseJSON.assigned_user_id);
+    $("#last_touch_div").html("less than a minute ago")
+    timeout_trigger();
+    //reload_task_widget();
+    $(document).trigger("add-alerts", [{'message': data.responseJSON.msg ,'priority': 'success'}]);
+  });

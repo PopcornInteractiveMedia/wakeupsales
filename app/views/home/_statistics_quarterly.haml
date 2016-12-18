@@ -1,0 +1,114 @@
+.fl.ic_stats{style: "margin:10px 0 0 10px;"}
+.fl.head_font{style: "padding:10px 0 0 0px;"}
+  Statistics &nbsp;
+  %span{style: "font-size:12px"}
+    =  @start_date.strftime("%B %d")
+    &#45;
+    =  @end_date.strftime("%B %d")
+.cb10
+
+.body.collapse.in{style: "height:auto;"}
+  .col-md-12.count_nav_block.p10.bggry
+    .col-md-4.p0
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #78808B;"
+        .well.well-sm{style: st}
+          %p
+            Average (days)
+          %p{class: span_cls}
+            %b.fnt30 
+              = @salescycle.present? ? @salescycle.first.average : "NA"
+      .cb
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #78808B;"
+        .well.well-sm{style: st}
+          %p
+            Shortest (days)
+          %p{class: span_cls}
+            %b.fnt30 
+              = @salescycle.present? ? @salescycle.first.shortest : "NA"
+      .cb
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #78808B;"
+        .well.well-sm{style: st}
+          %p
+            Longest (days)
+          %p{class: span_cls}            
+            %b.fnt30 
+              = @salescycle.present? ? @salescycle.first.longest : "NA"
+    .col-md-8.p0
+      - if @salescycle.present?
+        .fl
+          %ul{style: "list-style:none"}
+            - if @ratio_salescycle != 0.0   
+              %li
+                %br
+                %b.fnt30
+                  = @ratio_salescycle.to_i 
+                  &#37;
+                %br
+                of sales reps are closing deals faster than you.                  
+            %li
+              %br
+              %br
+              %br
+              The average close time for all reps this quarter is
+              %br
+              %b.fnt30
+                = @avg_days_for_all_deal.to_i 
+                day(s).
+
+    .cb10
+  .col-md-12.count_nav_block.p10
+    .col-md-4.p0
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #468848 !important;border: 1px solid #468848;"
+        .well.g1.well-sm{style: st}
+          %p
+            Total
+          %p{class: span_cls}
+            %b.fnt30.g1 
+              = @pportunity.present? ? @pportunity.first.total_deals : "NA"
+      .cb
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #FAA632 !important;border: 1px solid #FAA632;"
+        .well.y1.well-sm{style: st}
+          %p
+            Won
+          %p{class: span_cls}
+            %b.fnt30.y1 
+              = @pportunity.present? ? @pportunity.first.won_deals : "NA"
+      .cb
+      .col-md-12.p0
+        - span_cls = "span_blue"
+        - st = "border-bottom: 7px solid #B84A49 !important;border: 1px solid #B84A49;"
+        .well.r1.well-sm{style: st}
+          %p
+            Win Percentage
+          %p{class: span_cls}
+            %b.fnt30.r1 
+              - if @pportunity.present?
+                = @pportunity.first.win 
+                &#37;
+              - else
+                NA
+      .cb
+    .col-md-8.p0
+      - if @pportunity.present? && (!@ratio.nil? && !@ratio.blank?) && (@ratio != 0.0)
+        .fl{style: "margin-top: 2px;"}
+          %ul{style: "list-style:none"}
+            %li
+              %br
+              %br
+              %b.fnt30
+                = @ratio.to_i
+                &#37;
+                %br
+              of sales reps win deals at a better rate.
+              //of sales reps are closing deals faster than you.            
+  .cb

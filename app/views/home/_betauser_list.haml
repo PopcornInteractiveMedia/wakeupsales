@@ -1,0 +1,72 @@
+.col-md-12.p0
+  %div
+    %a{"data-toggle" => "modal", href: "#inviteBetaCon", class: "fl btn btn_adcon btn-default ",rel: "tooltip", title: "Invite Beta User", style: "margin:0px;"}
+      %i.add_con_icn
+      Invite Beta User
+    .navbar-right
+      %form{action: "#", method: "get"}
+      .input-group
+        %input#system-search.form-control{name: "q", placeholder: "Type to search...", style: "height: 30px;padding-right:20px"}
+        %span.glyphicon.glyphicon-search.fr{style: "margin-right:5px;top:-21px"}
+  .cb
+  .table-responsive
+    %table.table.table-list-search.table-striped.table-bordered
+      %thead
+        %tr
+          %th Serial
+          %th Email
+          %th Users
+          %th Active Users
+          %th Deals
+          %th Requested at
+          %th Verified
+          %th Registered
+          %th Actions
+          
+      %tbody
+        - if !@busers.nil? || !@busers.blank?
+          - i = 1
+          - @busers.each do |user|
+            %tr
+              %td 
+                = i 
+              %td 
+                = user.email
+              - if user.is_registered?
+                - org = Organization.find_by_email user.email
+                %td
+                  -if org.present? && org.users.count > 1
+                    = (org.users.count) if org.present? 
+                  -else
+                    0
+                %td
+                  -if org.present? && org.users.by_active.count > 1
+                    /= (org.users.by_active.count - 1) if org.present? 
+                    = (org.users.by_active.where("invitation_token IS ? ", nil).count ) if org.present? 
+                  -else
+                    0                  
+                  
+                %td
+                  = org.deals.count if org.present?
+              - else
+                %td
+                  NA
+                %td
+                  NA                
+                %td
+                  NA
+              %td 
+                = user.created_at.strftime("%m/%d/%Y")
+              %td 
+                = user.is_verified? ? "Y" : "N"
+              %td 
+                = user.is_registered? ? "Y" : "N"
+              %td 
+                - if user.is_approved?
+                  =link_to "/disapprove/#{user.id}", :confirm => "Do you want to disapprove the user?" ,style: "margin-left: 5px;", rel: "tooltip", title: "Disapprove" do
+                    Disapprove
+                - else 
+                  =link_to "/approve/#{user.id}", :confirm => "Do you want to approve the user?" ,style: "margin-left: 5px;", rel: "tooltip", title: "Approve" do
+                    Approve
+                
+            - i += 1

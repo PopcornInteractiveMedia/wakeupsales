@@ -1,0 +1,103 @@
+.mtop30
+  %h4 Email Notification 
+.table-responsive.mtop30            
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .row
+      %h4 Send me Email Notification
+      %hr
+      %table{:width=>"40%",:cellspacing=>"0",:cellpadding=>"0"}
+        %tr
+          %td Send me Due Tasks notification
+          %td
+            - if (current_user.email_notification.nil?) || (current_user.email_notification && current_user.email_notification.due_task ==  true)
+              = radio_button_tag :due_task, "true", :checked => 'true'
+              Yes
+              = radio_button_tag :due_task, "false"
+              No
+            - else
+              = radio_button_tag :due_task, "true"
+              Yes
+              = radio_button_tag :due_task, "false", :checked => 'true'
+              No	
+        %tr
+          %td Send me New Task Assigned notification
+          %td
+            - if (current_user.email_notification.nil?) || (current_user.email_notification && current_user.email_notification.task_assign ==  true)
+              = radio_button_tag :task_assign, "true", :checked => 'true'
+              Yes
+              = radio_button_tag :task_assign, "false"
+              No
+            - else
+              = radio_button_tag :task_assign, "true"
+              Yes
+              = radio_button_tag :task_assign, "false", :checked => 'true'
+              No		  
+        %tr
+          %td Send me New Deal Assigned notification
+          %td
+            - if (current_user.email_notification.nil?) || (current_user.email_notification && current_user.email_notification.deal_assign ==  true)
+              = radio_button_tag :deal_assign, "true", :checked => 'true'
+              Yes
+              = radio_button_tag :deal_assign, "false"
+              No
+            - else	  
+              = radio_button_tag :deal_assign, "true"
+              Yes
+              = radio_button_tag :deal_assign, "false", :checked => 'true'
+              No
+        %tr
+          %td Please donot send me any email notification
+          %td
+            - if (current_user.email_notification && current_user.email_notification.donot_send ==  true)
+              = radio_button_tag :donot_send, "true", :checked => 'true'
+              Yes
+              = radio_button_tag :donot_send, "false"
+              No
+            - else	  
+              = radio_button_tag :donot_send, "true"
+              Yes
+              = radio_button_tag :donot_send, "false", :checked => 'true'
+              No
+      %hr/
+      %br
+      %br
+    .row
+      .col-md-12
+        %button.btn.btn-info{type: "button", id: "chart_submit_btn", onclick: "update_notification()"}
+          Save
+          
+      
+:javascript
+  function update_notification(){
+    //$('#chart_submit_btn').prop("disabled", true).html("Please wait...");
+    if($('#due_task_true').is(':checked'))
+      var tasks = 1;
+    else
+      var tasks = 0;   
+    if($('#deal_assign_true').is(':checked'))
+      var assigned_task = 1;
+    else
+      var assigned_task = 0;    
+    if($('#task_assign_true').is(':checked'))
+      var assigned_deal = 1;
+    else
+      var assigned_deal = 0;   
+    if($('#donot_send_true').is(':checked'))
+      var donot_send = 1;
+    else
+      var donot_send = 0;
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: "POST",
+      url: "settings/update_notification",
+      data: {tasks:tasks,task_assign:assigned_task,deal_assign:assigned_deal,donot_send:donot_send},
+      success: function(data){ 
+        $('#email_notification').html(data);  
+        $(document).trigger("add-alerts", [{'message': "Notification updated successfully.",'priority': 'info'}]);
+      },
+      error: function(data){
+        alert('got an error');
+      }
+    });  
+  }
+

@@ -1,0 +1,18 @@
+- form_tag :action => 'import', :id => @user do
+  %select{id: "from", name: "”from”"}
+    %option{value: ""} Select Id
+    %option{value: "gmail"} Gmail
+    %option{value: "yahoo"} Yahoo
+    %option{value: "hotmail"} Hotmail
+  %br/
+  %p
+    Please Enter Your Email Address Below :
+    %br/
+    %input{name: "login", type: "text"}/
+  %p
+    Enter Your Password :
+    %br/
+    %input{name: "password", type: "password"}/
+  %p
+  %h4 Note : we are not going to save your Password anywhere
+  %p= submit_tag 'Find Contacts'

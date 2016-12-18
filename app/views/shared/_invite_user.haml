@@ -1,0 +1,65 @@
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+/ Invite user popup starts
+#inviteuserModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} ×
+        %h4.modal-title invite a User
+      .modal-body
+        = form_for(User.new, :url => new_lead_path, :html=>{:class => "form"}) do |f|
+          .row
+            .form-group.col-md-6
+              %label
+                First Name
+                %font{color: "red", size: "2"} *
+              =f.text_field :first_name, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "20"}
+            .form-group.col-md-6
+              %label 
+                Last Name
+                %font{color: "red", size: "2"} *
+              =f.text_field :last_name, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "20"}
+          .row
+            .form-group.col-md-6
+              %label
+                Email
+                %font{color: "red", size: "2"} *
+              =f.text_field :email, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "50"}
+            .form-group.col-md-6    
+              %label 
+                Work Phone
+                %font{color: "red", size: "2"} *
+              .input-group
+                %span.input-group-addon +1
+                /=f.text_field :work_phone,:class=>"col-md-12 form-control bfh-phone",:type=>"phone","data-format"=>"(ddd) ddd-dddd","data-number"=>"15555555555",:placeholder=>"(999) 999 9999", :required => true
+          .row
+            .form-group.col-md-6
+              %label Time Zone
+              /= f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, { :class => 'form-control' }, :required => true
+              /= f.select "admin_type", options_from_collection_for_select(current_user.organization.roles.all, "id","name"), { :include_blank=>true }
+            .form-group.col-md-6
+              %label 
+                User Group
+                %font{color: "red", size: "2"} *
+              .radio
+                %label
+                  =f.radio_button :admin_type, "2", :checked => true, :onclick => "$('#show_dropdown').hide();"
+                  Admin
+              .radio
+                %label
+                  =f.radio_button :admin_type, "3", :onclick => "$('#show_dropdown').show();"
+                  Non-Admin
+                  %span#show_dropdown{style: "display:block"}
+                    /=f.fields_for user_role do |r|
+                    /  = r.select :role_id, options_from_collection_for_select(current_user.organization.roles.all, "id","name"), { :class => 'form-control' }
+          .modal-footer
+            /%button.btn.btn-default{"data-dismiss" => "modal", type: "button"} Close
+            =f.submit "Invite User", :class=>"btn.btn-primary"
+:javascript
+  $(window).on('load', function () {
+    $('form input[type="text"].bfh-phone, form input[type="phone"].bfh-phone, span.bfh-phone').each(function () {
+      var $phone = $(this);
+      $phone.bfhphone($phone.data());
+    });
+    $("#user_time_zone").addClass("col-md-12 form-control");
+  });

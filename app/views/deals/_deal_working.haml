@@ -1,0 +1,276 @@
+#deallist.col-md-12.deallist
+  .w-box.tab-pane.active.in.wbox-customize
+    %div.table-responsive
+      %table#dataTableWorking.table.table-condensed.table-hover.table-striped{:style=>"border-bottom: 1px solid #C3C3C3;width: 100% !important;", :cellspacing=>"0","data-source"=>leads_url(format: 'json',params: {cuser: current_user.id,_type: 'working',filtertype: params[:filtertype],filtervalue: params[:filtervalue]})}
+        %thead
+          %tr
+            %th.dropdown#deal_label_menu{style: "font-size:18px;color:#F59106;"}
+              %a#workingDropdown.dropdown-toggle{:href=>"javascript:","data-toggle" => "", :style=> "cursor:default;text-decoration:none;"}
+                #workingLabel.label_arrow
+                  %span.icon-chevron-down
+              %ul.dropdown-menu.custom-menu.fl{:style=>"right:auto;padding-left:5px;font-size: 11px;"}
+                -current_user.user_labels.all.each do |lbl|
+                  %li
+                    %input{:type=>"checkbox",:value=>lbl.id,:onclick=>"check_apply(this, 'working');"}
+                    =lbl.name
+                %li.divider
+                %li#working_applylabel_li{:onclick=>"addLabelToDeal(this);",:style=>"padding:5px 5px 0px 16px;cursor:pointer;display:none;"}
+                  Apply
+               
+                %li{"data-toggle" => "modal", href: "#labelModal", rel: "popup", title: "Add a Label",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+                  Add Label 
+                %li
+                  %a{:href=>"/settings/#user_label",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+                    Manage Label
+                %li.divider
+                %li{"data-toggle" => "modal", href: "#dealmoveModal", rel: "popup", title: "Add a Label",onclick: "$('.show_all').show();$('#assigned_to_user').val('');$('.deal_s_'+$('.working_chk_box_class').attr('deal_status')).hide()",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}     
+                  Move Deal
+            %th{style: "font-weight: normal !important;"}
+              Title
+            %th{style: "font-weight: normal !important;"}
+              Created
+            %th{style: "font-weight: normal !important;"}
+              Amount
+            %th{style: "font-weight: normal !important;"}
+              Contact
+            %th{style: "font-weight: normal !important;"}
+              Phone
+            %th{style: "font-weight: normal !important;"}
+              Email
+            %th{style: "font-weight: normal !important;"}
+              Priority
+            %th{style: "font-weight: normal !important;"}
+              Status
+            %th{style: "font-weight: normal !important;"}
+              Location
+        %tbody{:style=>"font-size:11px"}
+          
+            
+:javascript
+   
+  function metisTableWorking() {
+    "use strict";
+    $('#dataTableWorking').dataTable({
+      sPaginationType: "bootstrap",
+      bJQueryUI: true,
+      //bProcessing: true,
+      bServerSide: true,
+      "bStateSave": true,
+      aoColumns: [{sWidth: '10px'}, {sClass: 'col-md-3'}, {sClass: 'col-md-1'},{sClass: 'col-md-1'}, {sClass: 'col-md-2'}, {sClass: 'col-md-2'}, {sClass: 'col-md-3'},{sClass: 'col-prio'},{sClass: 'col-status'},{sClass: 'col-loc'}],
+      "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+      oLanguage: {sLengthMenu: '_MENU_'},
+      sAjaxSource: $('#dataTableWorking').data('source'),
+      aaSorting: [[0,'desc']],
+      aoColumnDefs: [
+        {
+        aTargets: [0],
+        bSortable: false,
+        mRender: function (data, type, row ) {
+                return "<input type='checkbox' value=" + row[0] +" deal_status=" + row[24] +" title='Check to add label' name='active_working_label_menu' class='working_chk_box_class' onclick='working_chk_box()'>";
+              }
+        },
+        {
+        aTargets: [1],
+        bSortable: true,
+        mRender: function(data, type, row ){
+            var str= "<div style='line-height: 20px;' class='dealrow' onmouseover='$(this).find(\"div.actions\").show();' onmouseout='$(this).find(\"div.actions\").hide();'> \
+            <div id='deal_popup_menu'> \
+              <a style='cursor:pointer;text-decoration:none;font-size:16px;' href='/leads/" + row[0] + "'> \
+                "+row[1] +"\
+              </a> \
+            </div> \
+            <div style='color:#201E1E' class='fl'> \
+                <i class='icon-time' title='Last activity'></i> \
+                " + row[2] +"\
+                <br class='cb'> \
+                <i class='icon-user' title='Assigned to'></i> \
+                " + row[3] + " \
+                <div> \
+                  "+ showlabelicons(row[5],'working')+"\
+                </div> \
+              </div> \
+                <div class='dealspopupmenu fr'>"
+                if(row[18]=="true"){
+                str+="<div style='display: none;' class='actions dropdown fr'> \
+                  <span style='cursor:pointer;text-decoration:none;color:darkOrange;' href='javascript:' data-toggle='dropdown' class='btn-sm btn-circle dropdown-toggle'> \
+                    <button type='button' class='btn btn-warning btn-xs'><span class='icon-cog icon-1x'></span></button>\
+                  </span> \
+                  <ul class='dropdown-menu'> \
+                    <li> \
+                      <a rel='tooltip' onclick=\"$('#task_form')[0].reset();task_deal(" + row[0] + ");$('#hfield').val('"+ row[0] +"');$('#deal_title').val('"+ row[1] +"').prop('disabled', true);$('#email_err').html('');\" href='#taskModal' data-toggle='modal' data-id='" + row[0] + "'>Add Task</a> \
+                    </li> \
+                    <li> \
+                      <a onclick=\"$('#notable_id').val(" + row[0] + ");$('#notable_type').val('Deal');\" href='javascript:' data-toggle='modal' data-target='#noteModal'>Add Note</a> \
+                    </li> \
+                    <li> \
+                      <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8] +"');$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' data-toggle='modal' data-target='#SendEmailModal'>Send Email</a> \
+                    </li>\
+                    <li> \
+                      <a href='/leads/" + row[0] + "/edit'>Edit</a> \
+                    </li>"
+                    if(row[23] == "true"){
+                    str+="<li> \
+                      <a rel='nofollow' data-method='delete' data-confirm='Are you sure?' href='/leads/" + row[0] + "'>Delete</a> \
+                    </li>";
+                    }
+                    str+="<li> \
+                      <a title='Move Deal' rel='popup'  onclick=\"$('.show_all').show();$('.deal_s_"+ row[24] +"').hide();$('#assigned_to_user').val(" + row[21] + ");$('#new_initr_id').val(" + row[22] + ");$('#new_assign_id').val(" + row[21] + ");move_work_deal(" + row[0] + ");reset_pop();\" href='#dealmoveModal' data-toggle='modal' data-id='" + row[0] + "' class='movedealincomepop'> \
+                        Move Deal \
+                      </a> \
+                    </li>\
+                    <li> \
+                      \
+                    </li> \
+                  </ul> \
+                </div>";
+                }
+                str+="</div>\
+              <br> \
+            </div> \
+          </div>"; 
+            return str;
+            }
+        },
+           {aTargets: [2],
+          bSortable: true,
+          mRender: function(data, type, row ){
+            return row[16];
+            
+            }},
+        {aTargets: [3],
+          bSortable: true,
+          mRender: function(data, type, row ){
+            if(row[19] != ''){
+            return "<span style='font-size:15px;'>$"+row[19]+"</span>";
+            }
+            else{return ""}
+            }},
+        
+        {aTargets: [4],
+          bSortable: false,
+          mRender: function(data, type, row ){
+            return "<a href='/"+row[20]+"/"+row[17]+"' rel='tooltip' title='"+row[25]+"'>"+row[6]+"</a>";
+            
+            }},
+        {aTargets: [5],
+
+          bSortable: false,
+          mRender: function(data, type, row ){
+            if(row[7] != ''){
+            return "<i class='icon-phone'></i> " + row[7];
+            }
+            else{return ""}
+            }},
+        {aTargets: [6],
+          bSortable: false,
+
+          mRender: function(data, type, row ){
+            if(row[8] != ''){
+            if(row[8].length > 21)
+              var shrt_email = row[8].substring(0,21) + "..."
+            else
+              var shrt_email = row[8]
+            return "<i class='glyphicon glyphicon-envelope'></i> <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8]+"');$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' data-toggle='modal' data-target='#SendEmailModal' rel='tooltip' title='"+row[8]+"'>"+shrt_email+"</a>";
+            }
+            else{return ""}
+
+            }},
+        {aTargets: [7],
+
+          bSortable: true,
+          mRender: function(data, type, row ){
+            return "<a href='#' onclick='filterbypriority(\""+ row[10][1]+"\",\"working\")'><span class='btn btn-xs btn-sm "+ row[9]+"'>"+ row[10][0]+"</span></a>";
+            }},
+        {aTargets: [8],
+          bSortable: true,
+          mRender: function(data, type, row ){
+            return row[14];          
+            }},
+        {aTargets: [9],
+
+          bSortable: true,
+          mRender: function(data, type, row ){
+            
+              if((row[11] == '') && (row[13] == '')){
+              return row[12];
+              }
+              else if((row[11] == '') && (row[13] != '')){
+              return row[13] + ", " + row[12];
+              }
+              else if((row[11] != '') && (row[13] == '')){
+              return row[11] + ", " + row[12];
+              }
+              else{
+              return row[11] + ", " + row[13] + ", " + row[12];
+              }
+            
+            
+            }},
+
+      ],
+     fnDrawCallback: function() {
+                $('#task_loader').hide();
+                $("#working_div_val").val(1);
+                $('a[rel="tooltip"],i').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+                //$('#badge_working_on').html(this.fnSettings().fnRecordsDisplay())
+                $(".dealrow" ).hover(
+                  function() {
+                  div_open=$(this).find("div.open")
+                  $(div_open).removeClass("open")
+                  $(this).find("div.dealspopupmenu").show();
+                  }, function() {
+                  $(this).find("div.dealspopupmenu").hide();
+                });
+                $('.dealrow').mouseover(function (e) {
+                  e.stopPropagation();
+                  $('.actions', this).show();
+                });
+                $('.dealrow').mouseout(function (e) {
+                  e.stopPropagation();
+                  $('.actions', this).hide();
+                });    
+               
+            }
+    });
+    
+  }
+  //"sDom": "<'pull-right'l>t<'row'<'col-md-4'f><'col-md-4'p>>",
+  //"sDom": "<'row'<'pull-right'l><'pull-right'f>>t<'row'<'pull-right'p>>",
+  $(function() {
+    $('#task_loader').show();
+    //metisTableWorking();
+   
+  });
+  //$('.custom-menu').click(function(e) {
+     //e.stopPropagation();
+  //});
+ 
+  function working_chk_box(){
+    var $cbs = $('input[name="active_working_label_menu"]');
+    var total = 0;
+    $cbs.each(function() {
+        if (this.checked){
+            total ++;
+        }
+    });
+    if(total > 0){
+      $("#workingLabel").removeClass("label_arrow")
+      $("#workingLabel").addClass("label_arrow_active")
+      $("#workingDropdown").attr("data-toggle", "dropdown")
+    }else{
+      $("#workingLabel").addClass("label_arrow")
+      $("#workingLabel").removeClass("label_arrow_active")
+      $("#workingDropdown").removeAttr("data-toggle", "dropdown");
+      $(".DataTables_sort_wrapper").removeClass("open")
+    }
+  var checkboxes = document.getElementsByName('active_working_label_menu');
+  var vals = "";
+  for (var i=0, n=checkboxes.length;i<n;i++) {
+   if (checkboxes[i].checked) 
+   {
+    vals += checkboxes[i].value+ ","
+   }
+  }
+  $("#mass_deal_ids").val(vals)
+  };
+

@@ -1,0 +1,8 @@
+class CompanyContact < ActiveRecord::Base
+  belongs_to :organization
+  belongs_to :company_strength
+  
+  
+  attr_accessible :created_by, :email, :facebook_url, :first_name, :is_public, :last_name, :linkedin_url, :messanger_id, 
+              :messanger_type, :name, :twitter_url, :website,:organization,:company_strength_id
+end

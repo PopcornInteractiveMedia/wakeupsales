@@ -1,0 +1,1058 @@
+= javascript_include_tag "skypeCheck"
+
+=hidden_field_tag 'contact', 'contact'
+
+= javascript_include_tag "jquery.uploadfile.min"
+
+= stylesheet_link_tag "uploadfile.min"
+
+:css
+
+  span.upload {
+
+    overflow: hidden;
+
+  }
+
+
+
+  span.upload input {
+
+      display: block !important;
+
+      opacity: 0 !important;
+
+      overflow: hidden !important;
+
+  }
+
+  textarea {
+
+      color: #444;
+
+      padding: 5px;
+
+  }
+
+  
+
+  .txtstuff {
+
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+
+      overflow: hidden;
+
+      padding: 11px;
+
+  }
+
+  
+
+  .hiddendiv {
+
+      display: none;
+
+      white-space: pre-wrap;
+
+      word-wrap: break-word;
+
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+
+  }
+
+  
+
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+
+  /* these must be the same for both */
+
+  .common {
+
+      width: 500px;
+
+      min-height: 47px;
+
+
+
+      overflow: hidden;
+
+  }
+
+  
+
+  .lbr {
+
+      line-height: 3px;
+
+  }  
+
+  #note_notes-wysiwyg-iframe{width:833px !important;}
+
+-if params[:action] == "index"
+
+  #last_added 
+
+    %h3{style: "color: #8A8686;"} Last contact added
+
+.col-md-10.p0
+
+  .con-box1{style: "min-height:190px"}
+
+    .prof_det
+
+      .navbar-left.col-md-4{style: "padding:0"}
+
+        .fl.prf_img
+
+          - if  @contact.present? && @contact.image.present? && @contact.image.image.present?
+
+            - image_path = @contact.image.image.url(:thumb)
+
+            =image_tag image_path, class: "img-thumbnail", style: @contact.contact_status ? "" : "opacity:0.3"
+
+          - else
+
+            - cla = "without_img"
+
+            - if @contact.present? && @contact.is_company?
+
+              
+
+              .default-no-company{style: @contact.contact_status ? "" : "opacity:0.3"}
+
+
+
+            - elsif @contact.present? &&  @contact.is_individual?
+
+              
+
+
+
+              .default-no-user{style: @contact.contact_status ? "" : "opacity:0.3"}
+
+          
+
+          .cb10
+
+          - if @contact.present? && @contact.linkedin_url.present?
+
+            =link_to "//"+@contact.linkedin_url, target: "_blank" do
+
+              .fl.soc_links_lin{title: "#{@contact.linkedin_url}", rel: "tooltip"}
+
+          -else
+
+            .fl.soc_links_lin.n_active
+
+          - if @contact.present? && @contact.facebook_url.present?
+
+            =link_to "//"+@contact.facebook_url, target: "_blank" do
+
+
+
+              .fl.soc_links_fb{title: "#{@contact.facebook_url}", rel: "tooltip"}
+
+          -else
+
+            .fl.soc_links_fb.n_active
+
+          - if @contact.present? && @contact.twitter_url.present?
+
+            =link_to "//"+@contact.twitter_url, target: "_blank" do
+
+
+
+              .fl.soc_links_twt{title: "#{@contact.twitter_url}", rel: "tooltip"}
+
+          -else    
+
+            .fl.soc_links_twt.n_active          
+
+        .prof_addr.fl
+
+          %div{style: "width:200px"}
+            -if @contact.present?
+              =hidden_field_tag :cont_name_for_list, @contact.contact_name
+
+              =hidden_field_tag :cont_id_for_list, @contact.id
+
+            - if @contact.present? && @contact.is_company?
+
+              - contact_name = @contact.name
+
+            - else
+
+              - contact_name = @contact.full_name if @contact.present?
+
+            = contact_name
+
+            - if @contact.present? && @contact.is_individual? && @contact.position.present?
+
+              %span
+
+                (
+
+                = @contact.position
+
+                )
+
+          %div
+
+            /- if @contact.present? && @contact.is_individual? && @contact.company_contact.present? && @contact.company_contact.name.present?
+
+            /  = link_to @contact.company_contact.name, "/company_contact/"+@contact.company_contact.id.to_s
+
+          .cb10
+
+          %div
+
+            - edit_contact_url="#"
+
+            - if @contact.present? && @contact.is_company?
+
+              - edit_contact_url= "/edit_company_contact/#{@contact.id}"
+
+            - elsif @contact.present? && @contact.is_individual?
+
+              - edit_contact_url= "/edit_individual_contact/#{@contact.id}"
+
+            - if (@contact.present? && @contact.contact_status && ((@contact.is_public?) || ((@contact.created_by == current_user.id) || (current_user.is_admin?))))
+
+              =link_to edit_contact_url, style: "margin-left: 2%;text-decoration:none;background:none;color:#555555", class: "grey_act" do
+
+                %span.glyphicon.glyphicon-pencil{style:"color:#555", title: "Edit", rel: "tooltip"}
+
+
+
+            - if @contact.present? && (current_user.is_admin? || current_user.is_super_admin? || @contact.created_by == current_user.id)
+
+              -if @contact.contact_status
+
+                = link_to "/contacts/change_status/#{@contact.id}?status=enable&ctype=#{@contact.class.name}", :method => :post, :confirm => "Do you want to disable the contact?" ,style: "margin-left: 5px;background:none;text-decoration:none;color:#555555" , class: "grey_act" do
+
+                  %span.glyphicon.glyphicon-ban-circle{style:"color:#555", rel: "tooltip", title: "Disable"}
+
+              -else
+
+                = link_to "/contacts/change_status/#{@contact.id}?status=disable&ctype=#{@contact.class.name}", :method => :post, :confirm => "Do you want to enable the contact?" ,style: "margin-left: 5px;background:none;text-decoration:none;color:#555555" , class: "grey_act" do
+
+                  %span.glyphicon.glyphicon-ok-circle{style:"color:#555", rel: "tooltip", title: "Enable"}
+
+              - if @contact.is_company?
+
+                = link_to "/contacts/#{@contact.id}?type=company", :method => :delete, :confirm => "Do you want to delete the contact?" ,style: "margin-left: 5px;text-decoration:none;background:none" , class: "grey_act" do
+
+                  %span.glyphicon.glyphicon-trash{title: "Delete", rel: "tooltip"}
+
+              - elsif @contact.is_individual?
+
+                = link_to "/contacts/#{@contact.id}?type=individual", :method => :delete, :confirm => "Do you want to delete the contact?" ,style: "margin-left: 5px;text-decoration:none;" , class: "grey_act" do
+
+                  %span.glyphicon.glyphicon-trash{title: "Delete", rel: "tooltip"}
+
+        .cb10
+
+        - if (@contact.present? && @contact.contact_status && ((@contact.is_public?) || ((@contact.created_by == current_user.id) || (current_user.is_admin?))))
+
+          %a{"data-toggle" => "modal", title:"Add a Lead", rel:"tooltip", href: "#dealModal", class: "btn btn-primary btn-success pad2", onclick: "$('#lead_referrer').val('Contact Details');$('#new_deal')[0].reset();$('#deal_first_name').val(\"#{contact_name}\");$('#hfield').val(\"#{@contact.id}\");$('#deal_email').val(\"#{@contact.email}\");$('#deal_country').val(\"#{@contact.address.present? ? @contact.address.country_id : ""}\");$('#deal_work_phone').val(\"#{!@work_phone.blank? ? @work_phone.first.phone_no : ''}\");$('#deal_country').trigger('change');$('#deal_contact_id').val(\"#{@contact.id}\");$('#company_type').val(\"#{@contact.class.name}\");$('#deal_first_name').attr('disabled', true);"}
+
+            %span.glyphicon.glyphicon-plus-sign
+
+            New Lead
+
+          %a{"data-toggle" => "modal", href: "#taskModal", class: "btn btn-primary btn-success pad2",onclick: "$('#task_referrer').val('Contact Details');$('#task_form')[0].reset();setTimeout(\"$('#deal_title_task').val('#{@contact.title}');$('#hfield').val('#{@contact.id}');task_deal('#{@contact.id}')\",1000);$('#deal_title_task').attr('disabled', true);$('#taskable_id').val(\"#{@contact.id}\");$('#taskable_type').val(\"#{@contact.class.name}\");", "data-id" => @contact.id,rel: "tooltip", title: "Add a Task"}
+
+            %span.glyphicon.glyphicon-plus-sign
+
+            New Task
+
+          //%a{"data-target" => "#noteModal", "data-toggle" => "modal", rel: "tooltip",title: "Add a Note",href: "javascript:", class: "btn btn-primary pad2",  onclick: "$('#notable_id').val(#{@contact.id});$('#notable_type').val(\"#{@contact.class.name}\");$('#note_from_deal').val(true)"}
+
+          //%span.glyphicon.glyphicon-plus-sign
+
+          //Note
+
+        %br/
+
+        %br/
+
+        %span.grey_act Last touch:
+
+        %span
+
+          - if @contact.class.name == "IndividualContact"
+
+            - con = "individual"
+
+          -else
+
+            - con = "company"
+
+          -activ_date = contact_last_activity_show(@contact.id,"#{con}")[0] if @contact.present?
+
+          -activ_by = contact_last_activity_show(@contact.id,"#{con}")[1] if @contact.present?
+
+          -if activ_by.present? && activ_date.present?
+
+             
+
+            =activ_date
+
+            ago
+
+            &bull;
+
+            by
+
+            =activ_by
+
+          -else
+
+            No Activity Found
+
+      .gen_inf_prof.fl.col-md-4{style: "padding:0"}
+
+        -ccode =  @contact.address &&  @contact.address.country ?  @contact.address.country.isd_code : "" if @contact.present?
+
+        %table
+
+          %tr
+
+            %th Name
+
+            %td= contact_name
+
+          - if @contact.present? && @contact.is_individual? && @contact.company_contact.present? && @contact.company_contact.name.present?
+
+            %tr
+
+              %th Company
+
+              %td= link_to @contact.company_contact.name, "/company_contact/"+@contact.company_contact.id.to_s
+
+          %tr
+
+            %th Email
+
+            %td
+              -if @contact.present?
+                %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", rel: "tooltip", title: "#{@contact.email}",href: "javascript:",:style=>@contact.is_active == false ? "cursor: default;" : "font-size: 15px;", onclick: "$('#send-mail-popup').get(0).reset();$('#to').val(\"#{@contact.email}\");$('#mailer_id').val(\"#{@contact.id}\");$('#mailer_type').val(\"#{@contact.class.name}\");$('#email_contact_id').val(\"#{@contact.id}\");$('#email_contact_type').val(\"#{@contact.class.name}\");"}
+
+                %font=@contact.email
+
+          - if @contact.present? && @contact.is_company? && @contact.website.present?
+
+            %tr
+
+              %th Website
+
+              %td
+
+                %font= link_to @contact.website, @contact.website,  target: "_blank"
+
+          - if @work_phone.present? && @work_phone.first.phone_no.present?
+
+            %tr
+
+              %th Work
+
+              %td
+
+                %font
+
+                - @work_phone =  @contact.phones.present? ? ( @contact.phones.by_phone_type("work")) : ''
+
+                - if @work_phone.present? && @work_phone.first.phone_no.present?
+
+                  - phone_code= @contact.phones.first.extension.nil? ?  "" : @contact.phones.first.extension
+
+                  %span.soc_skyp
+
+                  =link_to  "+" + ccode + @work_phone.first.phone_no, "skype:+" + ccode+ (@work_phone.first.phone_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+
+                  -if phone_code.present?
+
+                    -if phone_code.include?("+")
+
+                      -phone_code.slice!(0)
+
+                    x
+
+                    =phone_code                  
+
+          - if @mobile_phone.present? && @mobile_phone.first.present? && @mobile_phone.first.phone_no.present?
+
+            %tr
+
+              %th Cell
+
+              %td
+
+                %font
+
+                  - mobile_code= @contact.phones.first.extension.nil? ? "" : @contact.phones.first.extension
+
+                  - mobile_no = @mobile_phone.first.phone_no
+
+                  =image_tag "/assets/skype.png"
+
+                  =link_to "+" + ccode + mobile_no, "skype:+" + ccode+ (mobile_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+
+          - if @contact.present? && @contact.address.present?
+
+            %tr{valign: "top"}
+
+              %th Address
+
+              %td
+
+                - if @contact.address.address.present?
+
+                  = @contact.address.address
+
+                  %span{style: "margin-left:-4px;"}
+
+                    ,
+
+
+
+                - if @contact.address.city.present?
+
+                  %span{style: "margin-left:2px;"}
+
+                    = @contact.address.city 
+
+                  %span{style: "margin-left:-4px;"}
+
+                    ,
+
+
+
+                - if @contact.address.state.present? 
+
+                  %span{style: "margin-left:2px;"}
+
+                    = @contact.address.state.strip   
+
+                  %span{style: "margin-left:-4px;"}                  
+
+                    ,
+
+
+
+
+
+                - if @contact.address.zipcode.present?
+
+                  %span{style: "margin-left:2px;"}
+
+                    = @contact.address.zipcode
+
+                  %span{style: "margin-left:-4px;"}
+
+                    ,
+
+
+
+                - country = @contact.address.country_id.present? ? (Country.find @contact.address.country_id).name : ''
+
+                - if !country.blank?
+
+                  %span{style: "margin-left:2px;"}
+
+
+
+                    = country
+
+
+
+      .navbar-right
+
+
+
+        %div
+
+          - if@contact.present? && @contact.address && @contact.address.country
+
+            %a{href: "https://maps.google.com/maps?q=#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", target: "_blank"}
+
+              %img{src: "https://maps.google.com/maps/api/staticmap?&size=246x112&sensor=true&maptype=terrain&markers=size:small|color:red|#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", style: "max-height:400px; max-width: 100%"}
+
+      .cb10
+
+
+
+
+
+  .col-md-12.p0
+
+    - if (@contact.present? && @contact.contact_status && ((@contact.is_public?) || ((@contact.created_by == current_user.id) || (current_user.is_admin?))))
+
+      .con-box1.msg_ok{style: "min-height:50px;height:auto;"}
+
+        %h4#show_nt_contact_div{style: "margin-top:0px;cursor:pointer"}
+
+          %span.glyphicon.glyphicon-paperclip{style: "color:#4C5264;"}
+
+          Notes & Attachment
+
+        .form-group#contact_note_div{style: "display:none;margin-bottom: 0px;"}
+
+
+
+            
+
+          - note = Note.new()
+
+          = form_for(note,:url=>"/add_notes", :remote=>true,:html=>{:class => "form",:method=>"post",:id=>"new-notes-popup-contact",:multipart => true}) do |f|
+
+            = hidden_field_tag :notable_type, "#{@contact.class.name}"
+
+            = hidden_field_tag :notable_id,@contact.id
+
+            %label.col-sm-1.control-label{style: "padding-left: 25px;padding-top: 11px;"}
+
+              .fl
+
+                - if current_user.image.present? && current_user.image.image.present?
+
+                  = image_tag current_user.image.image.url(:thumb), :alt=>"profile image",:class=> "profile-circle"
+
+                - else
+
+                  = image_tag "no_user30.png", :alt=>"dummy user",:class=>"profile-circle"
+
+            .col-sm-11{style: "padding:0"}
+
+              =hidden_field_tag "hidden_note","",name: "note[notes]"
+
+              =f.text_area :notes, :required => true ,name:"not", :class=> "form-control",:style =>"height:47px;background:#fcfcfc;padding-right:40px;", :onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", placeholder: "Add a Note"
+
+              /%a{href: "javascript:void(0)"}
+
+              /  %span.glyphicon.glyphicon-paperclip.file_cus.upload{style: "width:3%;"}
+
+              /    =f.file_field :attachment,:class=>"form-control btn-metis-7 btn-file btn_upload",:style=>"margin-top: -26px;width: 5%;cursor:pointer", :onchange => "set_required_for_file_descrption(this)"
+
+              #show_file_name{style: "background: #f1f5fa;padding: 10px;width: 50%;margin: 5px;display:none"}
+
+              =hidden_field_tag "temp_file_ids"
+
+              #fileuploadercontact
+
+                Upload
+
+              .cb
+
+              %br
+
+              %button.btn.btn-primary.btn-success{type: "submit", disable_with: "Please wait...", id: "notes_submit_btn",onclick: "getd();"} Add a Note
+
+              %button.btn.btn-default{type: "button",onclick: "remove_note();"} Cancel
+
+              =hidden_field_tag "note_from_deal", true
+
+      .cb
+
+    .cb
+
+  .con-box1{style: "padding:10px 0;border:none"}
+
+    .cb10
+
+    .tablisting.task_tab
+
+      %ul.nav.nav-tabs
+
+        %li#todayTask.active
+
+          %a{"data-toggle" => "tab", href: "new", onclick: "load_activity_cum_deals('activity')", style: "border-radius:5px 0 0 0 "}
+
+            .fl.ic_act_b_stm
+
+            .fl.fnt18 Activity Stream
+
+            .cb
+
+        %li#overdueTask
+
+          %a{"data-toggle" => "tab", href: "#overdue", onclick: "load_activity_cum_deals('deals')", style: "cursor:pointer;"}
+
+            .fl.ic_deal_gry
+
+            .fl.fnt18 Leads
+
+            .cb
+
+        - if @contact.class.name == "CompanyContact"
+
+          %li#personContacts
+
+            %a{"data-toggle" => "tab", href: "#overdue", onclick: "load_activity_cum_deals('people')", style: "cursor:pointer;"}
+
+              .fl.ic_indivisual_gry
+
+              .fl.fnt18 Persons
+
+              .cb            
+
+      .cb10.get-space
+
+    .cb
+
+    .activity_cum_deals_div.cmn_cl{style: "border: 1px solid #DDDDDD;margin-top: -2px;"}
+
+      //              .act_date_f_con
+
+      //                Today
+
+      //              .table-responsive
+
+      //                %table.table.table-striped{style: "margin-bottom:0px"}
+
+      //                  %tbody
+
+      //                    %tr.task_row
+
+      //                      %td{style: "padding: 1px 8px;width:100px"}
+
+      //                        .dt_stream
+
+      //                          04:58 PM
+
+      //                          .mid_bdr_dasboard
+
+      //                            %img.img-circle.img-thumbnail{src: "assets/note.png"}/
+
+      //                      %td{style: "vertical-align:top;"}
+
+      //                        .fl.grey_act Updated Deal
+
+      //                        .fr • By me
+
+      //                        .cb
+
+      //                        %div New_deal123
+
+      //                      %td
+
+      //                    %tr.task_row
+
+      //                      %td{style: "padding: 1px 8px;width:100px"}
+
+      //                        .dt_stream
+
+      //                          04:58 PM
+
+      //                          .mid_bdr_dasboard
+
+      //                            %img.img-circle.img-thumbnail{src: "assets/tasks_small.png"}/
+
+      //                      %td{style: "vertical-align:top;"}
+
+      //                        .fl.grey_act Created task     • Due on  Wed 12 Feb 2014 @ 06:35 PM by me
+
+      //                        .fr • Assigned to Rex Trot
+
+      //                        .cb
+
+      //                        %div Phillippe Daveze / Looking for a software developer for Developers Having Knowledge in PHP, HTML5, CSS3, Javascript, jQuery...
+
+      //                      %td
+
+      //                        .fl.file_for_t
+
+      //                    %tr.task_row
+
+      //                      %td{style: "padding: 1px 8px;width:100px"}
+
+      //                        .dt_stream
+
+      //                          04:58 PM
+
+      //                          .mid_bdr_dasboard
+
+      //                            %img.img-circle.img-thumbnail{src: "assets/tasks_small.png"}/
+
+      //                      %td{style: "vertical-align:top;"}
+
+      //                        .fl.grey_act Created task     • Due on  Wed 12 Feb 2014 @ 06:35 PM by me
+
+      //                        .fr • Assigned to Rex Trot
+
+      //                        .cb
+
+      //                        %div Phillippe Daveze / Looking for a software developer for Developers Having Knowledge in PHP, HTML5, CSS3, Javascript, jQuery...
+
+      //                      %td
+
+      //                        .fl.file_for_t
+
+  .cb
+
+  /%a#moreActivity.fr{href: "/activities"}
+
+  /  %span.btn.btn-default.btn-xs View more
+
+.cb
+
+= render :partial => "shared/edit_popup_contact"
+
+:javascript
+
+  $(function(){
+
+    load_activity_cum_deals("activity");
+
+    var options = { 
+
+        target:        '#new-notes-popup',   // target element(s) to be updated with server response 
+
+        beforeSubmit:  showRequest_notes_attachment,  // pre-submit callback 
+
+        success:       showResponse_notes_attachment, // post-submit callback 
+
+        //data: { key1: 'value1', key2: 'value2' }
+
+        // other available options: 
+
+        //url:       url         // override for form's 'action' attribute 
+
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+
+        clearForm: true        // clear all form fields after successful submit 
+
+        //resetForm: true        // reset the form after successful submit 
+
+ 
+
+        // $.ajax options can be used here too, for example: 
+
+        //timeout:   3000 
+
+    }; 
+
+    // bind to the form's submit event 
+
+    $('#new-notes-popup-contact').submit(function() { 
+
+        //formValidation();
+
+        // inside event callbacks 'this' is the DOM element so we first 
+
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+
+        $(this).ajaxSubmit(options); 
+
+        
+
+        // !!! Important !!! 
+
+        // always return false to prevent standard browser submit and page navigation 
+
+        return false; 
+
+    }); 
+
+     $("#fileuploadercontact").uploadFile({
+
+      url:"/upload_multiple_note_attach",
+
+      multiple:true,
+
+      fileName:"myfile",
+
+      showDelete: true,
+
+      returnType: "json",
+
+      //showAbort:false,
+
+      showDone:false,
+
+      deletelStr: "",
+
+      abortStr: "",
+
+      uploadButtonClass:"ajax-file-upload-green",
+
+      //dynamicFormData: function()
+
+      //{
+
+      //  var deal_id = $("#deal_id").val();
+
+      //  var data ={ deal_id: deal_id }
+
+      //  return data;
+
+      //},
+
+      
+
+      onSuccess:function(files,data,xhr)
+
+      {
+
+        
+
+        tempids=[];
+
+        if(data["message"] =="success")
+
+        {
+
+          
+
+          if($("#temp_file_ids").val() != "")
+
+          {
+
+          tempids= $("#temp_file_ids").val().split(",");
+
+          addItem = data["id"];
+
+          tempids.splice(tempids.length,1, addItem);
+
+          $("#temp_file_ids").val(tempids);
+
+          }
+
+          else
+
+          {
+
+            $("#temp_file_ids").val(data["id"]);
+
+          }
+
+          set_required_for_file_descrption(this);
+
+        }
+
+        
+
+      },
+
+      deleteCallback: function (data, pd) {
+
+      var tempids=[]; 
+
+      tempids= $("#temp_file_ids").val().split(",");
+
+      removeItem = data["id"];
+
+      tempids.removeByValue(removeItem);
+
+      $("#temp_file_ids").val(tempids);    
+
+      
+
+         $.post("/delete_temp_note_attach?tf_id=" + data["id"], {op: "delete",id: data["id"]},
+
+             function (resp,textStatus, jqXHR) {
+
+             
+
+              
+
+             });
+
+          
+
+           pd.statusbar.hide(); //You choice.
+
+      }
+
+    });
+
+
+  });
+
+  
+
+  Array.prototype.removeByValue = function(val) {
+
+      for(var i=0; i<this.length; i++) {
+
+          if(this[i] == val) {
+
+              this.splice(i, 1);
+
+              break;
+
+          }
+
+      }
+
+  }
+
+  function getd(){
+
+    $('#hidden_note').val($('textarea').val().replace(/\n/g, "<br />"));
+
+  }
+
+  window.onload=function(){ got_select_item();};
+
+   function got_select_item()
+
+   {
+
+      if($("#cont_name_for_list").val() != "" && typeof $("#cont_name_for_list").val() != 'undefined'){
+
+      //alert($("#cont_name_for_list").val());
+
+      ltr = $("#cont_name_for_list").val().charAt(0).toUpperCase();
+
+      $("#list_buttons .panel").find(".panel-collapse").removeClass('in');
+
+      $("#head"+ltr).find(".panel-collapse").addClass('in');
+
+      $("#head"+ltr).find(".panel-heading").trigger( "click" );
+
+      $("#cont_name_for_list").val("")
+
+      }
+
+   } 
+
+  function remove_note()
+   {
+    $('#note_notes').val('');
+    $("#contact_note_div").hide('slow');
+    $("#show_file_name").hide();
+    $(".ajax-file-upload-statusbar").remove();
+    $("#temp_file_ids").val("");
+   } 
+
+  function hightlight_name(){
+
+     cont_id = $("#cont_id_for_list").val();
+
+     element = $("a#contact_"+cont_id);
+
+     make_select(element);
+
+  }
+
+  function load_activity_cum_deals(data){
+
+    if(data=="deals")
+
+      $("#moreActivity").hide();
+
+    else if(data=="deals")
+
+      $("#moreActivity").show()
+
+    else
+
+      $("#moreActivity").show()
+
+    action="/contact_widget"
+
+    $.ajax({
+
+        type: "POST",
+
+        url: action,
+
+        dataType: 'json',
+
+        data: {tab_type: data, id: "#{@contact.id if @contact.present?}", contact_type: "#{@contact.class.name if @contact.present?}"},
+
+        async: true,
+
+        beforeSend: function(){
+
+          $("#task_loader,.fixed_loader").show();
+
+        },
+
+        success: function(data)
+
+        {
+
+         
+
+        },
+
+        error: function(data) {
+
+          $("#task_loader,.fixed_loader").hide();
+
+        },
+
+        complete: function(data) {
+
+          $(".activity_cum_deals_div").html(data.responseText);
+
+          $("#task_loader,.fixed_loader").hide();
+
+          $('a,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+
+        }
+
+    });
+
+  }
+
+  var txt = $('#note_notes'),
+
+    hiddenDiv = $(document.createElement('div')),
+
+    content = null;
+
+  
+
+  txt.addClass('txtstuff');
+
+  hiddenDiv.addClass('hiddendiv common');
+
+  
+
+  $('body').append(hiddenDiv);
+
+  
+
+  txt.on('keyup', function () {
+
+  
+
+      content = $(this).val();
+
+  
+
+      content = content.replace(/\n/g, '<br>');
+
+      hiddenDiv.html(content + '<br class="lbr">');
+
+  
+
+      $(this).css('height', hiddenDiv.height()+20);
+
+  
+
+  });
+
+
+
+   $('#show_nt_contact_div').click(function () {
+
+     $('#contact_note_div').slideToggle('slow');
+
+   });
+  function show_edit(id)
+    {
+      
+      $("#show_edit_"+id).show();
+      $("#show_trash_"+id).show();
+    }
+  function hide_edit(id)
+    {
+      $("#show_edit_"+id).hide();
+      $("#show_trash_"+id).hide();
+    }

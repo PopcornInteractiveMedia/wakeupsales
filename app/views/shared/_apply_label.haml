@@ -1,0 +1,36 @@
+#ApplyLabelModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "ApplyLabelModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title 
+          Apply Label
+      %div{style: "margin-left:80%;"}
+        %a{"data-toggle" => "modal", href: "#labelModal" ,rel: "tooltip", title: "Add a label",onclick: "$('#ApplyLabelModal').modal('hide');"} 
+          %span.icon-plus-sign
+          Add New Label 
+      %br          
+      .modal-body{style: "margin-top:-25px;"}   
+            
+        %span 
+          =hidden_field_tag "deal_id_for_label"
+          -if current_user.user_labels.present?
+            - current_user.user_labels.all.each do |lbl|
+             
+              %span
+                %div{class: "fl"}
+                  %input{:type=>"checkbox",:value=>lbl.id,:class=>"label_chk_box",:onclick=>"check_apply(this,'incoming');"}
+                %div{class: "fl", style: "margin-left:5px"}
+                  =lbl.name
+                  &nbsp;
+            %br 
+            %br
+            %button.btn.btn-primary{type: "button",id: "apply_label_btn",onclick: "applylabel_deal(this);"} Apply
+            %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+              %span.c_links
+                Cancel
+          -else
+            %center
+              %b{style: "text-align:center;"}
+                No Labels are available.          
+

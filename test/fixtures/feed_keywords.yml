@@ -1,0 +1,9 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  feed_tags: MyString
+
+two:
+  organization: 
+  feed_tags: MyString

@@ -1,0 +1,71 @@
+<style type="text/css">
+.well {
+    background-color: #F5F5F5;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    margin-bottom: 20px;
+    min-height: 20px;
+    padding: 19px;
+}
+</style>
+<br/><br/><br/>
+<div class="row contact_row">
+  <%if User.count == 0 %>
+    <div class="col-md-5 contact_div">
+      <div class="well">
+  	    <legend style="margin:0">Create Admin User</legend>
+        <div id="admin_user_error"></div>
+        <%= form_for(User.new, :url => create_admin_user_path(), :html=>{:class => "form"}) do |f|%>           
+          <div class="form-group">
+             <%= f.email_field :email, :required => true, :class=>"form-control", :placeholder=>"Email" , :style=>"height:50px;font-size: 17px;", :id => "admin_user_email" %>
+          </div>
+          <div class="form-group">
+             <%= f.password_field :password, :required => true, :class=>"form-control", :placeholder=>"Password", :style=>"height:50px;font-size: 17px;", :id => "admin_user_password" %>
+           </div>
+          <div class="form-group">
+            <%= f.password_field :password_confirmation, :required => true, :class=>"form-control", :placeholder=>"Password Confirmation", :style=>"height:50px;font-size: 17px;", :id => "admin_user_password_confirmation" %>
+          </div>
+          <div style="text-align:center;font-size: 17px;">
+            <button class="btn btn-primary" type="submit" onclick="return validate_confirm_password()" style="width:50%;height:50px;">Create</button>  
+          </div>
+      <% end %>
+      </div>
+    </div>
+  <%else%>
+    <div class="col-md-5 contact_div">
+      <div class="well">
+        Welcome to WakeUpSales Community Edition. Try and Explore all it's Features within seconds, absolutely Free!
+        <br><br>
+        <legend>Sign into your account</legend>
+        <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html=>{:class => "form"}) do |f| %>           
+          <div class="form-group">
+             <%= f.email_field :email, :required => true, :class=>"form-control", :placeholder=>"Email" , :style=>"height:50px;font-size: 17px;" %>
+          </div>
+          <div class="form-group">
+             <%= f.password_field :password, :required => true, :class=>"form-control", :placeholder=>"Password", :style=>"height:50px;font-size: 17px;" %>
+           </div>
+          <div style="text-align:center;">
+            <button class="btn btn-primary" type="submit" style="width:50%;height:50px;font-size: 17px;">Login</button>
+          </div>
+          <div style="text-align:center;margin-top:20px;font-size: 17px;">
+            <%= link_to "Forgot Password", new_password_path(resource_name) %>
+          </div>
+      <% end %>
+      </div>
+    </div>
+  <%end%>
+</div>
+<%=stylesheet_link_tag "home"%>
+<script>
+  function validate_confirm_password(){
+    var pwd = $("#admin_user_password").val();
+    var pwd_confirm = $("#admin_user_password_confirmation").val();
+    if(pwd == pwd_confirm){
+      return true;
+    }else{
+      $("#admin_user_error").text("Password and confirm password does not match.").css({"color":"#ff0000", "margin":"12px 0"})
+      return false;
+    }
+  }
+</script>

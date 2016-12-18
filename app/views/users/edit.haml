@@ -1,0 +1,14 @@
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .con-box1
+        %header
+          %h4
+            %span.glyphicon.glyphicon-pencil
+            Edit user '#{@user.full_name}'
+        %hr
+        .cb10
+        .panel-body{style: "border:none"}
+          =render :partial => "users/form", :objects => @user

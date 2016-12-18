@@ -1,0 +1,405 @@
+:css
+  .glyphicon-fullscreen, .glyphicon-pencil{color: #555555;}
+-content_for :title,@deal.title
+%script{src: "/assets/jquery.tagsinput.min.js"}
+= javascript_include_tag "skypeCheck"
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-8
+      .con-box1
+        = form_for(@deal, :url => lead_path(@deal),  :html=>{:class => "form",:multipart => true, :method=>"put",:id=>"edit_deal"}) do |f|
+
+          =render :partial=>"editdeal",:locals=>{:f => f}
+        .cb 
+    .col-md-4
+      -@contact = (!@deal.deals_contacts.first.contactable.nil? ? @deal.deals_contacts.first.contactable : CompanyContact.new)
+      =hidden_field_tag "deal_contacts_id", @deal.deals_contacts.select(:contactable_id).collect(&:contactable_id).join(",")
+
+      - @deal.deals_contacts.each do |c|
+        .con-box1
+
+          - if c.contactable.is_individual?
+            -contact_page="individual_contact"
+          - elsif c.contactable.is_company?
+            -contact_page="company_contact"
+
+          - if c.contactable.full_name.present?        
+        
+            .fl.prf_img
+              - if c.contactable.image.present?
+                - image_path = c.contactable.image.image.url(:thumb)
+                %img{alt: "", src: image_path }
+              - elsif c.contactable.is_individual? && !c.contactable.image.present?
+                -image_path = "no_user50.png"
+                =image_tag image_path
+              - elsif c.contactable.is_company? && !c.contactable.image.present?
+                -image_path = "comp_logo_50.png"
+                =image_tag image_path
+            .prof_addr.fl
+              %div
+
+                = link_to c.contactable.full_name, "/#{contact_page}/#{c.contactable.id}"
+              .cb10
+              -@contact = c.contactable
+              - if @contact.linkedin_url.present?
+                =link_to "//"+@contact.linkedin_url, target: "_blank" do
+                  .fl.soc_links_lin{title: "#{@contact.linkedin_url}", rel: "tooltip"}
+              -else
+                .fl.soc_links_lin.n_active
+              - if @contact.facebook_url.present?
+                =link_to "//"+@contact.facebook_url, target: "_blank" do
+                  .fl.soc_links_fb{title: "#{@contact.facebook_url}", rel: "tooltip"}
+              -else
+                .fl.soc_links_fb.n_active
+              - if @contact.twitter_url.present?
+                =link_to "//"+@contact.twitter_url, target: "_blank" do
+                  .fl.soc_links_twt{title: "#{@contact.twitter_url}", rel: "tooltip"}
+              -else    
+                .fl.soc_links_twt.n_active
+            .fr
+
+              - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+                %a{"data-toggle" => "modal", href: "#addCon", rel: "tooltip", class:"",style: "text-decoration:none", title: "Associate a contact",onclick: "$('#associate_con')[0].reset();$('#show_er_deal_em').hide();$('#show_er').hide();$('#contactable_id').val('');$('#extension_for_contact_deal').html('+1')"}
+                  %span.add_con_icn_black
+                =link_to "/edit_#{contact_page}/#{c.contactable.id}", class: "grey_act", style:"font-size: 12px;text-decoration:none", rel: "tooltip", title: "Edit" do
+                  %span.in-edit-cn            
+
+                - if @deal.deals_contacts.count > 1
+                  =link_to "/delete_lead_con/#{c.id}", :confirm => "Do you want to delete the contact?", class: "grey_act" ,style: "font-size: 10px;", rel: "tooltip", title: "Delete" do
+                    %span.glyphicon.glyphicon-trash
+
+
+          .cb10
+          .fl
+            - if c.contactable.email.present?
+              .fl.grey_act Email:
+              .fl 
+
+
+                %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", rel: "tooltip", title: "#{c.contactable.email}", href: "javascript:",:style=>"font-size:13px;", onclick: "$('#send-mail-popup').get(0).reset();$('#mailer_id').val(\"#{@deal.id}\");$('#mailer_type').val('Deal');$('#email_contact_id').val(\"#{c.contactable.id}\");$('#email_contact_type').val('#{c.contactable.class.name}');$('#to').val(\"#{c.contactable.email}\");reset_email_err_msg();"} 
+                  =truncate(c.contactable.email, length: 25)              
+            .cb10
+            - @work_phone =  c.contactable.phones.present? ? ( c.contactable.phones.by_phone_type("work")) : ''
+            - if @work_phone.present? && @work_phone.first.phone_no.present?
+              .fl.grey_act Work:
+              .fl
+                -ccode =  c.contactable.address &&  c.contactable.address.country ?  c.contactable.address.country.isd_code : ""
+                - phone_code= c.contactable.phones.first.extension.nil? ? "" : c.contactable.phones.first.extension
+                %span.soc_skyp
+                =link_to "+" + ccode + @work_phone.first.phone_no, "skype:+" + ccode + (@work_phone.first.phone_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"				
+                -if phone_code.present?
+                  -if phone_code.include?("+")
+                    -phone_code.slice!(0)
+                  x
+                  =phone_code
+            -else
+              Not Avl.
+            - if c.contactable.present? && !c.contactable.address.nil?
+              - address = c.contactable.address
+              .cb10
+              .fl.grey_act Location:
+              .fl 
+                - city = address.city 
+                - if !city.blank?
+                  = city
+                  ,
+                - state = address.state 
+                - if !state.blank?
+                  = state
+                  ,
+                - country = address.country_id.present? ? (Country.find address.country_id).name : ''
+                - if !country.blank?
+                  = country
+            .cb10
+          .cb
+
+
+
+
+
+
+      .cb
+        
+#addCon.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+
+      = form_tag(add_contact_path,:id=>"associate_con") do |f|
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} x
+          %h4.modal-title Add Contact
+        .modal-body
+          .row 
+
+            .form-group.col-md-6
+              =text_field_tag :first_name,"",:class=>"col-md-12 form-control typeahead",:onkeyup=>"$('#show_er').html('');return onlycharacters(event);",:onkeydown=>"$('#show_er').html('');return onlycharacters(event);", "data-provide"=> "typeahead" , :autocomplete=>"off", :required => true, :placeholder => "Contact"
+              %label{id: "show_er",class: "error",style: "display:none"}
+              =hidden_field_tag 'contactable_id'
+              =hidden_field_tag 'contactable_type'
+              =hidden_field_tag "deal_id","#{params[:id]}"
+              //%input{:type=>"hidden",:id=>"extension_contact_popup",:name=> "extension_contact_popup"}
+            .form-group.col-md-6
+              %input#email.inp_txt{name: "email", class: "form-control",type: "email", value: "", required: "true", placeholder: "Email"}/
+          .row
+            .form-group.col-md-6
+              - @coun = Country.find(:all)
+              = select_tag "country", options_from_collection_for_select(@coun, "id", "name"), :prompt => "- Country -", :class => 'form-control', :required => true, :onchange => "prefill_extension(this.value,'extension_for_contact','extension_contact_popup')"
+            .form-group.col-md-6 
+              .input-group
+                %span.input-group-addon#extension_for_contact +1
+                = text_field_tag :work_phone,"", :id=>"work_phone",:value=>"", :class => "form-control bfh-phone","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :required => true
+
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit",id: "add_con","data-disable-with" => "Saving...", onclick: "return chk_con_id();"} Save  
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+=render :partial=>"shared/source"
+
+
+:javascript
+  $(function() {                
+    $.fn.editableform.loading;     
+    $('#industry1').editable({
+      url: '/save_lead_industry?deal_id='+"#{@deal.id}",
+      pk: 'industry',
+      mode: 'popup',
+      source: '/get_industry_list?type=industry',
+      title: 'Enter Industry',   
+      data: {custom: 'Select Industry'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please select industry';
+      },
+      render: function() {
+        this.$loading = $($.fn.editableform.loading);        
+        this.$div.empty().append(this.$loading);
+      },
+      success: function(response, newValue) {
+        if(response != "")
+          $('#industry1').attr("data-original-title", response)
+      }
+    });
+    $('#source1').editable({
+      url: '/save_lead_industry?deal_id='+"#{@deal.id}",
+      pk: 'source',
+      mode: 'popup',
+      source: '/get_industry_list?type=source',
+      title: 'Enter Source',   
+      data: {custom: 'Select Source'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please select source';
+      },
+      render: function() {
+        this.$loading = $($.fn.editableform.loading);        
+        this.$div.empty().append(this.$loading);
+      },
+      success: function(response, newValue) {
+        if(response != "")
+          $('#source1').attr("data-original-title", response)
+      }
+    });
+    
+    $('#deal_messanger_type').trigger('change');
+    $('#deal_messanger_type').change(function() {
+      if($(this).val() != ""){
+        $("#deal_messanger_id").prop("required", true);
+      }else{
+        $("#deal_messanger_id").removeAttr("required")
+      }
+    });
+    $('.deal_title').editable({
+      url: '/update_lead_ttl' ,
+      pk: 1,
+      mode: 'inline',
+      title: 'Enter Title',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter deal title';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').editable({
+      url: '/settings/save_source?from=editdeal' ,
+      pk: "#{@deal.id}",
+      title: 'Enter Source',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Source name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        //$("#deal_deal_source").append(o);
+        $('#source1').text(newsource[1]).attr("data-original-title", newsource[1]).attr("data-title", newsource[1]).attr("data-value", newsource[0]);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').on('hidden', function(e, editable) {
+      $("#editable_source").text("+ NEW");
+      editable.text = "";
+    });
+    // Save industry
+    $('#editable_industry').editable({
+      url: '/settings/save_industry?from=editdeal' ,
+      pk: "#{@deal.id}",
+      title: 'Enter Industry',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: "left",
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter industry name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        //$("#deal_deal_industry").append(o);
+        $("#industry1").text(newsource[1]).attr("data-original-title", newsource[1]);
+        //$("#editable_industry").text("+NEW");
+        //alert($("#editable_industry").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_industry').on('hidden', function(e, editable) {
+      $("#editable_industry").text("+ NEW");
+      editable.text = "";
+    });
+    
+  });
+  $(function() { 
+  $('#deal_tag_list').tagsInput({'defaultText':'Click to add','width':'240px'});
+  });
+  $("#first_name").keypress(function() {
+  $('#first_name').addClass('loadinggif');
+   setTimeout(hideascontactload, 510);
+  });
+  function hideascontactload()
+  {
+    $('#first_name').removeClass('loadinggif');
+  }
+  function chk_con_id()
+  {
+   var con_id = $("#contactable_id").val();
+   var name = $("#first_name").val();
+   var deal_contacts_id = $("#deal_contacts_id").val();
+   var trainindIdArray = deal_contacts_id.split(',');
+   for(i = 0; i< trainindIdArray.length; i++){
+     if(trainindIdArray[i] == con_id) {
+        $("#show_er").show();
+       $("#show_er").html('Contact is already associated.');
+       return false
+     }
+     else
+     { $("#show_er").hide();}
+   }
+   if(name != "" && con_id == "")
+   {
+    $("#show_er").html('Contact not found.');
+    return false
+   }
+   else
+   {
+    $("#show_er").html('');
+   }
+  }
+  $('#first_name.typeahead').typeahead([{
+    name: 'contacts',
+    valueKey: 'name',
+    remote: {url: '/get_contacts/'+ #{current_user.organization.id}+ '?q=%QUERY'},
+    template: "<p style='word-wrap: break-word;'><strong>{{name}}</strong> - {{email}}</p>",
+    engine: Hogan
+    }]).on('typeahead:selected',onSelected).on('typeahead:opened',onOpened);
+  function onSelected($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    //    var hfield = document.getElementById('hfield');
+    var email = document.getElementById('email');
+    var country = document.getElementById('country');
+    var workphone = document.getElementById('work_phone');
+    console.log(datum.id);
+    //    hfield.value = datum.id;
+    $("#contactable_id").val(datum.id);
+    $("#contactable_type").val(datum.company_type)
+    email.value = datum.email;
+    country.value=datum.country_id;
+    workphone.value = datum.phone_no;
+    $("#country").trigger("change")
+  }
+  function onOpened($e){
+  $("#contactable_id").val("")
+  console.log('Opned');
+  }
+
+
+  

@@ -1,0 +1,95 @@
+:css
+  #user_role_id{width:264px!important}
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+/ Invite user popup starts
+#inviteuserModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title Invite user
+      .modal-body
+        #alert-msg.alert.fade.in.alert-danger.show-alert{style: "display:none;"}
+          %button.close{onclick: "$('#alert-msg').hide();$('#loader').hide();"} x
+          #msg_div.show-msg
+        = form_for(User.new, :url => invite_user_path(), :html=>{:class => "form", :id=>"user_invite_form"}, :method => :post, :remote => true) do |f|
+          .row
+            .form-group.col-md-6
+              /%label
+              /  First Name
+              /  %font{color: "red", size: "2"} *
+              =f.text_field :first_name, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "20"},:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", :placeholder => "First name"
+            .form-group.col-md-6
+              /%label 
+              /  Last Name
+              /  %font{color: "red", size: "2"} *
+              =f.text_field :last_name,:class=> "col-md-12 form-control",:html=>{:maxlength=> "20"}, :onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:placeholder => "Last name"
+          .row
+            .form-group.col-md-6
+              /%label
+              /  Email
+              /  %font{color: "red", size: "2"} *
+              =f.email_field :email, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "50"}, :placeholder => "Email"
+              %div{id:"email_err_usr",class: "error"}
+            .form-group.col-md-6    
+              /%label 
+              /  Work Phone
+              /  %font{color: "red", size: "2"} *
+              /.input-group
+              /  %span.input-group-addon +1
+              =f.text_field :work_phone,:class=>"col-md-12 form-control bfh-phone",:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :onblur => "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:onclick =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .row
+            .form-group.col-md-6
+              %label Time Zone
+              = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones,  { :class => 'form-control', :default=> @current_user.time_zone }, :required => true
+              /= f.select "admin_type", options_from_collection_for_select(Role.all, "id","name"), { :include_blank=>true }
+            .form-group.col-md-6
+              %label 
+                User Group
+                /%font{color: "red", size: "2"} *
+              .cb
+              .radio.fl
+                %label
+                  =f.radio_button :admin_type, "2", :checked => true, :onclick => "$('#show_dropdown').hide();"
+                  Admin
+              -roles=@current_organization.roles.select("id, name") if @current_organization.present?
+              -unless roles.blank?
+                .radio.fl{style: "margin:10px 0 0 20px;padding-bottom: 15px;"}
+
+                  %label
+                    =f.radio_button :admin_type, "3", :onclick => "$('#show_dropdown').show();"
+                    Non-Admin
+                .cb
+                .navbar-left#show_dropdown{style: "display:none"}
+                  = f.select :role_id, options_from_collection_for_select(roles, "id","name"), { :class => 'form-control'}
+              -else
+                = link_to "Click", "/settings#group"
+                to create a group
+          .modal-footer
+            .pull-left
+              /%button.btn.btn-default{"data-dismiss" => "modal", type: "button"} Close
+              =f.submit "Save", :class=>"btn btn-primary", :disable_with => "Please wait ...",:onclick=> "return validate_email('user_email')"
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+:javascript
+  
+  $('#user_invite_form').bind('ajax:success', function(evt, data, status, xhr){
+  $('#loader').hide();
+  $("#inviteuserModal").modal('hide');
+  window.location.href ="/users";
+  });
+
+  $('#user_invite_form').bind('ajax:before', function(evt, data, status, xhr){
+  $('#loader').show();
+  });
+
+  $("#user_invite_form").bind("ajax:complete", function(evt, data, status, xhr) {
+  if(data.responseText !== " "){
+  $(".show-alert").show();
+  $(".show-msg").html(data.responseText);
+  }
+  $('#loader').hide();
+  });
+ 
+

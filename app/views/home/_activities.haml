@@ -1,0 +1,13 @@
+.box.span4{style: "margin-left:10px;height:600px"}
+  %header
+    %h5 Activities
+    .toolbar
+      /.btn-group
+      /  %a.btn.btn-default.btn-sm.accordion-toggle.minimize-box{"data-toggle" => "collapse", href: "#activityTable"}
+      /    %i.icon-chevron-up
+  #activityTable.body.collapse.in{style: "height:550px"}
+    =render :partial => "organization_activities"
+
+
+
+

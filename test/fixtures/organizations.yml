@@ -1,0 +1,27 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  email: MyString
+  is_active: false
+  website: MyString
+  total_users: 1
+  strength: 1
+  is_premium: false
+  is_active: false
+  deleted_at: 2013-10-22 18:30:57
+  beta_account_id: 1
+  admin_type: 1
+
+two:
+  name: MyString
+  email: MyString
+  is_active: false
+  website: MyString
+  total_users: 1
+  strength: 1
+  is_premium: false
+  is_active: false
+  deleted_at: 2013-10-22 18:30:57
+  beta_account_id: 1
+  admin_type: 1

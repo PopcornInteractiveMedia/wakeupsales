@@ -1,0 +1,102 @@
+=javascript_include_tag "bootstrap-formhelpers-phone.js"
+
+#edit_org_form{style: "display:none"}  
+  -@org = current_user.organization
+  = form_for(@org, url: "/update_org_settings") do |f|               
+    .mtop30
+      %h4 Company Information:
+    %hr
+    
+     
+    .row
+      .col-md-12
+        
+        .col-md-10
+          .fl.col-md-6.p0
+            .fl.grey_act
+              Name: 
+            .fl.col-md-8{style: "margin-left:62px"}
+              = f.text_field :name,:required => 'true',:class => 'form-control',:placeholder => 'Name'
+            .cb10
+            .fl.grey_act
+              Primary Contact: 
+            .fl.col-md-8{style: "margin-left:1px"}
+              = f.text_field :email,:required => 'true',:class => 'form-control',:placeholder => 'Email'
+            .cb10
+            .fl.grey_act
+              Employee Count: 
+            .fl.col-md-8
+              -@cn = CompanyStrength.find(:all)
+              =f.select :size_id, options_from_collection_for_select(@cn, "id", "range",(current_user.organization.size_id)), {:include_blank => '- Company Size -'},:class=>"form-control", :required => true
+            .cb10
+            .fl.grey_act
+              Website: 
+            .fl.col-md-8{style: "margin-left:54px"}
+              = f.text_field :website,:required => 'true',:class => 'form-control',:placeholder => 'Email'
+          .fl.col-md-6
+            .fl.grey_act Description:
+            .fl.col-md-8
+              = f.text_field :description,:required => 'true',:class => 'form-control',:placeholder => 'Description'
+            .cb10
+            .fl.grey_act Phone:
+            .fl.col-md-8{style: "margin-left:30px"}
+              - @org.build_phone unless @org.phone.present? 
+              =f.fields_for :phone do |p| 
+                = p.text_field :phone_no,:required => 'true',:class => 'form-control bfh-phone',:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999",:placeholder => 'Phone'
+              
+    %br
+    .mtop30
+      %h4 Address Information:
+    %hr
+    - @org.build_address unless @org.address.present? 
+      
+    =f.fields_for :address do |a|    
+      .row
+        .col-md-12
+          = a.hidden_field :organization_id,:value=>current_user.organization.id
+          .col-md-10
+            .fl.col-md-6.p0
+              .fl.grey_act
+                Street: 
+              .fl.col-md-8{style: "margin-left:62px"}
+                
+                = a.text_field :address,:required => 'true',:class => 'form-control',:placeholder => 'Street'
+              .cb10
+              .fl.grey_act
+                State: 
+              .fl.col-md-8{style: "margin-left:66px"}
+                = a.text_field :state,:required => 'true',:class => 'form-control',:placeholder => 'State'
+              .cb10
+              .fl.grey_act
+                Country: 
+              .fl.col-md-8{style: "margin-left:49px;"}
+                -@co = Country.find(:all)
+                =a.select :country_id, options_from_collection_for_select(@co, "id", "name",(@org.address.country_id)), {:include_blank => '- Select Country -'},:class=>"form-control", :required => true
+            .fl.col-md-6
+              .fl.grey_act City:
+              .fl.col-md-8{style: "margin-left:52px"}
+                = a.text_field :city,:required => 'true',:class => 'form-control',:placeholder => 'City'
+              .cb10
+              .fl.grey_act Zip:
+              .fl.col-md-8{style: "margin-left:58px"}
+                = a.text_field :zipcode,:required => 'true',:class => 'form-control',:placeholder => 'Zipcode'
+    .mtop30
+      %h4 Locale Information:
+    %hr
+    
+    .row
+      .col-md-12
+        .col-md-10
+          .fl.col-md-6.p0
+            .fl.grey_act
+              Currency Locale:: 
+            .fl.col-md-8
+              .form-group
+                = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, {:default=> current_user.time_zone }, :class=> "form-control",:required => true
+              
+  
+    %br
+    %center
+      %button.btn.btn-primary{type: "submit"} Update
+      %button.btn.btn-default{type: "button",onclick: "hide_edit_form()"} Cancel
+    %br

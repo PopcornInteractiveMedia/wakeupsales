@@ -1,0 +1,342 @@
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+:css
+  .tt-dropdown-menu{
+    overflow-y: auto;
+    max-height: 250px;
+  }
+  textarea {
+      color: #444;
+      padding: 5px;
+  }
+  
+  .txtstuff {
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+      overflow: hidden;
+      padding: 11px;
+  }
+  
+  .hiddendiv {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+  }
+  
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+  /* these must be the same for both */
+  .common {
+      width: 500px;
+      min-height: 47px;
+
+      overflow: hidden;
+  }
+  
+  .lbr {
+      line-height: 3px;
+  }  
+#dealModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title Add a new Lead
+      .modal-body
+        #deal-alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+          %button.close{onclick: "$('#deal-alert-msg').hide();$('#loader').hide();"} x
+          #deal_msg_divcrontab syntax
+        -deal=Deal.new
+        = form_for(deal, :url => leads_path, :remote => true, :html=>{:class => "form",:method=>"post",:id=>"new_deal"}) do |f|
+          %input{:type=>"hidden",:id=>"is_edit_deal_id",:name=> "is_edit_deal",:value=> "false"}
+          //%input{:type=>"hidden",:id=>"extension_deal_popup",:name=> "extension_deal_popup"}
+          -#= f.fields_for :contact, Contact.new do |contact|
+          -#  .row
+          -#    .form-group.col-md-6
+          -#      =contact.text_field :name,:class=>"col-md-12 form-control", :placeholder => "Name"
+          -#    .form-group.col-md-6
+          -#      =contact.email_field :email,:class=>"col-md-12 form-control", :placeholder => "Name"
+          .form-group{style: "margin-bottom:0"}
+            /%label
+            /  Title
+            /  %font{color: "red", size: "2"} *
+            =f.text_area :title, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"}, :style=> "height:41px;resize: none;", :placeholder => "Title",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .row
+            .form-group.col-md-6
+              /%label Deal Amount($)
+              =f.text_field :amount,:class=>"col-md-12 form-control",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)", :placeholder => "Deal Amount($)"
+            .form-group.col-md-6
+              /%label
+              /  Name
+              /  %font{color: "red", size: "2"} *
+              =f.text_field :first_name,:class=>"col-md-12 form-control typeahead",:onkeyup=>"return onlycharacters(event)",:onkeydown=>"return onlycharacters(event)", "data-provide"=> "typeahead" , :autocomplete=>"off", :required => true, :placeholder => "Contact Name"
+              =f.hidden_field :contact_id
+              = hidden_field_tag "company_type"
+              = hidden_field_tag "hidden_first_name"
+
+          .row
+            .form-group.col-md-6
+              /%label Email
+              - if all_org_users
+                =f.select :assigned_to, all_org_users.collect {|c| [ c.full_name, c.id ]}, {:include_blank => '- Assign user -'},:class=>"col-md-12 form-control", :required => true              
+            .form-group.col-md-6
+              /%label
+              /  Assigned To
+              /  %font{color: "red", size: "2"} *
+              =f.email_field :email,:class=>"col-md-12 form-control",:type=>"email", :placeholder => "Contact Email",:required => true
+          .row
+            .form-group.col-md-6
+              /%label
+              /  Country
+              /  %font{color: "red", size: "2"} *
+              
+              =f.select :country, Country.find(:all).collect {|c| [ c.name, c.id ]}, {:include_blank => '- Country -'},:class=>"col-md-12 form-control", :required => true,:onchange => "prefill_extension(this.value,'extension_for_deal','extension_deal_popup')"
+            .form-group.col-md-6    
+              /%label Work Phone
+              .input-group
+                %span.input-group-addon#extension_for_deal +1
+                =f.text_field :work_phone,:class=>"form-control bfh-phone",:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :onblur => "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:onclick =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit",id: "deal_submit_btn"} Save
+              %button.btn.btn-primary{type: "submit",id: "deal_submit_more"} Save & add more
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+
+#output2.hide
+:javascript
+  $("#deal_first_name").keypress(function() {
+  $('#deal_first_name').addClass('loadinggif');
+   setTimeout(hideload, 510)
+  });
+  $("#deal_first_name").keyup(function() {
+   $("#hidden_first_name").val($('#deal_first_name').val());
+  });
+  function hideload()
+  {
+   $('#deal_first_name').removeClass('loadinggif');
+  }
+  $(window).on('load', function () {
+    $('form input[type="text"].bfh-phone, form input[type="phone"].bfh-phone, span.bfh-phone').each(function () {
+      var $phone = $(this);
+      $phone.bfhphone($phone.data());
+    });
+  });
+  // prepare the form when the DOM is ready 
+ 
+  
+  $('#new_deal').bind('ajax:success', function(evt, data, status, xhr){
+  $('#loader').hide();
+  $("#inviteuserModal").modal('hide');
+  window.location.href ="/users";
+  });
+
+  $('#new_deal').bind('ajax:before', function(evt, data, status, xhr){
+  $('#loader').show();
+  });
+
+  $("#new_deal").bind("ajax:complete", function(evt, data, status, xhr) {
+  if(data.responseText !== " "){
+  $("#alert-msg").show();
+  $("#msg_div").html(data.responseText);
+  }
+  $('#loader').hide();
+  });
+    $('#new_deal')[0].reset();
+    $('#deal_submit_more').click(function() { $('#is_edit_deal_id').val('true');});
+    $('#deal_submit_btn').click(function() { $('#is_edit_deal_id').val('false');});
+    var options = { 
+        target:        '#output2',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest,  // pre-submit callback 
+        success:       showResponse,  // post-submit callback 
+ 
+        // other available options: 
+        //url:       "deals/create"         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: false,        // clear all form fields after successful submit 
+        resetForm: false        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind to the form's submit event 
+    $('#new_deal').submit(function() { 
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        
+        //if($('#is_edit_deal').val()== 'true')
+        //{  
+        //  return true;
+        //}
+        //else
+        //{
+          $(this).ajaxSubmit(options); 
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+          return false; 
+        //}
+    }); 
+  
+  function validatedeal()
+  {
+     if ($("#new_deal").valid()== true){
+      if($('#is_edit_deal_id').val() == 'false'){
+        $('#deal_submit_btn').prop("disabled", true).html("Please wait...");
+      }else{
+        $('#deal_submit_more').prop("disabled", true).html("Please wait...");
+      }
+      return true;
+     }
+     else{
+      return false;
+     }
+     
+  }
+  
+  // pre-submit callback 
+  function showRequest(formData, jqForm, options) { 
+      // formData is an array; here we use $.param to convert it to a string to display it 
+      // but the form plugin does this for you automatically when it submits the data 
+      var queryString = $.param(formData); 
+      //$('#deal_submit_btn').prop("disabled", true).html("Please wait...");
+      //$('#deal_submit_more').prop("disabled", true).html("Please wait...");
+      // jqForm is a jQuery object encapsulating the form element.  To access the 
+      // DOM element for the form do this: 
+      // var formElement = jqForm[0]; 
+   
+      //alert('About to submit: \n\n' + queryString); 
+   
+      // here we could return false to prevent the form from being submitted; 
+      // returning anything other than false will allow the form submit to continue
+      if(validatedeal() == true) 
+        return true;
+      else
+        return false; 
+  } 
+   
+  // post-submit callback 
+  function showResponse(responseText, statusText, xhr, $form)  { 
+      // for normal html responses, the first argument to the success callback 
+      // is the XMLHttpRequest object's responseText property 
+      $('#deal_submit_btn').removeAttr("disabled").html("Save");
+      //$('#deal_submit_more').removeAttr("disabled").html("Save & add more");
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'xml' then the first argument to the success callback 
+      // is the XMLHttpRequest object's responseXML property 
+   
+      // if the ajaxSubmit method was passed an Options Object with the dataType 
+      // property set to 'json' then the first argument to the success callback 
+      // is the json data object returned by the server 
+   
+      //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+      //    '\n\nThe output div should have already been updated with the responseText.');
+      var restext= responseText.split("-");
+      //alert(restext[1])
+      if(($('#is_edit_deal_id').val()== 'true') && (restext[1] == "success"))
+       {
+         $('#new_deal')[0].reset();
+         $("#dealModal").modal('hide');
+         window.location.href = "/leads/"+ restext[0] +"/edit";
+       }
+      else if(typeof restext[1] == "undefined" && (responseText != "success")){
+        $("#deal-alert-msg").show();
+        $("#deal_msg_div").html(responseText);
+      }
+       else
+       {
+       $('#new_deal')[0].reset();
+       
+       if($('#contact').val() == "contact"){
+         window.location.reload();
+       }
+       else if($('#hdntasks').val() == "mytask")
+        window.location.reload();
+       else{
+         window.location.href = "/leads";
+         $("#dealModal").modal('hide');
+        }
+       } 
+   }
+  
+  $('#deal_first_name.typeahead').typeahead([{
+    name: 'contacts',
+    minLength: 0,
+    limit: 500,
+    valueKey: 'name',
+    remote: {url: '/get_contacts/'+ #{current_user.organization.id if current_user.organization.present?}+ '?q=%QUERY'},
+    template: "<p style='word-wrap: break-word;'><strong>{{name}}</strong> - {{email}}</p>",
+    engine: Hogan
+    }]).on('typeahead:selected',onSelected).on('typeahead:opened',onOpened);
+  function onSelected($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    //    var hfield = document.getElementById('hfield');
+    var email = document.getElementById('deal_email');
+    var country = document.getElementById('deal_country');
+    var workphone = document.getElementById('deal_work_phone');
+    console.log(datum.id);
+    //    hfield.value = datum.id;
+    $("#deal_contact_id").val(datum.id);
+    $("#company_type").val(datum.company_type)
+    
+    email.value = datum.email;
+    country.value=datum.country_id;
+    workphone.value = datum.phone_no;
+    $("#deal_country").trigger("change")
+    
+  }
+  function onOpened($e){
+  $("#deal_contact_id").val("")
+  console.log('Opned');
+  }
+  
+  
+  
+  //$("#new_deal").validate({
+  //      messages: {
+  //        "deal[first_name]": "Please specify the first name",
+  //        "deal[email]": {
+  //          email: "Email address must be in the format of name@domain.com"
+  //          },
+  //        "deal[title]": "Please specify the title",
+  //        "deal[assigned_to]": "Please assign the deal to someone",
+  //        "deal[country]": "Please select the country"
+  //      }
+  //      //,
+  //      //errorElement: "div",
+  //      //wrapper: "div",  // a wrapper around the error message
+  //      //errorPlacement: function(error, element) {
+  //      //    
+  //      //    //offset = element.offset();
+  //      //    
+  //      //    //error.insertBefore(element);
+  //      //    //error.addClass('formErrorContent');  // add a class to the wrapper
+  //      //    //error.css('position', 'relative');
+  //      //    //error.css('left', offset.left + element.outerWidth());
+  //      //    //error.css('top', offset.top);
+  //      //}
+
+  //  });
+  /*auto expandable textarea */
+  var txt = $('#deal_title'),
+      hiddenDiv = $(document.createElement('div')),
+      content = null;
+  
+  txt.addClass('txtstuff');
+  hiddenDiv.addClass('hiddendiv common');
+  
+  $('body').append(hiddenDiv);
+  
+  txt.on('keyup', function () {
+  
+      content = $(this).val();
+  
+      content = content.replace(/\n/g, '<br>');
+      hiddenDiv.html(content + '<br class="lbr">');
+  
+      $(this).css('height', hiddenDiv.height());
+  
+  });

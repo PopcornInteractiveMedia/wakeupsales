@@ -1,0 +1,116 @@
+.tabbable.task_tab
+  %ul.nav.nav-tabs
+    =hidden_field_tag "latest_task_type", @deal.latest_task_type_id.present? ? @deal.last_task.name : "No-Action"
+    - all_count = badge_all_deal("Deal", @deal.id)
+    
+    %li#allTask
+      - func = all_count != 0 ? "widget_tasks('all')" : ""
+      - toggle_val = all_count != 0 ? "tab" : ""
+      - href_val = all_count != 0 ? "#all" : "javascript:"
+      - style = all_count == 0 ? "cursor:default;" : ""    
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+        All
+        %span 
+          (
+          =all_count
+          )
+    - today_count = badge_today_deal("Deal", @deal.id)
+    %li#todayTask
+      - func = today_count != 0 ? "widget_tasks('today')" : ""
+      - toggle_val = today_count != 0 ? "tab" : ""
+      - href_val = today_count != 0 ? "#today" : "javascript:"
+      - style = today_count == 0 ? "cursor:default;" : ""
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+        Today
+        %span 
+          (
+          =today_count
+          )
+    - overdue_count = badge_overdue_deal("Deal", @deal.id)
+    %li#overdueTask
+      - func = overdue_count != 0 ? "widget_tasks('overdue')" : ""
+      - toggle_val = overdue_count != 0 ? "tab" : ""
+      - href_val = overdue_count != 0 ? "#overdue" : "javascript:"
+      - style = overdue_count == 0 ? "cursor:default;" : ""
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+        Overdue
+        %span 
+          (
+          =overdue_count
+          )
+    - upcoming_count = badge_upcoming_deal("Deal", @deal.id)
+    %li#upcomingTask
+      - func = upcoming_count != 0 ? "widget_tasks('upcoming')" : ""
+      - toggle_val = upcoming_count != 0 ? "tab" : ""
+      - href_val = upcoming_count != 0 ? "#upcoming" : "javascript:"
+      - style = upcoming_count == 0 ? "cursor:default;" : ""
+      %a{"data-toggle" =>toggle_val, href: href_val, onclick: func, style: style}
+        Upcoming
+        %span 
+          (
+          =upcoming_count
+          )
+  #task_list.body{style: "padding:0px;"}
+    =render :partial => "deals/widget_task_list"
+=hidden_field_tag "today_count", badge_today_deal("Deal", @deal.id)
+=hidden_field_tag "overdue_count", badge_overdue_deal("Deal", @deal.id)
+=hidden_field_tag "upcoming_count", badge_upcoming_deal("Deal", @deal.id)
+
+:javascript
+  $(function() {
+    if(#{@comp_task_type.present?}){
+      widget_tasks("#{@comp_task_type}")
+      $("li").removeClass("active")
+      $("##{@comp_task_type}Task").addClass("active")
+    }
+    else{
+      tc=$("#today_count").val();
+      oc=$("#overdue_count").val();
+      uc=$("#upcoming_count").val();
+      //alert("tc="+tc);
+      //alert("oc="+oc);
+      //alert("uc="+uc);
+      if(tc > 0){
+         $("#todayTask").addClass("active");
+         widget_tasks('today');
+      }else if( tc == 0 && oc > 0){
+        $("#overdueTask").addClass("active");
+        widget_tasks('overdue');
+      }else if(tc==0 && oc ==0 && uc > 0){
+        $("#upcomingTask").addClass("active");
+        widget_tasks('upcoming');
+      }else{
+         $("#allTask").addClass("active");
+         widget_tasks('all');
+        
+      }
+    }
+  });
+  function widget_tasks(data){
+    action="/lead_task_widget"
+    $.ajax({
+        type: "POST",
+        url: action,
+        dataType: 'json',
+        data: {task_type: data, deal_id: "#{@deal.id}"},
+        async: true,
+        beforeSend: function(){
+          $("#ajax-loader_task").show();
+		  
+        },
+        success: function(data)
+        {
+          
+         $("#ajax-loader_task").hide();
+        },
+        error: function(data) {
+          $("#ajax-loader_task").hide();
+        },
+        complete: function(data) {
+          
+          $("#task_list").html(data.responseText);
+          $("#ajax-loader_task").hide();
+          timeout_trigger();
+        }
+    });
+  }

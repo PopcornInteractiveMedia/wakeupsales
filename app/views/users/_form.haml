@@ -1,0 +1,68 @@
+= form_for @user, :html => { :class => 'form-horizontal' } do |f|
+  .row
+    .form-group.col-md-6
+      %label
+        First Name
+        /%font{color: "red", size: "2"} *
+      =f.text_field :first_name, :required => true ,:class=> "col-md-3 form-control",:html=>{:maxlength=> "20"}
+    .form-group.col-md-6{style: "margin-left:5px"}
+      %label 
+        Last Name
+        /%font{color: "red", size: "2"} *
+      =f.text_field :last_name, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "20"}
+  .row
+    .form-group.col-md-6
+      %label
+        Email
+        /%font{color: "red", size: "2"} *
+      =f.email_field :email, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "50"}, :disabled => true
+    .form-group.col-md-6{style: "margin-left:5px"}
+      %label 
+        Work Phone
+        /%font{color: "red", size: "2"} *
+      /.input-group
+      /  %span.input-group-addon +1
+      =f.text_field :work_phone,:class=>"col-md-12 form-control bfh-phone",:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999", :value=> (@user.phone.phone_no if @user.phone.present?), :onblur => "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))",:onclick =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+  .row
+    .form-group.col-md-6
+      %label Time Zone
+      = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, { :class => 'form-control' }, :required => true
+      /= f.select "admin_type", options_from_collection_for_select(Role.all, "id","name"), { :include_blank=>true }
+    .form-group.col-md-6{style: "margin-left:5px"}
+      %label 
+        User Group
+        /%font{color: "red", size: "2"} *
+      - if @user.admin_type != 1 && params[:action] != "profile"
+        .radio
+          %label
+            =f.radio_button :admin_type, "2", :checked => true, :onclick => "$('#show_dropdown').hide();"
+            Admin
+        .radio
+          %label
+            =f.radio_button :admin_type, "3", :onclick => "$('#show_dropdown').show();"
+            Non-Admin
+            -if (@user.admin_type == 3)
+              -style="display:block;"
+            -else
+              -style="display:none;"
+            %span#show_dropdown{style: style}
+              = f.select :role_id, options_from_collection_for_select(current_user.organization.roles, "id","name", (@user.role.id if (@user.admin_type == 3) && @user.role.present?)), { :class => 'form-control'}
+      - else
+        - if @user.admin_type == 1
+          Super Admin
+        - if @user.admin_type == 2
+          Admin
+        - if @user.admin_type == 3
+          =@user.user_role.role.name
+  .row
+    .form-group.col-md-6
+      %label Profile Image
+      = f.file_field "profile_image",:class=> "col-md-12 form-control"
+      /= f.select "admin_type", options_from_collection_for_select(Role.all, "id","name"), { :include_blank=>true }
+      - if @user.image.present?
+        %br
+        = image_tag @user.image.image.url(:thumb)
+  .row
+    .form-actions
+      =f.submit "Update", :class=>"btn btn-primary", :disable_with => "Updating...."
+      =link_to "Cancel",users_path,:class=>"btn btn-default"

@@ -1,0 +1,30 @@
+.col-lg-12.con-box1{style: "border-top:none;border-radius:0;background:#fff"}
+  - if @current_user.present? && @current_organization.present? && (w=@current_user.widget).present?
+    -if w.chart
+      - if @current_user.is_admin? || @current_user.is_super_admin?
+        .con-box1
+          .fl.ic_d_sta
+          .fl.head_font
+            Deals by Tag
+          .cb10
+          %div
+            .pie_tag_chart_div{style: "padding:0 10px;"}
+              %div{style: "text-align:center;padding-top: 60px"}
+                %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}
+      .cb
+/=hidden_field_tag "pie_tag_display", pie_tag_display
+:javascript
+  $( document ).ready(function() {
+    //alert('pie_tag_display == 1');
+    selected_quarter = $('#selected_range_value').val();
+    $.ajax({
+      type: "POST",
+      url: "/pie_tag_chart",
+      data:{quarter: selected_quarter},
+      complete: function(data) {
+        //alert(data.responseText);
+        //alert('complete');
+        $(".pie_tag_chart_div").html(data.responseText);
+      }
+    });
+  });      

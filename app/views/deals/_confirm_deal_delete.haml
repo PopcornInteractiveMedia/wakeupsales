@@ -1,0 +1,24 @@
+#confirmDealDelete.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      = form_tag "/delete_selected_leads",  :class => "form",:method=>"post",:id=>"deal_delete", :remote => true do |f|
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title Do you want to delete the selected deal(s)?
+        .modal-body
+          = hidden_field_tag "deal_ids_to_delete",""
+          .row
+            .navbar-left{style: "margin-left: 15px;"}
+              = submit_tag "Ok", class: "btn btn-primary", disable_with: "Please wait..."
+              %a{href:"javascript:", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+:javascript
+  $(function(){
+    $("#deal_delete").bind("ajax:complete", function(evt, data, status, xhr){
+        if(data.responseText == "success"){
+          $('#confirmDealDelete').modal('hide');
+          window.location.reload();
+        }
+    });
+  })

@@ -1,0 +1,564 @@
+= javascript_include_tag "skypeCheck"
+=hidden_field_tag 'contact', 'contact'
+= javascript_include_tag "jquery.uploadfile.min"
+= stylesheet_link_tag "uploadfile.min"
+:css
+  span.upload {
+    overflow: hidden;
+  }
+  span.upload input {
+      display: block !important;
+      opacity: 0 !important;
+      overflow: hidden !important;
+  }
+  textarea {
+      color: #444;
+      padding: 5px;
+  }
+  .txtstuff {
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+      overflow: hidden;
+      padding: 11px;
+  }
+  .hiddendiv {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+  }
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+  /* these must be the same for both */
+  .common {
+      width: 500px;
+      min-height: 47px;
+      overflow: hidden;
+  }
+  .lbr {
+      line-height: 3px;
+  }  
+  #note_notes-wysiwyg-iframe{width:833px !important;}
+-if params[:action] == "index"
+  #last_added
+    %h3{style: "color: #8A8686;"} Last contact added
+.col-md-12{:style=>"margin-top:7%;"}
+  .col-md-4{:style => "border-right: #428fd0;padding-left: 3%;"}
+    .prof_det
+      .navbar-left{style: "padding:0"}
+        - if @contact.present? && @contact.is_company?
+          - contact_name = @contact.name
+        - else
+          - contact_name = @contact.full_name if @contact.present?
+      -ccode =  @contact.address &&  @contact.address.country ?  @contact.address.country.isd_code : "" if @contact.present?
+      %ul.contact-left
+        - @name = @contact.class.name == "IndividualContact" ? @contact.first_name : @contact.name
+        %li
+          .contactIcon
+            %span.contact-middle-center
+              - unless @name.nil?
+                = @name[0].upcase
+              - else
+                = @contact[0].upcase
+        %li
+          %h4
+            - unless @name.nil?
+              = @name.titlecase
+            - else
+              = @contact.titlecase
+          .prf_img
+            - if @contact.present? && @contact.linkedin_url.present?
+              =link_to "//"+@contact.linkedin_url, target: "_blank" do
+                .fl.soc_links_lin{title: "#{@contact.linkedin_url}", rel: "tooltip"}
+            -else
+              .fl.soc_links_lin.n_active
+            - if @contact.present? && @contact.facebook_url.present?
+              =link_to "//"+@contact.facebook_url, target: "_blank" do
+                .fl.soc_links_fb{title: "#{@contact.facebook_url}", rel: "tooltip"}
+            -else
+              .fl.soc_links_fb.n_active
+            - if @contact.present? && @contact.twitter_url.present?
+              =link_to "//"+@contact.twitter_url, target: "_blank" do
+                .fl.soc_links_twt{title: "#{@contact.twitter_url}", rel: "tooltip"}
+            -else
+              .fl.soc_links_twt.n_active
+            .cb
+        .cb   
+    %br
+    .grey_act CONTACT DETAILS:
+    %div
+      = @contact.email
+      - if @contact.class.name == "IndividualContact"
+        - con = "individual"
+      -else
+        - con = "company"
+        -activ_date = contact_last_activity_show(@contact.id,"#{con}")[0] if @contact.present?
+        -activ_by = contact_last_activity_show(@contact.id,"#{con}")[1] if @contact.present?
+        -if activ_by.present? && activ_date.present?
+          =activ_date
+          ago
+          &bull;
+          by
+          =activ_by
+        -else
+          No Activity Found
+        - if @contact.present? && @contact.is_company? && @contact.website.present?
+          %tr
+            %th Website
+            %td
+              %font= link_to @contact.website, @contact.website,  target: "_blank"
+        - if @work_phone.present? && @work_phone.first.phone_no.present?
+          %font
+            - @work_phone =  @contact.phones.present? ? ( @contact.phones.by_phone_type("work")) : ''
+            - if @work_phone.present? && @work_phone.first.phone_no.present?
+              - phone_code= @contact.phones.first.extension.nil? ?  "" : @contact.phones.first.extension
+              %span.soc_skyp
+                =link_to  "+" + ccode + @work_phone.first.phone_no, "skype:+" + ccode+ (@work_phone.first.phone_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+              -if phone_code.present?
+                -if phone_code.include?("+")
+                  -phone_code.slice!(0)
+                  x
+                  =phone_code
+        - if @mobile_phone.present? && @mobile_phone.first.present? && @mobile_phone.first.phone_no.present?
+          %font
+            - mobile_code= @contact.phones.first.extension.nil? ? "" : @contact.phones.first.extension
+            - mobile_no = @mobile_phone.first.phone_no
+            =image_tag "/assets/skype.png"
+            =link_to "+" + ccode + mobile_no, "skype:+" + ccode+ (mobile_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+        - if @contact.present? && @contact.address.present?
+          - if @contact.address.address.present?
+            = @contact.address.address
+            %span{style: "margin-left:-4px;"}
+              ,
+            - if @contact.address.city.present?
+              %span{style: "margin-left:2px;"}
+                = @contact.address.city
+              %span{style: "margin-left:-4px;"}
+                ,
+            - if @contact.address.state.present?
+              %span{style: "margin-left:2px;"}
+                = @contact.address.state.strip
+              %span{style: "margin-left:-4px;"}
+                ,
+            - if @contact.address.zipcode.present?
+              %span{style: "margin-left:2px;"}
+                = @contact.address.zipcode
+              %span{style: "margin-left:-4px;"}
+                ,
+            - country = @contact.address.country_id.present? ? (Country.find @contact.address.country_id).name : ''
+            - if !country.blank?
+              %span{style: "margin-left:2px;"}
+                = country
+    %br
+    .grey_act CONTACTS ON ORGANIZATION:
+    .all-contacts
+      - @contacts.each do |con|
+        %ul.contact-left
+          - @name = con.class.name == "IndividualContact" ? con.first_name : con.name
+          %li
+            .small-contactIcon
+              %span.small-contact-middle-center
+                - unless @name.nil?
+                  = @name[0].upcase
+                - else
+                  = con.email[0].upcase
+          %li
+            %h5
+              - unless @name.nil?
+                = @name.titlecase
+              - else
+                = con.titlecase
+          .cb
+    .navbar-right
+      %div
+        - if@contact.present? && @contact.address && @contact.address.country
+          %a{href: "https://maps.google.com/maps?q=#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", target: "_blank"}
+            %img{src: "https://maps.google.com/maps/api/staticmap?&size=246x112&sensor=true&maptype=terrain&markers=size:small|color:red|#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", style: "max-height:400px; max-width: 100%"}
+    .cb10  
+  .col-md-8
+    .tablisting.task_tab
+      %ul.nav.nav-tabs
+        %li#todayTask.active
+          %a{"data-toggle" => "tab", href: "new", onclick: "load_activity_cum_deals('activity')", style: "border-radius:5px 0 0 0 "}
+            .fl.ic_act_b_stm
+            .fl.fnt18 Activities
+            .cb
+        %li#overdueTask
+          %a{"data-toggle" => "tab", href: "#overdue", onclick: "load_activity_cum_deals('deals')", style: "cursor:pointer;"}
+            .fl.ic_deal_gry
+            .fl.fnt18 Leads
+            .cb
+        /%li#attachments
+        /  %a{"data-toggle" => "tab", href: "#overdue", onclick: "load_activity_cum_deals('attachments')", style: "cursor:pointer;"}
+        /    .fl.ic_deal_gry
+        /    .fl.fnt18 Attachments
+        /    .cb
+        - if @contact.class.name == "CompanyContact"
+          %li#personContacts
+            %a{"data-toggle" => "tab", href: "#overdue", onclick: "load_activity_cum_deals('people')", style: "cursor:pointer;"}
+              .fl.ic_indivisual_gry
+              .fl.fnt18 Persons
+              .cb
+      .cb10.get-space
+    .cb
+    .activity_cum_deals_div.cmn_cl{style: "border: 1px solid #DDDDDD;margin-top: -2px;"}
+  .cb
+.cb
+
+= render :partial => "shared/edit_popup_contact"
+
+:javascript
+
+  $(function(){
+
+    load_activity_cum_deals("activity");
+
+    var options = { 
+
+        target:        '#new-notes-popup',   // target element(s) to be updated with server response 
+
+        beforeSubmit:  showRequest_notes_attachment,  // pre-submit callback 
+
+        success:       showResponse_notes_attachment, // post-submit callback 
+
+        //data: { key1: 'value1', key2: 'value2' }
+
+        // other available options: 
+
+        //url:       url         // override for form's 'action' attribute 
+
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+
+        clearForm: true        // clear all form fields after successful submit 
+
+        //resetForm: true        // reset the form after successful submit 
+
+ 
+
+        // $.ajax options can be used here too, for example: 
+
+        //timeout:   3000 
+
+    }; 
+
+    // bind to the form's submit event 
+
+    $('#new-notes-popup-contact').submit(function() { 
+
+        //formValidation();
+
+        // inside event callbacks 'this' is the DOM element so we first 
+
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+
+        $(this).ajaxSubmit(options); 
+
+        
+
+        // !!! Important !!! 
+
+        // always return false to prevent standard browser submit and page navigation 
+
+        return false; 
+
+    }); 
+
+     $("#fileuploadercontact").uploadFile({
+
+      url:"/upload_multiple_note_attach",
+
+      multiple:true,
+
+      fileName:"myfile",
+
+      showDelete: true,
+
+      returnType: "json",
+
+      //showAbort:false,
+
+      showDone:false,
+
+      deletelStr: "",
+
+      abortStr: "",
+
+      uploadButtonClass:"ajax-file-upload-green",
+
+      //dynamicFormData: function()
+
+      //{
+
+      //  var deal_id = $("#deal_id").val();
+
+      //  var data ={ deal_id: deal_id }
+
+      //  return data;
+
+      //},
+
+      
+
+      onSuccess:function(files,data,xhr)
+
+      {
+
+        
+
+        tempids=[];
+
+        if(data["message"] =="success")
+
+        {
+
+          
+
+          if($("#temp_file_ids").val() != "")
+
+          {
+
+          tempids= $("#temp_file_ids").val().split(",");
+
+          addItem = data["id"];
+
+          tempids.splice(tempids.length,1, addItem);
+
+          $("#temp_file_ids").val(tempids);
+
+          }
+
+          else
+
+          {
+
+            $("#temp_file_ids").val(data["id"]);
+
+          }
+
+          set_required_for_file_descrption(this);
+
+        }
+
+        
+
+      },
+
+      deleteCallback: function (data, pd) {
+
+      var tempids=[]; 
+
+      tempids= $("#temp_file_ids").val().split(",");
+
+      removeItem = data["id"];
+
+      tempids.removeByValue(removeItem);
+
+      $("#temp_file_ids").val(tempids);    
+
+      
+
+         $.post("/delete_temp_note_attach?tf_id=" + data["id"], {op: "delete",id: data["id"]},
+
+             function (resp,textStatus, jqXHR) {
+
+             
+
+              
+
+             });
+
+          
+
+           pd.statusbar.hide(); //You choice.
+
+      }
+
+    });
+
+
+  });
+
+  
+
+  Array.prototype.removeByValue = function(val) {
+
+      for(var i=0; i<this.length; i++) {
+
+          if(this[i] == val) {
+
+              this.splice(i, 1);
+
+              break;
+
+          }
+
+      }
+
+  }
+
+  function getd(){
+
+    $('#hidden_note').val($('textarea').val().replace(/\n/g, "<br />"));
+
+  }
+
+  window.onload=function(){ got_select_item();};
+
+   function got_select_item()
+
+   {
+
+      if($("#cont_name_for_list").val() != "" && typeof $("#cont_name_for_list").val() != 'undefined'){
+
+      //alert($("#cont_name_for_list").val());
+
+      ltr = $("#cont_name_for_list").val().charAt(0).toUpperCase();
+
+      $("#list_buttons .panel").find(".panel-collapse").removeClass('in');
+
+      $("#head"+ltr).find(".panel-collapse").addClass('in');
+
+      $("#head"+ltr).find(".panel-heading").trigger( "click" );
+
+      $("#cont_name_for_list").val("")
+
+      }
+
+   } 
+
+  function remove_note()
+   {
+    $('#note_notes').val('');
+    $("#contact_note_div").hide('slow');
+    $("#show_file_name").hide();
+    $(".ajax-file-upload-statusbar").remove();
+    $("#temp_file_ids").val("");
+   } 
+
+  function hightlight_name(){
+
+     cont_id = $("#cont_id_for_list").val();
+
+     element = $("a#contact_"+cont_id);
+
+     make_select(element);
+
+  }
+
+  function load_activity_cum_deals(data){
+
+    if(data=="deals")
+
+      $("#moreActivity").hide();
+
+    else if(data=="deals")
+
+      $("#moreActivity").show()
+
+    else
+
+      $("#moreActivity").show()
+    action="/contact_widget"
+
+    $.ajax({
+
+        type: "POST",
+
+        url: action,
+
+        dataType: 'json',
+
+        data: {tab_type: data, id: "#{@contact.id if @contact.present?}", contact_type: "#{@contact.class.name if @contact.present?}"},
+
+        async: true,
+
+        beforeSend: function(){
+
+          $("#task_loader,.fixed_loader").show();
+
+        },
+
+        success: function(data)
+
+        {
+
+         
+
+        },
+
+        error: function(data) {
+
+          $("#task_loader,.fixed_loader").hide();
+
+        },
+
+        complete: function(data) {
+
+          $(".activity_cum_deals_div").html(data.responseText);
+
+          $("#task_loader,.fixed_loader").hide();
+
+          $('a,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+
+        }
+
+    });
+
+  }
+
+  var txt = $('#note_notes'),
+
+    hiddenDiv = $(document.createElement('div')),
+
+    content = null;
+
+  
+
+  txt.addClass('txtstuff');
+
+  hiddenDiv.addClass('hiddendiv common');
+
+  
+
+  $('body').append(hiddenDiv);
+
+  
+
+  txt.on('keyup', function () {
+
+  
+
+      content = $(this).val();
+
+  
+
+      content = content.replace(/\n/g, '<br>');
+
+      hiddenDiv.html(content + '<br class="lbr">');
+
+  
+
+      $(this).css('height', hiddenDiv.height()+20);
+
+  
+
+  });
+
+
+
+   $('#show_nt_contact_div').click(function () {
+
+     $('#contact_note_div').slideToggle('slow');
+
+   });
+  function show_edit(id)
+    {
+      
+      $("#show_edit_"+id).show();
+      $("#show_trash_"+id).show();
+    }
+  function hide_edit(id)
+    {
+      $("#show_edit_"+id).hide();
+      $("#show_trash_"+id).hide();
+    }

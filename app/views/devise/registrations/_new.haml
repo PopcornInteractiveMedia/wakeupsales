@@ -1,0 +1,77 @@
+/=javascript_include_tag "bootstrap-formhelpers-phone.js"
+/ Invite user popup starts
+#signup_modal_popup.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title Sign up
+      .modal-body
+        #alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+          %button.close{onclick: "$('#alert-msg').hide();$('#loader').hide();"} x
+          #msg_div
+        = form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html=>{:class => "form", :autocomplete => "off"}) do |f|
+          = devise_error_messages!
+          .form-group
+            =f.text_field :first_name, :required => true ,:class=> "form-control",:html=>{:maxlength=> "20"}, :placeholder => "First Name",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .form-group
+            =f.text_field :last_name, :required => true ,:class=> "form-control",:html=>{:maxlength=> "20"}, :placeholder => "Last Name",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .form-group          
+            = f.text_field  :organization_name, :class=>"form-control", :placeholder=>"Organization Name", :required => true,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .form-group
+            = f.email_field :email, :class=>"form-control email_sgnup_form", :placeholder=>"Email" , :required => true,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+            = f.hidden_field "is_beta_user", :value => "0"
+          .form-group
+            = f.text_field  :organization_website, :class=>"form-control", :placeholder=>"Website", :required => true,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .form-group
+            = f.select :organization_size, CompanyStrength.find(:all).collect {|c| [ c.range, c.id ]}, {:include_blank => '- Organization Size -'},  :required => "true", :class=>"form-control", :required => true
+          .form-group
+            = f.password_field :password, :class=>"form-control", :placeholder=>"Password", :required => true
+          .form-group
+            = f.password_field :password_confirmation, :class=>"form-control", :placeholder=>"Password Confirmation" , :required => true
+          .form-group
+            = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, { :class => 'form-control' }, :required => true
+          .modal-footer
+            %br
+            .pull-left
+              /%button.btn.btn-default{"data-dismiss" => "modal", type: "button"} Close
+              = f.submit "Sign up", :class=>"btn btn-success", :disable_with => "Saving....", :onclick => "return chk_validation_signup()"
+            .pull-left{style: "font-size: 12px;margin-top:5px;margin-left: 10px;"}
+              By clicking this button, you agree to our 
+              %a{href: "#"}
+                terms & conditions
+              and
+              %a{href: "#"}
+                privacy policy
+:javascript
+  $(document).ready(function(data) {
+    $('#user_invite_form').bind('ajax:success', function(evt, data, status, xhr){
+    $('#loader').hide();
+    $("#inviteuserModal").modal('hide');
+    window.location.href ="/users";
+    });
+
+    $('#user_invite_form').bind('ajax:before', function(evt, data, status, xhr){
+    $('#loader').show();
+    });
+
+    $("#user_invite_form").bind("ajax:complete", function(evt, data, status, xhr) {
+    if(data.responseText !== " "){
+    $("#alert-msg").show();
+    $("#msg_div").html(data.responseText);
+    }
+    $('#loader').hide();
+    });
+  });
+  function chk_validation_signup(){
+    $("#new_user [required]").each(function(index) {
+      var userAgent = navigator.userAgent.toString().toLowerCase();
+      if ((userAgent.indexOf('safari') != -1) && !(userAgent.indexOf('chrome') != -1)) {
+        if (!$(this).val()) {
+          alert("Please fill all required fields.");
+          $(this).focus();
+          return false;
+        }
+      } 
+    });  
+  }

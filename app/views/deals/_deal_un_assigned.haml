@@ -1,0 +1,259 @@
+.table-responsive
+  %table#dataTable_un_assigned.table.white-table.table-hover{"data-source"=>leads_url(format: 'json',params: {cuser: current_user.id,_type: 'un_assigned',filtertype: params[:filtertype],filtervalue: params[:filtervalue], assigned_to: params[:assigned_to], created_by: params[:created_by], cre_by: cookies[:cre_by], cre_by_val: cookies[:cre_by_val], asg_by: cookies[:asg_by], asg_by_val: cookies[:asg_by_val], loc: cookies[:loc], loc_val: cookies[:loc_val], priority: cookies[:priority], priority_val: cookies[:priority_val], daterange: cookies[:daterange],last_touch: cookies[:last_touch],last_tch: cookies[:last_tch], dt_range: cookies[:dt_range], dtrange_from: cookies[:dtrange_from], dt_range_from: cookies[:dt_range_from], dtrange_to: cookies[:dtrange_to], dt_range_to: cookies[:dt_range_to],q: cookies[:deal_quarter], y: cookies[:deal_year], tag: cookies[:tag]})}
+    %thead
+      %tr
+        %th.dropdown#deal_label_menu
+          %a#un_assigned_Dropdown.dropdown-toggle{:href=>"javascript:","data-toggle" => "", :style=> "cursor:default;text-decoration:none;"}
+            #un_assignedLabel.label_arrow
+              %span.icon-chevron-down
+                =image_tag("drop-down-arrow.png")
+          %ul.dropdown-menu.custom-menu.fl{:style=>"right:auto;padding-left:5px;left:-3px"}
+            %li.arrow_top{style: "left:0;z-index:99"}
+              =hidden_field_tag "change_assigned","1"
+            %li{"data-toggle" => "modal", href: "#assignDealModal", rel: "popup", title: "Reassign user",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+              Reassign User
+            %li{"data-toggle" => "modal", href: "#confirmDealDelete", rel: "popup", title: "Delete selected deals",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+              Delete deals
+        %th Title
+        %th Contact
+        %th Location
+        %th Created
+        %th{style: "width:120px"} Assigned To
+    %tbody
+      
+   
+:javascript
+  $('#task_loader').show();
+  "use strict";
+  $(".show-drop-down_data").on("click", function(event){
+    event.stopPropagation();
+  });
+  $('#dataTable_un_assigned').dataTable({  
+    oLanguage: {"sLengthMenu": "_MENU_" },
+    sPaginationType: "bootstrap",
+    bJQueryUI: true,
+    bProcessing: reset_badge_count(),
+    dataType: "json",
+    aLengthMenu: [[20, 25, 50, 100], [20, 25, 50, 100]],
+    iDisplayLength: 20,
+    bServerSide: true,
+    "bStateSave": true,
+    aoColumns: [{sWidth: '70px'},{sClass: 'col-md-3'},{sClass: 'col-md-3'},null,{sWidth: '110px'},null],
+    "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+    sAjaxSource: $('#dataTable_un_assigned').data('source'),
+    aaSorting: [[0,'desc']],
+    aoColumnDefs: [
+      {
+        aTargets: [0],
+        bSortable: false,
+        iSortCol_0: 0,
+        mRender: function (data, type, row ) {
+                if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")))
+                  $("#badge_un_assigned").html("(0)");
+                  $("#badge_un_assigned").html('(' + row[34] + ')');
+                  
+                  
+                  if(row[25] > 25){
+                    $(".dataTables_length").show();
+                    $('.dataTables_length select').addClass('form-control');
+                  }
+               
+                //str="<input type='checkbox' value='" + row[0] +"' deal_status='" + row[31] +"' name='active_un_assigned_label_menu' class='fl incoming_chk_box_class' onclick='un_assigned_chk_box()'>";  
+                
+                //return str;
+                str="<input type='checkbox' value='" + row[0] +"' deal_status='" + row[22] +"' name='active_un_assigned_label_menu' class='fl incoming_chk_box_class' onclick='un_assigned_chk_box()'>";  
+
+                 str+="<div class='dropdown fl'> <div class='deal_set fl dropdown-toggle' rel='tooltip' title='Actions' data-toggle='dropdown' onclick=\"scrollbtm(this);$('#clicked_button_ref').val('listmenu');\" style='cursor:pointer'></div>";
+       
+                  var dele = "<li><a rel='nofollow' id='delete_unassigned_link' href='javascript:' onclick=\"delete_unassigned_deal('" + row[0] + "')\"><span class='glyphicon glyphicon-trash' style='margin-right:5px;'></span>Delete</a></li>"
+         
+                str+= "<br><ul class='dropdown-menu'><li class='arrow_top'></li><li><a href='/leads/"+ row[0]+"/edit'><span class='glyphicon glyphicon-edit' style='margin-right:5px;'></span>Edit</a></li> <li class='divider'></li><li><a href='javascript:' onclick=\"quick_edit('" + row[0] + "')\"><span class='quick-edit' style='margin-right:5px;' ></span>Quick Edit</a></li>  <li class='divider'></li>"+ dele +"<li class='divider'></li><li><a onclick=\"$('#reassign_deal_ids').val('" + row[0] + "');reset_all_checkbox();\" href='javascript:' data-toggle='modal' data-target='#assignDealModal'><span class='glyphicon glyphicon-user' style='margin-right:5px;'></span>Reassign User</a></li></ul></div>";
+                return str
+              }
+       },
+      {
+        aTargets: [1],
+        bSortable: true,
+        mRender: function(data, type, row ){
+            var str= "<div style='line-height: 20px;' class='dealrow' > \
+            <div id='deal_popup_menu'> \
+              <a class='link_n' href='/leads/" + row[0] + "'> \
+                "+row[1] +"\
+              </a> \
+            </div> \
+            <div class='fl grey_small'> \
+              <i class='icon-time' title='Last activity'></i> \
+              " + row[2] +"\
+              <div> \
+                "+ showlabelicons(row[5],'incoming')+"\
+              </div> \
+            </div> \
+              <div>"
+              str+="</div>\
+              <br> \
+            </div> \
+          </div>"; 
+            return str;
+            }
+      },
+      {
+          aTargets: [2],
+          bSortable: false,
+          mRender: function(data, type, row ){
+             str="<a href='/"+row[27]+"/"+row[16]+"' rel='tooltip' title='"+row[15]+"'>"+row[6]+"</a>";
+                    
+             if(row[7] != ''){
+              str+= "<i class='icon-phone'></i>" +",&nbsp;"+ row[7];
+             }
+             if(row[8] != ''){
+              if(row[8].length > 21)
+                var shrt_email = row[8].substring(0,21) + "..."
+              else
+                var shrt_email = row[8]
+              str+= "<br/> <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8]+"');$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' class='link_n' data-toggle='modal' data-target='#SendEmailModal' rel='tooltip' title='"+row[8]+"'>"+shrt_email+"</a>";
+            }
+          return str    
+      }},
+       
+      {
+          aTargets: [5],
+          bSortable: true,
+          mRender: function(data, type, row ){
+          
+          if(row[17] != ''){
+          //return  "<span style='color:#333'><a data-toggle='modal' href='#assignDealModal' rel='popup' style='padding:5px 5px 0px 16px;cursor:pointer' onclick=\"$('#reassign_deal_ids').val('"+ row[0]+"');\"  title='Reassign user'>N/A</a></span>";
+          return  "<a class='lead_asgn_to' href='javascript:' id=' "+ row[0] +" ' >Reassign User </a>";
+          }
+          else{return ""}
+          }},
+
+      {aTargets: [3],
+
+          bSortable: true,
+          mRender: function(data, type, row ){
+            if((row[12] != '') && (row[13] != '')){
+            return row[12] + ", " + row[13];
+            }
+            else{
+            return row[12];
+            }
+            }},
+         {aTargets: [4],
+          bSortable: true,
+          mRender: function(data, type, row ){
+            str="<br/><div class='grey_small'>&bull; by \
+              " + row[24] + " \
+              </span></div>"
+            return row[25]+str;             
+            }},
+    ],
+   fnPreDrawCallback: function() { $('#task_loader').show();},
+   fnDrawCallback: function() {
+              //$('#delete_unassigned_link').bind('ajax:complete', function(evt, data, status, xhr){
+              //  alert('complete')
+              //  get_deals('un_assigned');
+              //});
+              $('#task_loader').hide();
+              $('a[rel="tooltip"],i,input:checkbox,button,div').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+
+              $('.dealrow').mouseout(function (e) {
+                $('.actions', this).hide();
+              });    
+              if (Math.ceil((this.fnSettings().fnRecordsDisplay()) / this.fnSettings()._iDisplayLength) > 1)  {
+
+                      $('.dataTables_processing').css("display", "none");
+                     
+              } else {
+
+              }
+              $('a.lead_asgn_to').editable({
+                url: '/change_assigned_to?type=unassigned',    
+                pk: 1,
+                type: 'select',
+                source: '/get_user_list_lead?from=deal_detail',
+                title: 'Select User',   
+                data: {custom: 'Select User'}, 
+                validate: function(value) {
+                  if($.trim(value) == '')
+                    return 'Please select user';
+                },
+                success: function(response, newValue) {
+                   //oTable.fnDraw();
+                   get_deals('un_assigned');
+                }
+              });
+          }
+    
+  });    
+  function reset_badge_count(){
+    if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")))
+       $("#badge_un_assigned").html("(0)");
+  }
+  function delete_unassigned_deal(id){
+      if(confirm("Do you want to delete the lead?")){
+      $.ajax({
+        type: "DELETE",
+        url: "/leads/"+id,
+        dataType: 'json',
+        async: true,
+        data: {type: "unassigned"},
+        beforeSend: function(){
+          $("#show_loader").show();
+        },
+        success: function(data)
+        {
+          //$("#task_loader").hdie();
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          //$(document).trigger("add-alerts", [{'message': 'Deal has been deleted successfully.' ,'priority': 'success'}]);
+          get_deals('un_assigned');
+        }
+      });
+    } else {
+        return false;
+    }
+  }
+  function un_assigned_chk_box(){
+    var $cbs = $('input[name="active_un_assigned_label_menu"]');
+    var total = 0;
+    $cbs.each(function() {
+        if (this.checked){
+            total ++;
+        }
+    });
+    
+  if(total > 0){
+    $("#un_assignedLabel").removeClass("label_arrow")
+    $("#un_assignedLabel").addClass("label_arrow_active")
+    $("#un_assigned_Dropdown").attr("data-toggle", "dropdown")
+  }else{
+    $("#un_assignedLabel").addClass("label_arrow")
+    $("#un_assignedLabel").removeClass("label_arrow_active")
+    $("#un_assigned_Dropdown").removeAttr("data-toggle", "dropdown");
+    $(".DataTables_sort_wrapper").removeClass("open")
+  }
+  var checkboxes = document.getElementsByName('active_un_assigned_label_menu');
+  var vals = "";
+  for (var i=0, n=checkboxes.length;i<n;i++) {
+   if (checkboxes[i].checked) 
+   {
+    vals += checkboxes[i].value+ ","
+   }
+  }
+  $("#mass_deal_ids").val(vals);
+  $("#reassign_deal_ids").val(vals);;
+  $("#deal_ids_to_delete").val(vals);
+  
+  };  
+  
+   function reset_all_checkbox()
+  {
+   $('.incoming_chk_box_class:checkbox').each(function() 
+   { 
+    this.checked = false; 
+   }); 
+  }
+

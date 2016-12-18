@@ -1,0 +1,266 @@
+#taskNoteModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal", onclick: "uncheck_task_chkbox()"} ×
+        %h4.modal-title
+          Outcome of the task
+      .modal-body
+        =hidden_field_tag "task_type"
+        %form{onsubmit: "complete_this_task();return false;", id: "task_note_form", style:"margin-top: -20px;"}
+          .form-group
+            - @task_out = TaskOutcome.find(:all)
+            .cb10
+            .cb
+            .cb
+            -@task_out.each do |t_o|
+              .fl.task_out_main{:style=> "width:250px;"}
+                /=check_box_tag 'task_outcome', t_o.id,:required=>true
+                %input{id: "#{t_o.name}",name: "task_outcome",class: "ff", value: t_o.id,type: "checkbox",required: "true"}
+                =t_o.name
+            .cb
+
+            = text_area_tag "task_note", "", name:"not" ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"},:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", :style=> "height:41px;resize: none;display:none;"
+            %br
+            %input#create_task{name: "create_task", type: "checkbox",checked: "checked",onclick: "update_taskbox()"}
+            %span
+              %b
+                Create Task 
+            = hidden_field_tag "task_id"
+            = hidden_field_tag :create_task_comp, "1"
+            = hidden_field_tag "task_multi_out"
+            =hidden_field_tag "hidden_outcome","",name: "task_note"
+            =hidden_field_tag "contact_id", (@contact.present? ? @contact.id : "")
+          .cb10
+          .modal-footer
+            .pull-left
+              %button.btn.btn-primary{type: "submit", onclick: "task_out_chk();getda('hidden_outcome');"} Done
+              %button.btn.btn-default{"data-dismiss" => "modal", type: "button", onclick: "clear_task_out();complete_this_task();getda('hidden_outcome');"} Skip
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal",onclick: "uncheck_task_chkbox()"}
+                %span.c_links
+                  Cancel
+:javascript
+  function task_outcome(id){
+    $('#create_task').prop('checked', true);
+    $("#create_task_comp").val(1)
+    $("#task_note").hide();
+    $(".ff").attr('checked',false);
+    $(".ff").attr('required',true);
+    $("#task_id").val(id);
+    if($("#complete_task_"+id).is(":checked")){
+      $("#taskNoteModal").modal('show');
+    }else{
+      complete_this_task();
+    }
+  }
+  function update_taskbox()
+  {
+   if($("#create_task").is(':checked'))
+     $("#create_task_comp").val(1)
+   else
+     $("#create_task_comp").val(0)
+  }
+  function task_out_chk()
+  {
+    
+    var checkboxes = document.getElementsByName('task_outcome');
+    var vals = "";
+    for (var i=0, n=checkboxes.length;i<n;i++) {
+     if (checkboxes[i].checked) 
+     {
+      vals += checkboxes[i].value+ ","
+     }
+    }
+    
+    $("#task_multi_out").val(vals);
+  }
+  $("input:checkbox[name=task_outcome]").click(function() {
+   
+    var value = $(this).val();
+    if(value == "8" || value == 8)
+
+    {
+      $('.ff').removeAttr("checked");
+      $('.ff').removeProp('required');
+      $('#Others').prop('checked', true);
+      $("#task_note").show();
+      $( "#task_note" ).slideDown("slow");
+      $('#task_note').prop('required', true);
+    }
+    else
+    {
+      $('#Others').prop('checked', false);
+      $('.ff').removeProp('required');
+      $("#task_note").hide();
+      $( "#task_note" ).slideUp("slow");
+      $('#task_note').removeProp('required');
+    }
+  });
+  function clear_task_out()
+  {
+    $("#task_note").hide();
+    $('.ff').removeAttr("checked");
+
+  }
+  function reset_task_out(){
+    $("#task_note").hide();
+    $("input:checkbox").attr('checked',false);
+    $("input:checkbox").attr('required',true);
+  }
+   function getda(id){
+    $('#'+id).val($('#task_note').val().replace(/\n/g, "<br />"));
+  }
+  /*auto expandable textarea */
+  var outcome = $('#task_note'),
+      hiddenOutDiv = $(document.createElement('div')),
+      content = null;
+  
+  outcome.addClass('txtstuff');
+  hiddenOutDiv.addClass('hiddendiv common');
+  
+  $('body').append(hiddenOutDiv);
+  
+  outcome.on('keyup', function () {
+  
+      contentout = $(this).val();
+  
+      contentout = contentout.replace(/\n/g, '<br>');
+      hiddenOutDiv.html(contentout + '<br class="lbr">');
+  
+      $(this).css('height', hiddenOutDiv.height()+20);
+  
+  });
+  
+  /*end auto expandable textarea */
+  function uncheck_task_chkbox()
+  {
+    var task_id= $("#task_id").val();
+    $('#complete_task_'+task_id).prop('checked', false);
+  }
+  function complete_this_task(){
+   
+    $("#taskNoteModal").modal('hide');
+    //var task_out_val = $('input[name=task_outcome]:checked').val();
+    var task_multi = $("#task_multi_out").val();
+    var create_task = $("#create_task_comp").val();
+    var id= $("#task_id").val();
+    var note= $("#hidden_outcome").val();
+    var task_type= $("#task_type").val();
+    var stype="task";
+    var deal_id="";
+    var contact_id="";
+    var x = false;
+    if($("#complete_task_"+id).is(":checked")){
+      action="/complete";
+    }else{
+      action="/start_task";
+    }
+    is_deal= (document.location.href.toString().split(document.location.host)[1].indexOf("/leads")== 0);
+    is_dashboard= (document.location.href.toString().split(document.location.host)[1].indexOf("/dashboard")== 0) || (document.location.href.toString().split(document.location.host)[1] == "/");
+    is_contact= (document.location.href.toString().split(document.location.host)[1].indexOf("/contacts")== 0);
+    is_task= (document.location.href.toString().split(document.location.host)[1].indexOf("/tasks")== 0);
+    if(is_deal == true)
+    {
+      stype = "deal";
+      deal_id = $("#deal_id").val();
+    }else if(is_dashboard == true){
+      stype = "dashboard";
+    }else if(is_contact == true){
+       stype = "contact";
+       contact_id=$("#contact_id").val();
+    }else if(is_task == true)
+    {
+      stype = "task";
+    }
+    $.ajax({
+      type: "POST",
+      url: action,
+      dataType: 'json',
+      async: true,
+      data: {task_id: id, note: note,task_out_val: task_multi,create_task: create_task,stype: stype,deal_id: deal_id, task_type: task_type,contact_id: contact_id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        if(stype == "deal")
+        {
+          $("#task_header").html(data.responseText);
+          var type = $("#latest_task_type").val();
+          $("#deal_"+deal_id).html("<div class='last_task_"+ type +"'><div class='label"+ type +" labelTaskType tasktype'>"+ type +"</div></div>");
+        }
+        else if(stype == "contact")
+        {
+          $("#contact_task_list").html(data.responseText);
+        }
+        else
+        {
+          $("#task_header").html(data.responseText);
+          $("#task_note_form")[0].reset();
+          $("li").removeClass("active");
+          $("#"+task_type+"Task").addClass("active");
+          if($('#dashboard').val() == "dashboard")
+          {
+            widget_tasks(task_type);
+            $.ajax({
+              type: "POST",
+              url: "/usage",
+              dataType: 'json',
+              async: true,
+              beforeSend: function(){
+                //$("#task_loader").show();
+              },
+              success: function(data)
+              {
+              },
+              error: function(data) {
+                //$("#task_loader").hide();
+              },
+              complete: function(data) {
+              if(data.responseJSON.task_cmpl != 0)
+                $("#usage_task_cmpl").html("<a href='/tasks?type=completed' style='color:#FAAB3D'>"+data.responseJSON.task_cmpl+"</a>");
+              else
+                $("#usage_task_cmpl").html(data.responseJSON.task_cmpl);
+              var call_id = "#{@current_organization.task_types.where(:name => "Call").first.id if !@current_organization.task_types.where(:name => "Call").nil? && !@current_organization.task_types.where(:name => "Call").blank?}";
+              if("#{@current_user.is_admin? || @current_user.is_super_admin?}" == "true"){
+                if(data.responseJSON.owndeal != 0)
+                  $("#usage_won_deal").html("<a href='/leads?type=won' style='color:#49AFCD'>"+data.responseJSON.owndeal+"</a>");
+                else
+                  $("#usage_won_deal").html(data.responseJSON.owndeal);
+                if(data.responseJSON.call_cmpl != 0)
+                  $("#usage_call_cmpl").html("<a href='/tasks?type=completed&t_type=" + call_id + "' style='color:#78808A'>"+data.responseJSON.call_cmpl+"</a>");  
+                else
+                  $("#usage_call_cmpl").html(data.responseJSON.call_cmpl);  
+                
+                
+                $("#usage_lead_generated").html(data.responseJSON.deals);          
+                $("#usage_nurtured_deal").html(data.responseJSON.leadsnortured);
+              }else{
+                $("#usage_won_deal").html(data.responseJSON.owndeal);
+                var user_id = "#{@current_user.id}";
+                if(data.responseJSON.call_cmpl != 0)
+                  $("#usage_call_cmpl").html("<a href='/tasks?type=completed&t_type=" + call_id + "&assigned_to="+user_id+"' style='color:#78808A'>"+data.responseJSON.call_cmpl+"</a>");  
+                else
+                  $("#usage_call_cmpl").html(data.responseJSON.call_cmpl);  
+                $("#usage_lead_generated").html(data.responseJSON.deals);
+                $("#usage_nurtured_deal").html(data.responseJSON.leadsnortured);
+              }
+              if(data.responseJSON.lostdeal != 0)
+                $("#usage_lost_deal").html("<a href='/leads?type=lost' style='color:#78808A'>"+data.responseJSON.lostdeal+"</a>");
+              else
+                $("#usage_lost_deal").html(data.responseJSON.lostdeal);
+              }
+            });
+          }
+        }
+      }
+    });
+    return false;
+    
+  }
+

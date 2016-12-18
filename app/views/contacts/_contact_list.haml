@@ -1,0 +1,10 @@
+%input#firstchars{:type=>"hidden",:value=>@firstchars}
+%input#contactpageno{:type=>"hidden",:value=>"1"}
+#list
+  #list_buttons
+
+:javascript
+  $(document).ready(function(){
+    get_contact_data();
+  });
+  

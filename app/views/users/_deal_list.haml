@@ -1,0 +1,53 @@
+//#div_scroll_profile{style: "margin-top: 0px;margin-left: 0px;width:100%;height:620px;overflow-y:visible;overflow-x:hidden;"}
+%table.table.white-table
+  %tbody
+    - if @deals.first.present?
+      - @deals.each do |deal|
+        -if deal
+          %tr
+            %td{align: "left"}
+              %div
+                -if deal.deal_status_name.present?
+                  - if (((@allowed_user) || (deal.associated_users.include? current_user.id)) && (deal.is_active?))
+                    =link_to deal.title, lead_path(deal), style: "font-size: 20px;"
+                  - else
+                    %span{style: "font-size: 20px;"}
+                      = deal.title
+              %div
+                - if deal.amount.present?
+                  $
+                  =number_with_precision(deal.amount, :precision => 2)
+                - else
+                  No price set
+                %span
+
+
+                  &bull;
+
+
+                  Assigned to
+                  =deal.assigned_user.full_name if deal.assigned_user.present?
+                %span
+                  - if last_activity(deal.id).present?
+
+                    &bull;
+
+                    Created on
+                    =last_activity(deal.id)[0].split("@")[0]
+
+                    &bull;
+                    by
+                    /=last_activity(deal.id)[1]
+                    =deal.initiator_name if deal.initiator_name.present?
+            %td{style: "text-align:right; vertical-align:middle;"}   
+              .hot_pri.labelTaskType{style: "min-width:70px;width:auto"}
+                -if deal.deal_status_name.present? 
+                  =deal.deal_status_name         
+    - else
+      %tr
+        %td{style: "text-align:center"}
+          %span{style: "color:red"}
+            No leads found !!!
+                        
+                        
+          

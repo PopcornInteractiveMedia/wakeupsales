@@ -1,0 +1,31 @@
+#task_header
+  %div{style: "text-align:center;padding-top: 60px"}
+    %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}
+=render :partial => "tasks/task_js",:cache=> true
+:javascript
+  $(function() {
+    load_dashboard_task_widget();
+  });
+  
+  function load_dashboard_task_widget(){
+    
+    $.ajax({
+      type: "POST",
+      url: "/task_widget_page",
+      dataType: 'json',
+      async: true,
+      beforeSend: function(){
+        //$("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        //$("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#task_header").html(data.responseText);
+      }
+    });
+    
+  }

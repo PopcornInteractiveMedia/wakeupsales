@@ -1,0 +1,16 @@
+.mtop30
+  %h4 Feed Keywords
+.table-responsive.mtop30
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    %table.table.table-striped.table-list
+      %tbody
+        %tr
+          %td
+            .row
+              .col-md-12
+                - feedkeywords = FeedKeyword.by_organization_id(@current_organization.id).first
+                %input#tags.form-control{name: "tags", id: "feed_keywords_settings", value: "#{!feedkeywords.blank? ? feedkeywords.feed_tags : ''}"}/
+            %hr/
+            .row
+              .col-md-12
+                %button.btn.btn-primary{type: "button", id: "feed_submit_btn",onclick: "save_feeds_org()"} Save

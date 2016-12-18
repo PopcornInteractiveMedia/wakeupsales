@@ -1,0 +1,295 @@
+- if @contact.is_company?
+  - @activities = get_contact_activities("CompanyContact",@contact.id)
+- else
+  - @activities = get_contact_activities("IndividualContact",@contact.id)
+- match = ""
+-@activities_date = @activities.first(20).compact.group_by{|d| d.activity_date.beginning_of_day}
+-i=0
+- if @activities_date.present?
+  - @activities_date.each do |dt, activity|  
+    .activityRoot{:id => "activityId#{i}"}
+      - i += 1
+      - if dt
+        - unless match == dt.strftime("%b %d, %Y")
+          - today = Time.zone.now.strftime('%Y-%m-%d')
+          - yesterday = (Time.zone.now - (24 * 60 * 60)).strftime('%Y-%m-%d')
+          - day_before_yesterday = (Time.zone.now - (48 * 60 * 60)).strftime('%Y-%m-%d')
+          
+          .act_date{:id => "activityHead"}
+            #tod
+              - if (Date.today.to_s == DateTime.parse(dt.to_s).strftime('%Y-%m-%d').to_s)
+                Today
+              - else
+                - if (yesterday.to_s == DateTime.parse(dt.to_s).strftime('%Y-%m-%d').to_s)
+                  Yesterday
+                - else
+                  - if dt.strftime("%Y").to_s == Time.zone.now.year.to_s
+                    
+                    = dt.strftime("%b %d")
+                  - else
+                    
+                    = dt.strftime("%b %d, %Y")
+            - match = dt.strftime("%b %d, %Y")
+         
+          -activity.each_with_index do |activity,i|
+            .table-responsive.bor-lf{id: "activityList#{i}"}
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                - if(activity.activity_type == "Task")
+                  - task = Task.where(:id=>activity.activity_id).first
+                  - if task.present?
+                    %tbody
+                      %tr.task_row
+                        %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                          .dt_stream
+                            = activity.activity_date.strftime("%I:%M %p")
+                            .mid_bdr_dasboard{style:"right:-28px"}
+                              %span.img-circle.img-thumbnail.task-s15
+                          %td{style: "vertical-align:top; padding-left: 15px;"}
+                            .fl.grey_act 
+                              #{task.is_completed == true && activity.activity_status == "Update" ? "Complete" : activity.activity_status}#{activity.activity_status == "Assign" ? "ed" : "d"} task #{activity.activity_status == "Assign" ? "to" : ""}
+                              -if(activity.activity_status == "Assign")
+                                - if task.user.present?
+                                  - tuser = task.user
+                                  %a{href: "/profile/#{tuser.id}"}
+                                    = tuser.first_name 
+                                  %b • 
+                                  %span.due_date
+                                    Due on  #{task.due_date.strftime("%a %d %b %Y @ %H:%M") if task.due_date.present?}
+                            - if activity.activity_status == "Update"
+                              .fr{rel: "tooltip", title: "Updated by"}     
+                                - user = User.where("id=?",activity.activity_user_id).first
+                                - if user.present?
+                                  %span.ic_assign
+                                  %a{href: "/profile/#{user.id}"}
+                                    #{(user_name=user.id) == current_user.id ? "me" : user.first_name}                            
+                            - else
+                              - user = User.where("id=?",task.created_by).first
+                              - if user.present?
+                                .fr{rel: "tooltip", title: "Created by"}  
+                                  /-if(activity.activity_status == "Assign")
+                                  /  &bull; To
+                                  /  = (task.user.present? ? task.user.first_name : "") 
+                                  /-else
+                                  %span.ic_assign
+                                  %a{href: "/profile/#{user.id}"}
+                                    #{user.id == current_user.id ? "me" : user.first_name} 
+                            .cb
+                            %div 
+                              = link_to task.get_title, "javascript:", style: "text-decoration:none;cursor:text;"
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "Note")
+                  - attachment = Note.find activity.activity_id
+                  -if attachment.notes.present?
+                    %tbody
+                      %tr.task_row
+                        %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                          .dt_stream
+                            = activity.activity_date.strftime("%I:%M %p")
+                            .mid_bdr_dasboard{style:"right:-28px"}
+                              %span.img-circle.img-thumbnail.note-s15
+                          %td{style: "vertical-align:top; padding-left: 15px;"}
+                            .fl.grey_act 
+                              Created note
+                            - user = User.where("id=?",attachment.created_by).first
+                            - if user.present?
+                              .fr{rel: "tooltip", title: "Created by"}                             
+                                - if attachment.created_by
+                                  %span.ic_assign
+                                  - user_name=""
+                                  - if attachment.created_by.present?
+                                    - if user.present? && user.id == current_user.id
+                                      -user_name= "me"
+                                    - elsif user.present? && user.id != current_user.id
+                                      - user_name= (attachment.user.present? ? attachment.user.first_name : "")
+                                  - if user.present?
+                                    /%a{href: "/deals?created_by=#{attachment.created_by}"}
+                                    %a{href: "/profile/#{attachment.created_by}"}
+                                      = user_name
+                                  - else
+                                    = user_name
+                            .cb
+                              %div
+                                = attachment.notes.html_safe
+                                -if attachment.note_attachments.present?
+                                  -attachment.note_attachments.each do |at|
+                                    %img{src: asset_path('attachment.png')}
+                                    %a{href: at.attachment.url,target: "_blank"}
+                                      =at.attachment_file_name
+                                      /=attachment.file_description
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "Deal")
+                  - deal = Deal.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+
+                            %span.img-circle.img-thumbnail.deal-s15
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            #{activity.activity_status}#{activity.activity_status == "Assign" || activity.activity_status == "Re-assign" ? "ed" : "d"} deal
+                            - if activity.activity_status == "Assign" || activity.activity_status == "Re-assign"
+                              - user = User.where("id=?",deal.assigned_to).first
+                              - if user.present?
+                                to 
+                                %a{href: "/profile/#{user.id}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : deal.assigned_user.full_name}
+                          - if activity.activity_status == "Update"
+                            .fr{rel: "tooltip", title: "Updated by"}     
+                              - user = User.where("id=?",activity.activity_user_id).first
+                              - if user.present?
+                                %span.ic_assign
+                                %a{href: "/profile/#{user.id}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : user.first_name}
+                          - else
+                            .fr{rel: "tooltip", title: "Created by"}     
+                              - user = User.where("id=?",deal.initiated_by).first
+                              - if user.present?
+                                %span.ic_assign                         
+                                %a{href: "/leads?created_by=#{deal.initiated_by}"}
+                                  #{(user_name=user.id) == current_user.id ? "me" : deal.initiator.first_name}
+                          .cb
+                            %div 
+                              = link_to deal.title, lead_path(deal), style: ""
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "DealsContact")            
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+
+                            %span.img-circle.img-thumbnail.con-s15
+                        %td{style: "vertical-align:top; padding-left: 15px;"}
+                          .fl.grey_act 
+                            #{activity.activity_status}ed Contact
+                          - dlcontact = DealsContact.where("id =?",activity.activity_id)
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present? 
+                            .fr{rel: "tooltip", title: "Added by"}     
+                              %span.ic_assign                         
+                              /- if dlcontact.contactable.is_individual?
+                              /-contact_page="individual_contact" 
+                              /- elsif dlcontact.contactable.is_company?
+                              /-contact_page="company_contact"
+                              %a{href: "/profile/#{activity.activity_user_id}"}
+                                #{(user_name=User.find(activity.activity_user_id).id) == current_user.id ? "me" : activity.user.first_name}
+                            .cb
+                              %div 
+                                = link_to activity.activity_desc, "javascript:void(0)",style: "text-decoration:none;cursor:text;"
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "IndividualContact")
+                  - contact = IndividualContact.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+
+                            %span.img-circle.img-thumbnail.con-s15
+                        %td{style: "vertical-align:top; padding-left: 15px;"}
+                          .fl.grey_act 
+                            Created contact
+                          - user = User.where("id=?",activity.activity_user_id).first
+
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "Created by"}     
+                              %span.ic_assign                          
+                              - if contact.is_individual?
+                                -contact_page="individual_contact" 
+                              - elsif contact.is_company?
+                                -contact_page="company_contact"
+                              %a{href: "/profile/#{user.id}"}
+                                #{(user_name=user.id) == current_user.id ? "me" : activity.user.first_name}
+                          .cb
+                            %div 
+                              = link_to contact.full_name, "/#{contact_page}/#{contact.id}"
+                              
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "DealMove")
+                  - deal_move = DealMove.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+
+                            %span.img-circle.img-thumbnail.deal-s15
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            Lead moved
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "By"}     
+                              %span.ic_assign                          
+                              - if deal_move.user.present?
+                                %a{href: "/leads?created_by=#{deal_move.user.id}"}
+                                  #{(deal_move.user_id) == current_user.id ? "me" : (deal_move.user.present? ? deal_move.user.first_name : "")}
+                              - else
+                                #{(deal_move.user_id) == current_user.id ? "me" : (deal_move.user.present? ? deal_move.user.first_name : "")}
+                          .cb
+                            %div 
+                              = link_to deal_move.deal.title, "javascript:", style: "text-decoration: none;cursor: text;"
+            .table-responsive.bor-lf
+              %table.table.table-striped{style: "margin-bottom:0px"}
+                -if(activity.activity_type == "MailLetter")
+                  - mail_letter = MailLetter.find activity.activity_id
+                  %tbody
+                    %tr.task_row
+                      %td.bg_td_rt{style: "padding: 1px 8px;width:100px"}
+                        .dt_stream
+                          = activity.activity_date.strftime("%I:%M %p")
+                          .mid_bdr_dasboard{style:"right:-28px"}
+                            %span.img-circle.img-thumbnail.activity_mail
+                        %td{style: "vertical-align:top;padding-left: 15px;"}
+                          .fl.grey_act 
+                            Mail Sent to
+                            -if(!mail_letter.contact_info.nil?)
+                              -contact_info =mail_letter.contact_info
+                              %a{href: "/#{contact_info['contact_type'].to_s}/#{contact_info['contact_id'].to_s}"}
+                                =contact_info['full_name']
+                            -else 
+                              =mail_letter.mailto   
+                          - user = User.where("id=?",activity.activity_user_id).first
+                          - if user.present?
+                            .fr{rel: "tooltip", title: "Assigned To"}     
+                              %span.ic_assign                          
+                              - if mail_letter.user.present?
+                                %a{href: "/leads?created_by=#{mail_letter.user.id}"}
+                                  #{(mail_letter.user.id) == current_user.id ? "me" : (mail_letter.user.present? ? mail_letter.user.first_name : "")}
+                              - else
+                                #{(mail_letter.user.id) == current_user.id ? "me" : (mail_letter.user.present? ? mail_letter.user.first_name : "")}
+                          .cb
+                            %div 
+                              =mail_letter.subject
+            
+-else
+  %div{id: "no_act",style: "text-align:center;color:red;padding-bottom: 10px;margin-top: 5px;"}
+    No activities found for this contact.                      
+                   
+:javascript
+    $(function()
+  {
+    //$('#activity_info').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+    $('.panel-collapse').addClass('collapse');
+    $('#activity_info table:first').find("#collapse_icon").removeClass('icon-chevron-up').addClass('icon-chevron-down');
+    $('div').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+  });
+
+   $('.day_astream').click(function(e){
+    $(this).children("#collapse_icon").toggleClass('icon-chevron-down icon-chevron-up');
+    });
+:css
+  @media screen and (max-width:800px) {
+    .table-responsive{overflow-x:auto;margin-bottom:0;border:none !important}
+  }

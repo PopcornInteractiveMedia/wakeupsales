@@ -1,0 +1,177 @@
+.col-md-12.p0
+  .cb10
+  /.navbar-right
+  /  %a.grey_act{href: "#"}
+  /    %span.glyphicon.glyphicon-trash
+  /  %a.grey_act{href: "#"}
+  /    %span.glyphicon.glyphicon-fullscreen
+  %h4{style:"margin-top:0"} Edit Deal
+  .cb
+  %hr
+  .cb
+  .col-md-12.p0.fl
+    .fl.grey_act Deal Name:
+    .col-md-4.p0.fl
+      =f.text_field :title,:class=>"form-control col-md-4"
+      /%a.deal_title{href: "#", id: @deal.id}
+      /  =@deal.title
+    .cb10.ht-20  
+  .cb
+  .col-md-6.p0.fl
+    .fl.grey_act Priority:
+    - hot_priority = @current_organization.hot_priority
+    =f.radio_button :priority_type,hot_priority.id, :class => "fl", :checked =>(!@deal.priority_type.nil? && @deal.priority_type.id == hot_priority.id ? true : false) 
+    .hot_pri.labelTaskType.fl{style:"margin-right:20px;margin-left:5px"}
+      =hot_priority.name
+    - warm_priority = @current_organization.warm_priority
+    =f.radio_button :priority_type,warm_priority.id, :class => "fl", :checked => (!@deal.priority_type.nil? &&  @deal.priority_type.id == warm_priority.id  ? true : false )  
+    .warm_pri.labelTaskType.fl{style:"margin-right:20px;margin-left:5px"}
+      =warm_priority.name
+    - cold_priority = @current_organization.cold_priority
+    =f.radio_button :priority_type, cold_priority.id, :class => "fl", :checked => (!@deal.priority_type.nil? && @deal.priority_type.id == cold_priority.id ? true : false )  
+    .cold_pri.labelTaskType.fl{style:"margin-left:5px"}
+      =cold_priority.name    
+    .cb10.ht-20
+    .fl.grey_act.mt10 Assigned To:
+    .fl.col-md-8.p0
+      =f.select :assigned_to, @current_organization.users.where("invitation_token IS ? and is_active = ?", nil,true).order("first_name ASC").collect {|c| [ c.full_name, c.id ]}, {:include_blank => '- Users -',:selected=>@deal.assigned_to},:class=>"form-control", :required => true
+    .cb10.ht-20
+    .fl.grey_act.mt10 Source:
+    .fl{style:"width:200px;word-wrap: break-word;"}  
+      %a{href: "#", id: "source1","data-value"=> (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.id : "","data-original-title"=>  (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : "", "data-type" => "select", "data-placement" => "top",  rel: "tooltip", "data-title" => (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : "", title: (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : ""}
+        = truncate( (@deal.deal_source.present? && @deal.deal_source.source.present?) ? @deal.deal_source.source.name : "NA", length: 30)
+      %a{href: "#", id: "editable_source",style:"margin-left:5px", title: "Add a Source","data-value"=>"","data-original-title"=> "", "data-title"=>"custom"}
+        + NEW
+
+    .cb10.ht-20
+    .fl.grey_act.mt10 Deal Tag:
+    .fl.col-md-8.p0
+      = f.text_field :tag_list,:class=>"form-control col-md-4", :value => @deal.all_tags
+      %div{:style=>"width:265px"}
+        %font.fnt_color{ size: "2"} Try to enter a comma or hit enter after tag.    
+    .cb10
+    
+    .cb10.ht-20
+    .fl.grey_act.mt10 Duration:
+    .fl.col-md-8.p0
+      .input-group.fl
+        = select_tag :duration_type , options_for_select(["Weeks", "Hours"],@deal.deal_duration_type), :prompt => "- Duration -", :class => 'form-control ', :style=>"width:124px"
+      .fl
+        =f.text_field :duration,:class=>"form-control col-md-4", style: "width:115px",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)", :value=> @deal.deal_duration
+      %div{:style=>"width:265px"}
+        %font.fnt_color{ size: "2"} 
+    .cb10
+
+    .cb10.ht-20
+    .fl.grey_act Payment:
+    .fl{:style=>"font-size:13px"}
+      = f.radio_button :payment_status, "Not done", :checked => (@deal.payment_status.present? && @deal.payment_status == "Not done" ? true : false) , :style =>"position:relative;top:2px", :value => "Not done"
+      Not done
+      = f.radio_button :payment_status, "Partially done", :style =>"margin-left:10px;position:relative;top:2px",  :checked => (@deal.payment_status.present? && @deal.payment_status == "Partially done" ? true : false), :value => "Partially done"
+      Partially done
+      = f.radio_button :payment_status, "Completed", :checked => (@deal.payment_status.present? && @deal.payment_status == "Completed" ? true : false), :value => "Completed", :style=>"margin-left: 11px;"
+      Completed	
+    .cb10
+  .col-md-6.p0.fl
+    .fl.grey_act Visibility:
+    .fl{:style=>"font-size:13px"}
+      = f.radio_button :is_public, true, :checked => @deal.is_public? == true ? true : "", :style =>"position:relative;top:2px"      
+      - if params[:controller] == "contacts"
+        Everyone
+      - else
+        Everyone in organization  
+      = f.radio_button :is_public, false, :checked => true, :style =>"margin-left:10px;position:relative;top:2px",  :checked => @deal.is_public? == false ? true : ""
+      /= f.radio_button :is_public, false, :checked =>  params[:controller] == "contacts" ? (@contact.is_public == false ? true : "") : (@deal.is_public == false ? true : "")
+      - if params[:controller] == "contacts"
+        Only I can
+      - else
+        Associate Users
+    .cb10.ht-20
+    .col-md-12.p0
+      .fl.grey_act.mt10 Deal Amount:
+      .fl.col-md-8.p0
+        .input-group
+          %span.input-group-addon $
+          =f.text_field :amount,:class=>"form-control",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+    .cb10.ht-20
+    .col-md-12.p0
+      .fl.grey_act.mt10 Probability:
+      .fl.col-md-8.p0
+        .input-group
+          /=f.number_field :probability,:class=>"form-control",:maxlength=>"3",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+          =f.text_field :probability,:class=>"form-control", :onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+          %span.input-group-addon %
+        %span{id: "err_prb",style: "color:red;"}
+    .cb10.ht-20
+    .fl.grey_act Industry:
+    .fl{style:"width:200px;word-wrap: break-word;"}  
+      %a{href: "#", id: "industry1", "data-value"=>@deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.id,"data-original-title"=> @deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.name, "data-type" => "select", "data-placement" => "top" ,  rel: "tooltip", title: @deal.deal_industry.nil? ? "" : @deal.deal_industry.industry.name}
+        = truncate(@deal.deal_industry.nil? ? "NA" : @deal.deal_industry.industry.name, length: 30)       
+      %a{href: "#", style: "margin-left:5px;",id: "editable_industry", title: "Add an Industry","data-value"=>"","data-original-title"=> "", "data-title"=>"custom"}
+        + NEW
+ 
+    .cb10.ht-20
+    .fl.grey_act.mt10 Note:
+    .fl.col-md-8.p0
+      =hidden_field_tag "hdn_comments","",name: "deal[comments]"
+      =f.text_area :comments,:class=>"form-control note_txtarea txtarea_editdeal", name:"notdeal",:style=>"height:70px"
+    .cb10.ht-20
+    .fl.grey_act Bill Type:
+    .fl{:style=>"font-size:13px"}
+      = f.radio_button :billing_type, "Fixed", :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Fixed" ? true : false) , :style =>"position:relative;top:2px", :value => "Fixed"
+      Fixed
+      = f.radio_button :billing_type, "Monthly", :style =>"margin-left:10px;position:relative;top:2px",  :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Monthly" ? true : false), :value => "Monthly"
+      Monthly
+      = f.radio_button :billing_type, "Hourly", :checked => (!@deal.billing_type.nil? && @deal.billing_type == "Hourly" ? true : false), :value => "Hourly", :style=>"margin-left: 11px;"
+      Hourly
+.cb10
+/.col-sm-12{style: "margin:-8px 0 20px;padding:0"}
+/  .fl.grey_act
+/    Attach file:
+/  
+/  .col-md-10.p0.fl{:style=>"position:relative"}
+/    %input#inputEmail3.form-control.fl{placeholder: "File Description", style: "height:47px;background:#fcfcfc;padding-right:40px;", type: "email"}
+/    %a{href: "#",:style=>"position:absolute"}
+/      %span.glyphicon.glyphicon-paperclip.file_cus{style:"right:22px"}
+/  .cb
+.cb
+.col-md-12.p0
+  .col-md-2.fl{style:"margin-left:7%"}
+    %button.btn.btn-primary.pull-right{type: "submit", "data-disable-with" => "Saving...", :onclick=> "gethtml('hdn_comments'); return chk_edit_dealvalidation(); "} Update
+  .col-md-2.fl.p0
+    =link_to "Cancel","javascript:void(0)",:class=>"btn btn-default pull-left",:onclick=> "history.go(-1);"    
+
+:css
+  #deal_tags_tag{width: 100px}
+  #deal_tags_tagsinput{width:242px!important;border-radius:4px;}
+  #deal_tag_list_tag{width: 80px!important;}
+  .con-box1{min-height: 165px;}
+  .ht-20{height:20px;}
+  .input-sm{width: 200px!important}
+  .mt10{margin-top: 6px;}
+:javascript
+  $("#duration_type").change(function () {
+     if(this.value != ""){
+       $("#deal_duration").prop("required","true")
+     }else{
+       $("#deal_duration").removeAttr("required") 
+     }
+     if($("#deal_duration").val() != ""){
+       $(this).prop("required","true")
+     }else{
+       $(this).removeAttr("required") 
+     }
+     
+  });
+  $("#deal_duration").keyup(function () {
+     if(this.value != ""){
+       $("#duration_type").prop("required","true")
+     }else{
+       $("#duration_type").removeAttr("required") 
+     }
+     
+  });
+  function gethtml(id){
+    //$('#'+id).val($('textarea').val().replace(/\n/g, "<br />"));
+    $('#'+id).val($('textarea').val());
+  }  

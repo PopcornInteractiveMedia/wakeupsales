@@ -1,0 +1,317 @@
+.table-responsive
+  %table#dataTableWon.table.white-table.table-hover{"data-source"=>leads_url(format: 'json',params: {cuser: current_user.id,_type: 'won',filtertype: params[:filtertype],filtervalue: params[:filtervalue], assigned_to: params[:assigned_to], created_by: params[:created_by], cre_by: cookies[:cre_by], cre_by_val: cookies[:cre_by_val], asg_by: cookies[:asg_by], asg_by_val: cookies[:asg_by_val], loc: cookies[:loc], loc_val: cookies[:loc_val], priority: cookies[:priority], priority_val: cookies[:priority_val], next: cookies[:next], next_val: cookies[:next_val], daterange: cookies[:daterange],last_touch: cookies[:last_touch],last_tch: cookies[:last_tch], dt_range: cookies[:dt_range], dtrange_from: cookies[:dtrange_from], dt_range_from: cookies[:dt_range_from], dtrange_to: cookies[:dtrange_to], dt_range_to: cookies[:dt_range_to],q: cookies[:deal_quarter], y: cookies[:deal_year], is_opportunity: cookies[:opportunity], tag: cookies[:tag], label_type: cookies[:label_type]})}
+    %thead
+      %tr
+        %th.dropdown#deal_label_menu
+          %a#wonDropdown.dropdown-toggle{:href=>"javascript:","data-toggle" => "", :style=> "cursor:default;text-decoration:none;"}
+            #wonLabel.label_arrow
+              %span.icon-chevron-down
+                =image_tag("drop-down-arrow.png")
+          %ul.dropdown-menu.custom-menu.fl.show-drop-down{:style=>"right:auto;padding-left:5px;left:-3px"}
+            %li.arrow_top{style: "left:0;z-index:99"}
+            %li
+              %ul.show-drop-down_data{:style => "list-style: none;padding-left:5px;padding-top:5px;"}
+                -current_user.user_labels.all.each do |lbl|
+                  %li
+                    .fl
+                      %input{:type=>"checkbox",:value=>lbl.id,:onclick=>"check_apply(this, 'won');"}
+                    .fl{style:"margin-left:4px;width: 105px;word-wrap: break-word;"}
+                      =lbl.name
+                    .cb
+            %li.divider
+            %li#won_applylabel_li{:onclick=>"addLabelToDeal(this);",:style=>"padding:5px 5px 0px 16px;cursor:pointer;display:none;"}
+              Apply
+           
+            %li.won_mng_lbl_li{"data-toggle" => "modal", href: "#labelModal", rel: "popup", title: "Add a Label",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+              Add Label 
+            %li.won_mng_lbl_li
+              %a{:href=>"/settings/#user_label",:style=>"padding:5px 5px 0px 16px;cursor:pointer;color:#666666"}
+                Manage Label
+        %th Title
+        %th Contact
+        
+        %th Created
+        %th Closed
+        %th Amount
+        %th Next Action
+    %tbody
+          
+            
+:javascript
+  $('#task_loader').show();
+  "use strict";
+  $(".show-drop-down_data").on("click", function(event){
+    event.stopPropagation();
+  });
+  oTable_won =$('#dataTableWon').dataTable({
+    sPaginationType: "bootstrap",
+    bJQueryUI: true,
+    aLengthMenu: [[20, 25, 50, 100], [20, 25, 50, 100]],
+    iDisplayLength: 20,
+    bProcessing: reset_won_badge_count(),
+    bServerSide: true,
+    "bStateSave": true,
+    aoColumns: [{sWidth: '70px'}, {sClass: 'col-md-3'}, {sClass: 'col-md-3'},null,null,null,null],
+    "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+    oLanguage: {sLengthMenu: '_MENU_'},
+    sAjaxSource: $('#dataTableWon').data('source'),
+    aaSorting: [[0,'desc']],
+    aoColumnDefs: [
+      {
+      aTargets: [0],
+      bSortable: false,
+      mRender: function (data, type, row ) {
+              if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")) && $("#won_deals_tab").hasClass("active"))
+                $("#badge_won").html("(0)");
+                $("#badge_won").html('(' + row[35] + ')');
+                if(("#{cookies[:cre_by]}" == "true" ) || ("#{cookies[:asg_by]}" == "true" ) || ("#{cookies[:loc]}" == "true" ) || ("#{cookies[:priority]}" == "true" ) || ("#{cookies[:daterange]}" == "true" ) || ("#{cookies[:last_tch]}" == "true" ) || ("#{cookies[:dtrange_from]}" == "true" && "#{cookies[:dtrange_to]}" == "true") || ("#{cookies[:tag]}" != '' ) || ("#{cookies[:opportunity]}" == "true") || ("#{cookies[:label_type]}" != '')){
+                  $("#show_filter_dealmsg").html('Filtered ' + row[35] + ' deals ');
+                }
+                if(row[35] > 25){
+                 $(".dataTables_length").show();
+                 $('.dataTables_length select').addClass('form-control');
+                }
+                if(row[27]=="true"){
+                str="<input type='checkbox' value='" + row[0] +"'  title='Check to add label' name='active_won_label_menu' class='fl won_chk_box_class' onclick='won_chk_box()'>";  
+                }
+                else
+                {
+                 str="<input type='checkbox' value='" + row[0] +"'  title='Check to add label' name='active_won_label_menu' class='fl won_chk_box_class' onclick='won_chk_box()' disabled='disabled'>";  
+                }
+                if(row[27]=="true"){
+                 str+="<div class='dropdown fl'> <div class='deal_set fl dropdown-toggle' rel='tooltip' onclick=\"scrollbtm(this);$('#clicked_button_ref').val('listmenu');\" title='Actions' data-toggle='dropdown' style='cursor:pointer'></div>";
+                }
+                
+                str+= "<br><ul class='dropdown-menu'><li class='arrow_top'></li><li><a rel='tooltip' onclick=\"$('#task_form')[0].reset();$('#deal_title_task').val('" + row[1] + "');task_deal(' + row[0] + ');$('#hfield').val('"+ row[0] +"');$('#deal_title_task').val('"+ row[1] +"').prop('disabled', true);$('#email_err').html('');\" href='#taskModal' data-toggle='modal' data-id='" + row[0] + "'><span class='add_i_deal'></span>Add Task</a></li><li class='divider'></li><li><a onclick=\"$('#notable_id').val('" + row[0] + "');$('#notable_type').val('Deal');\" href='javascript:' data-toggle='modal' data-target='#noteModal'><span class='add_i_note'></span>Add Note</a></li><li class='divider'></li><li><a onclick=\"$('#deal_id_for_label').val('" + row[0] + "');reset_all_checkbox();\" href='javascript:' data-toggle='modal' data-target='#ApplyLabelModal'><span class='glyphicon glyphicon-tag' style='margin-right:5px;'></span>Apply Label</a></li><li class='divider'></li><li><a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8] +"');$('#mailer_id').val('" + row[0] + "');$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' data-toggle='modal' data-target='#SendEmailModal'><span class='glyphicon glyphicon-envelope' style='margin-right:5px;'></span>Send Email</a></li><li class='divider'></li><li><a href='/leads/"+ row[0]+"/edit'><span class='glyphicon glyphicon-edit' style='margin-right:5px;'></span>Edit</a></li><li class='divider'></li><li><a href='javascript:' onclick=\"quick_edit('" + row[0] + "')\"><span class='quick-edit' style='margin-right:5px;' ></span>Quick Edit</a></li></ul></div>";
+                return str
+            }
+      },
+      {
+      aTargets: [1],
+      bSortable: true,
+        mRender: function(data, type, row ){
+          var str= "<div style='line-height: 20px;' class='dealrow' > \
+              <div id='deal_popup_menu'> \
+                <a class='link_n' href='/leads/" + row[0] + "'> \
+                  "+row[1] +"\
+                </a> \
+              </div> \
+              <div class='fl grey_small'> \
+                <i class='icon-time' title='Last activity'></i> \
+                " + row[2] +"\
+                <i class='icon-user' title='Assigned to'></i> \
+                 &nbsp;&nbsp;&bull; Assigned to \
+                 <span> \
+                " + row[3] + " \
+                </span> \
+                <div> \
+                "+ showlabelicons(row[5],'won')+"\
+              </div> \
+          </div> \
+              <div>"
+              if(row[27]=="true"){
+              str+="<div style='display: none;' class='actions dropdown fr'> \
+                <ul class='dropdown-menu'> \
+                  <li> \
+                    <a rel='tooltip' onclick=\"$('#task_form')[0].reset();task_deal(" + row[0] + ");$('#hfield').val('"+ row[0] +"');$('#deal_title').val('"+ row[1] +"').prop('disabled', true);$('#email_err').html('');\" href='#taskModal' data-toggle='modal' data-id='" + row[0] + "'>Add Task</a> \
+                  </li> \
+                  <li> \
+                    <a onclick=\"$('#notable_id').val(" + row[0] + ");$('#notable_type').val('Deal');\" href='javascript:' data-toggle='modal' data-target='#noteModal'>Add Note</a> \
+                  </li> \
+                  <li> \
+                    <a  onclick=\"$('#deal_id_for_label').val(" + row[0] + ");reset_all_checkbox();\" href='javascript:' data-toggle='modal' data-target='#ApplyLabelModal'>Apply Label</a> \
+                  </li> \
+                  <li> \
+                    <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val(&quot;"+ row[87] +"&quot;);$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' data-toggle='modal' data-target='#SendEmailModal'>Send Email</a> \
+                  </li>\
+                  <li> \
+                    <a href='/leads/" + row[0] + "/edit'>Edit</a> \
+                  </li> \
+                </ul> \
+              </div>";
+              }
+              str+="</div>\
+            <br> \
+          </div> \
+        </div>"; 
+          return str;
+          }
+      },
+
+      {aTargets: [2],
+      bSortable: false,
+        mRender: function(data, type, row ){
+               str="<a href='/"+row[28]+"/"+row[16]+"' rel='tooltip' title='"+row[33]+"'>"+row[6]+"</a>";
+               if(row[7] != ''){
+                str+= "<i class='icon-phone'></i>" +",&nbsp;"+ row[7];
+               }        
+               if(row[8] != ''){
+                if(row[8].length > 21)
+                  var shrt_email = row[8].substring(0,21) + "..."
+                else
+                  var shrt_email = row[8]
+                str+= "<br/> <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8]+"');$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' class='link_n' data-toggle='modal' data-target='#SendEmailModal' rel='tooltip' title='"+row[8]+"'>"+shrt_email+"</a>";
+            }
+            return str;
+          }},
+      
+      //{aTargets: [5],
+      //bSortable: true,
+        //mRender: function(data, type, row ){
+          //return  row[18] +" %";
+          
+          //}},
+      //{aTargets: [6],
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return  row[19];
+          
+          //}},
+      
+      //{aTargets: [7],
+
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return "<i class='icon-phone'></i>" + row[20];
+          
+          //}},
+      //{aTargets: [8],
+      //bSortable: true,
+        //mRender: function(data, type, row ){
+          //return row[22];
+          
+          //}},
+      //{aTargets: [8],
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return row[23];
+          
+          //}},
+      //{aTargets: [9],
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return row[11] +", " + row[13] + ", " + row[12];
+          
+          //}},
+      //{aTargets: [8],
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return row[24];
+          
+          //}},
+
+      //{aTargets: [9],
+      //bSortable: false,
+        //mRender: function(data, type, row ){
+          //return row[25];
+          
+          //}},
+      {aTargets: [3],
+      bSortable: true,
+        mRender: function(data, type, row ){
+          return row[26];           
+          }},    
+      {aTargets: [4],
+      bSortable: true,
+        mRender: function(data, type, row ){
+          //if(row[10][0] == "Hot")
+          //  s_deal = "hot_pri"
+          //else if(row[10][0] == "Cold")
+          //  s_deal = "cold_pri"
+          //else
+          // s_deal = "warm_pri"
+          //return "<a href='#' onclick='filterbypriority(\""+ row[10][1]+"\",\"won\")'><span class='"+s_deal+" labelTaskType'>"+ row[10][0]+"</span></a>";
+          return row[36]
+          }},
+          {aTargets: [5],
+      bSortable: true,
+        mRender: function(data, type, row ){
+          
+          if(row[17] != ''){
+          return  "$" +row[17];
+          }
+          else{return ""}
+          }},
+          
+       {aTargets: [6],
+       bSortable: false,
+       mRender: function(data, type, row ){
+          if(row[34] != ''){
+            return  "<div class='last_task_"+row[0]+"'><div class='label"+row[34]+" labelTaskType tasktype'>"+row[34]+"</div><br>"+ (row[34] == 'No-Action' ? "<a rel='tooltip' onclick=\"$('#clicked_button_ref').val('listmenu');$('#task_form')[0].reset();$('#deal_title_task').val('" + row[1] + "');task_deal(' + row[0] + ');$('#hfield').val('"+ row[0] +"');$('#deal_title_task').val('"+ row[1] +"').prop('disabled', true);$('#email_err').html('');\" href='#taskModal' data-toggle='modal' data-id='" + row[0] + "'><span style='font-size: 12px;'>Schedule a Task</span></a>" : '') + "<div style='font-size: 12px;font-style: italic;'>"+row[37]+"</div></div>";
+          }
+          else{return ""}
+          }},
+    ],
+   fnPreDrawCallback: function() { $('#task_loader').show();},
+   fnDrawCallback: function() {
+               $('#task_loader').hide();
+               document.cookie='deal_quarter=""'
+               document.cookie='deal_year=""'
+               $('a[rel="tooltip"],i,input:checkbox,button,div').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+              //$('#badge_won').html(this.fnSettings().fnRecordsDisplay());
+              $('#task_loader').hide();
+              //$("#won_div_val").val(1);
+              //$(".dealrow" ).hover(
+                //function() {
+                //div_open=$(this).find("div.open")
+                //$(div_open).removeClass("open")
+                //$(this).find("div.dealspopupmenu").show();
+                //}, function() {
+                //$(this).find("div.dealspopupmenu").hide();
+              //});
+              //$('.dealrow').mouseover(function (e) {
+                //e.stopPropagation();
+                //$('.actions', this).show();
+              //});
+              $('.dealrow').mouseout(function (e) {
+                e.stopPropagation();
+                $('.actions', this).hide();
+              });    
+             
+          }
+  });
+  //$('#dataTable').columnFilter();
+  
+  
+  //$('.custom-menu').click(function(e) {
+     //e.stopPropagation();
+  //});
+  
+  
+    function reset_won_badge_count(){
+      $("#show_filter_dealmsg").html('');
+      if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")) && $("#won_deals_tab").hasClass("active"))
+                    if(("#{cookies[:cre_by]}" == "true" ) || ("#{cookies[:asg_by]}" == "true" ) || ("#{cookies[:loc]}" == "true" ) || ("#{cookies[:priority]}" == "true" ) || ("#{cookies[:daterange]}" == "true" ) || ("#{cookies[:last_tch]}" == "true" ) || ("#{cookies[:dtrange_from]}" == "true" && "#{cookies[:dtrange_to]}" == "true") || ("#{cookies[:tag]}" != '') || ("#{cookies[:opportunity]}" != '') || ("#{cookies[:label_type]}" != '')){
+                     $("#show_filter_dealmsg").html('');
+                    }
+                    $("#badge_won").html("(0)");
+    }
+  
+  function won_chk_box(){
+    var $cbs = $('input[name="active_won_label_menu"]');
+    var total = 0;
+    $cbs.each(function() {
+        if (this.checked){
+            total ++;
+        }
+    });
+    if(total > 0){
+      $("#wonLabel").removeClass("label_arrow")
+      $("#wonLabel").addClass("label_arrow_active")
+      $("#wonDropdown").attr("data-toggle", "dropdown")
+    }else{
+      $("#wonLabel").addClass("label_arrow")
+      $("#wonLabel").removeClass("label_arrow_active")
+      $("#wonDropdown").removeAttr("data-toggle", "dropdown");
+      $(".DataTables_sort_wrapper").removeClass("open")
+    }
+   var checkboxes = document.getElementsByName('active_won_label_menu');
+   var vals = "";
+  for (var i=0, n=checkboxes.length;i<n;i++) {
+   if (checkboxes[i].checked) 
+   {
+    vals += checkboxes[i].value+ ","
+   }
+  }
+  $("#mass_deal_ids").val(vals)
+  };

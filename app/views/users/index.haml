@@ -1,0 +1,210 @@
+:css
+  .cms-file-input input[type="file"] {
+    position: fixed;
+    z-index: 2;
+    opacity: 0;
+
+    filter: alpha(opacity=0);
+  }
+  .row{
+    margin-top: 3px;
+  }
+  .file_hid_block{
+    height:89px;
+    position: absolute !important;
+    top: 25px;
+    vertical-align: middle;
+    width:89px;
+    cursor:pointer;
+  }  
+  .file_upld{
+
+    display:table-cell;
+    background:#ffffff;
+    border-radius:1px;
+    text-align:center;
+    border: 1px solid #e9e9e9;
+    vertical-align: middle;
+    padding:3px;
+    width:90px;
+    height:90px;
+  }  
+  .click_img{
+    background:#000000;
+    color: #FFFFFF;
+    font-size: 12px;
+    opacity: 0.5;
+    position: absolute;
+    text-align: center;
+
+    bottom:6px;
+    width: 89px;
+  }
+  .mt10{margin-top:6px;margin-right:0px;}
+  .img_upload{width:90px;height:90px;border:1px solid #ccc;background:#ffffff;margin-bottom: 5px;border-radius:3px;}
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-4
+      .con-box1.p0
+        .fl.head_font Users
+        .fr{style: "margin-top: 6px;"} 
+          %a.btn.btn-primary.pad2{"data-toggle" => "modal", href: "#inviteuserModal", rel: "tooltip", title: "Invite User", onclick: "$('#user_invite_form')[0].reset();$('.show-alert').hide();$('#email_err_usr').html('');"}          
+            %span.glyphicon.glyphicon-plus-sign
+            Invite User
+                     
+        .cb10
+        .border-tb
+          /.navbar-left
+          /  %form.navbar-form{role: "search", style: "padding:0"}
+          /    .input-group
+          /      %input.form-control{name: "q", placeholder: "Search", style: "width:140px", type: "text"}/
+          /      .input-group-btn.con_panel
+          /        %button.btn.btn-default{style: "padding:6px", type: "submit"}
+          /          %i.glyphicon.glyphicon-search
+          /.btn-group.navbar-right{style: "margin-top:8px"}
+          /  %button.btn.btn-default{style: "width:140px;text-align: left;", type: "button"} All
+          /  %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+          /    %span.caret
+          /    %span.sr-only Toggle Dropdown
+          /  %ul.dropdown-menu{role: "menu"}
+          /    %li
+          /      %a{href: "#"} Action
+          /    %li
+          /      %a{href: "#"} Another action
+          /    %li
+          /      %a{href: "#"} Something else here
+          /    %li.divider
+          /    %li
+          /      %a{href: "#"} Separated link
+          .cb
+        #user_lists
+        = render :partial => "user_list"
+
+    .col-md-4
+      .con-box1.p0
+        .fl.head_font Sources
+        .fr{style: "margin-top: 6px;"}
+          %a.btn.btn-primary.pad2{"data-toggle" => "modal", "data-value" => "", href: "#sourceModal", rel: "popup", title: "Add a Source"}        
+            %span.glyphicon.glyphicon-plus-sign
+            Add a Source
+             
+        .cb10  
+        #source_list
+   
+      /.cb
+      /.dtPagination.fr
+      /  .dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_bootstrap
+      /    .fl.page_gry
+      /      Sources   
+      /      %span 1
+      /      of 50
+      /    %ul.pagination
+      /      %li.prev.disabled
+      /        %a{href: "#", style: "padding:6px"}
+      /          .fl.page_prv
+      /      %li.next
+      /        %a{href: "#", style: "padding:6px"}
+      /          .fl.page_nxt                                                                                                                                   
+    .col-md-4
+      .con-box1.p0
+        .fl.head_font Industry
+        .fr{style: "margin-top: 6px;"}
+          %a.btn.btn-primary.pad2{"data-toggle" => "modal", "data-value" => "", href: "#industryModal", rel: "popup", title: "Add an Industry"}        
+            %span.glyphicon.glyphicon-plus-sign
+            Add an Industry
+        .cb10      
+        #industry_list
+                  
+    
+        /.cb
+        /.dtPagination.fr
+        /  .dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_bootstrap
+        /    .fl.page_gry
+        /      Insustry   
+        /      %span 1
+        /      of 50
+        /    %ul.pagination
+        /      %li.prev.disabled
+        /        %a{href: "#", style: "padding:6px"}
+        /          .fl.page_prv
+        /      %li.next
+        /        %a{href: "#", style: "padding:6px"}
+        /          .fl.page_nxt                                                                         
+    /.col-md-4
+    /  .con-box1.p0{style: "min-height: 100px;"}
+    /    .fl.head_font API Token
+    /    .fr{style: "margin-top: 6px;"}
+    /    .cb10 
+    /    .border-tb
+    /      Auth Token:
+
+    /      %i
+    /        =@current_organization.auth_token      
+
+    /    .cb     
+        
+#editUserModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "editUserModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+        %h4.modal-title Edit User
+      .modal-body
+        #content{style: "margin-left: 12px;"}
+:javascript
+  $(document).ready(function(){
+  $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+  $('#user_edit_form').bind('ajax:success', function(evt, data, status, xhr){
+  alert('success')
+  $('#task_loader').hide();
+  $("#editUserModal").modal('hide');
+  window.location.href ="/users";
+  });
+
+  $('#user_edit_form').bind('ajax:before', function(evt, data, status, xhr){
+  alert('before')
+  $('#task_loader').show();
+  });
+
+  $("#user_edit_form").bind("ajax:complete", function(evt, data, status, xhr) {
+  //alert('complete')
+  if(data.responseText !== " "){
+  $("#alert-msg").show();
+  $("#msg_div").html(data.responseText);
+  }
+  $('#task_loader').hide();
+  });
+    $.ajax({
+        type: "POST",
+        url: "get_source_list" ,
+        success: function(result) {
+          $("#source_list").html(result);
+          $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+        }
+      });
+    $.ajax({
+        type: "POST",
+        url: "get_industry_list",
+        success: function(result) {
+          $("#industry_list").html(result);
+          $('a').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+        }
+      });
+    
+  })
+  $( "li.li-contacts" ).hover(
+    function() {
+      $(this).children("div.actions").show();
+    }, function() {
+      $(this).children("div.actions").hide();
+    }
+  );
+  function change_button()
+  {
+  $("#btn_usr_add").html('<a class="btn btn-primary" data-toggle="modal" href="#inviteuserModal" rel="tooltip" style="float:right;padding:3px;margin:4px;"><span class="icon-plus-sign"></span> Invite User</a>');
+  }
+ 
+= render :partial => "shared/source"
+= render :partial => "shared/industry"  

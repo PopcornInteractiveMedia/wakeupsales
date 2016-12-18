@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  deal: 
+  industry: 
+
+two:
+  organization: 
+  deal: 
+  industry: 

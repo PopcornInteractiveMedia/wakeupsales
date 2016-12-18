@@ -1,0 +1,51 @@
+.p0
+  %div
+    .navbar-right
+      %form{action: "#", method: "get"}
+      .input-group
+        %input#system-search.form-control{name: "q", placeholder: "Type to search...", style: "height: 30px;padding-right:20px"}
+        %span.glyphicon.glyphicon-search.fr{style: "margin-right:5px;top:-21px"}
+  .cb
+  .table-responsive{:style=>"overflow: auto;max-height: 450px;width: 100%;"}
+    %table.table.table-list-search.table-striped.table-bordered
+      %thead
+        %tr
+          %th Serial
+          %th{style: "width: 25%;"} Title
+          %th Assigned to
+          %th Created by
+          %th Created
+          %th Priority
+          %th Stage
+
+          
+      %tbody
+        - if !@deals.nil? || !@deals.blank?
+          - i = 1
+          - @deals.each do |deal|
+            %tr
+              %td 
+                = i 
+              %td 
+                = link_to lead_url(deal), :target => "_blank" do
+                  = deal.title
+              %td 
+                = deal.assigned_user.present? ? ((deal.assigned_user.id == @current_user.id) ? "me" : deal.assigned_user.full_name) : ''
+              %td 
+                = deal.initiator.present? ? (deal.initiated_by == @current_user..id ? "me" : deal.initiator.first_name) : ""
+              %td 
+                = date_format(deal.created_at)
+              %td 
+                - if(deal.priority_type.name == "Hot")
+                  - spancls = "hot_pri"
+                - elsif(deal.priority_type.name == "Cold")
+                  - spancls = "cold_pri"
+                - else
+                  - spancls = "warm_pri"
+                
+                %span{:class=>"#{spancls} labelTaskType"}
+                  = deal.priority_type.name
+              %td 
+                = deal.deal_status.name
+                
+            - i += 1

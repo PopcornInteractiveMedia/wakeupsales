@@ -1,0 +1,825 @@
+/= javascript_include_tag 'jquery.nicescroll.min', 'bootstrap-formhelpers-phone'
+
+#wrap
+  #content
+    .outer
+      .inner
+        .row
+          .col-lg-12
+            #alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+              %button.close{onclick: "$('#alert-msg').hide();$('#task_loader').hide();"} x
+              #msg_div
+            #task_header
+              .box{style: "border:0"}
+                .tabbable.task_tab
+                  %ul.nav.nav-tabs
+                    %li{style: "font-size:18px;color:#F59106;margin: -2px 4% -2px 0px;"}
+                      =image_tag "deal_small.png",:alt=>""
+                      Leads
+                %div{style: "border-bottom:1px solid #DDD;margin-top:5px"}
+                = render :partial => "lead_preview_list"
+                .row{style: "margin: 14px;"}
+                  .col-md-6
+                    /%button.btn.btn-primary.pull-right{type: "button", "data-disable-with" => "Saving...", onclick: "return validate_fields()"} Confirm
+                    = link_to "Confirm",save_lead_path,:class=>"btn btn-primary pull-right", :onclick=> "return validate_fields()"
+                   
+                  .col-md-6
+                    =link_to "Cancel",destroy_lead_path,:class=>"btn btn-default pull-left", :confirm => "Do you want to cancel and delete all the leads?"
+                
+                
+            
+
+:javascript
+   $(document).ready(function(){
+     //$.fn.editable.defaults.mode = 'inline';
+     $('#dataTableIncoming').dataTable( {
+       //"aoColumns": [{sWidth: '20px'}, {sClass: 'col-md-2'}, null,null, null,{sClass: 'col-md-2'}, {sClass: 'col-md-3'}, null,null, null,null, null,null, null,null, null,null],
+       //"sScrollX": "100%",
+       //"sScrollXInner": "110%",
+       //"bScrollCollapse": true
+     } );   
+     $('#div_scroll').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+     $('input[type="text"].lead_phone').each(function () {
+      var $phone = $(this);
+      $phone.bfhphone($phone.data());
+     });
+     $('.lead_phone').editable({
+      url: '/save_lead_data',
+      pk: 8,
+      title: 'Enter Phone',
+      type: 'text',
+      placement: 'left',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter phone';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_title').editable({
+      url: '/save_lead_data',
+      pk: 1,
+      title: 'Enter Title',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_comp_name').editable({
+      url: '/save_lead_data',
+      pk: 2,
+      title: 'Enter Company Name',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter company name';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_comp_size').editable({
+      url: '/save_lead_data',
+      pk: 3,
+      title: 'Enter Company Size',
+      type: 'text',
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_source').editable({
+      url: '/save_lead_data',
+      pk: 4,
+      title: 'Enter Source',
+      type: 'textarea',
+      placement: 'left',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_web').editable({
+      url: '/save_lead_data',
+      pk: 5,
+      title: 'Enter Website',
+      type: 'text',
+      placement: 'left',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_con_name').editable({
+      url: '/save_lead_data',
+      pk: 6,
+      title: 'Enter Contact Name',
+      type: 'text',
+      placement: 'left',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_desg').editable({
+      url: '/save_lead_data',
+      pk: 7,
+      title: 'Enter Designation',
+      type: 'text',
+      placement: 'left',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_mobile').editable({
+      url: '/save_lead_data',
+      pk: 9,
+      title: 'Enter Mobile',
+      type: 'text',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter mobile';
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('.lead_email').editable({
+      url: '/save_lead_data',
+      pk: 10,
+      title: 'Enter email',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter mobile';
+        if (reg.test($.trim(value)) == false) 
+        {          
+          return 'Please enter valid email id';
+        }
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_tech').editable({
+      url: '/save_lead_data',
+      pk: 11,
+      title: 'Enter Technology',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_loc').editable({
+      url: '/save_lead_data',
+      pk: 12,
+      title: 'Enter Location',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_con').editable({
+      url: '/save_lead_data',
+      pk: 13,
+      title: 'Enter Country',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+         
+        //var newsource = data.split('-');
+        //var o = new Option(newsource[0],newsource[0]);
+        //alert(data)
+        var c_id = data.split('_')[1];
+        if(data == "success")
+        {        
+        //alert(".change_c_"+c_id)
+        $("#con_"+c_id).val("0");
+        $(".change_c_"+c_id).removeAttr('style');
+        $(".change_c_"+c_id).css("color","green");
+        }
+        else
+        {        
+        //alert(".change_c_"+c_id)
+        $("#con_"+c_id).val("1");
+        $(".change_c_"+c_id).removeAttr('style');
+        $(".change_c_"+c_id).css("color","red");
+        }
+
+        //$(".lead_con").css("color","#3399F3");
+        /// jquerify the DOM object 'o' so we can use the html method        
+        //$(o).html(newsource[1]);
+        
+        //$(o).prop('selected', true)
+        //$("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('errorz') 
+        $(".lead_con").css("color","red");
+        /* actions on validation error (or ajax error) */
+        //var msg = '';
+        //if(data.errors) { //validation error
+          //$.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        //} 
+        //else if(data.responseText) { //ajax error
+        //msg = data.responseText;
+      //}
+    }
+    });
+    $('.lead_ind').editable({
+      url: '/save_lead_data',
+      pk: 14,
+      title: 'Enter Industry',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_cmnt').editable({
+      url: '/save_lead_data',
+      pk: 15,
+      title: 'Enter Comment',
+      type: 'textarea',
+      data: {custom: 'textarea'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_des').editable({
+      url: '/save_lead_data',
+      pk: 16,
+      title: 'Enter Description',
+      type: 'textarea',
+      data: {custom: 'textarea'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_asgn_to').editable({
+      url: '/save_lead_data',
+      pk: 17,
+      title: 'Enter Assigned To',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_fb').editable({
+      url: '/save_lead_data',
+      pk: 18,
+      title: 'Enter facebook url',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    }); 
+    $('.lead_tw').editable({
+      url: '/save_lead_data',
+      pk: 19,
+      title: 'Enter twitter url',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.lead_li').editable({
+      url: '/save_lead_data',
+      pk: 20,
+      title: 'Enter linkedin url',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter title';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    }); 
+    $('.lead_skype').editable({
+      url: '/save_lead_data',
+      pk: 21,
+      title: 'Enter skype id',
+      type: 'text',
+      data: {custom: 'text'}, 
+      placement: 'left',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter skype id';
+       
+      },
+      success: function(data) {       
+        //alert('success') 
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });  
+     
+   });

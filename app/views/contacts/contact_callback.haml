@@ -1,0 +1,112 @@
+.container
+  /.row
+  /  .cb10
+  /  .cb10
+  /  .col-md-12
+  /    
+  /    %a{href: "/contacts/gmail"} Gmail
+  /    /%a{href: "/contacts/yahoo"} Yahoo
+  /    /%a{href: "/contacts/hotmail"} HotMail
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .con-box1
+        %div
+          %h3
+            Imported Contacts
+        %div 
+          .cb10
+          .cb10
+          - if !@contacts.nil?
+            = form_for(Contact.new,:url=>"/import_contacts",:html=>{:class => "form",:method=>"post",:id=>"importcontact",:multipart => true}) do |f|
+              =hidden_field_tag "emailids"
+              .table-responsive
+                %table.table.white-table.table-hover{:id=>"imported_contacts"}
+                  %thead
+                    %th 
+                    /  %input#chkcontacts{:type=>"checkbox", :onclick => "check_uncheck(this)"}
+                    %th Contact Name
+                    %th Email
+                    %th Last Connection Date
+                  %tbody
+                    - @contacts.each do |c|
+                      %tr
+                        %td
+                          %input{:type=>"checkbox",:value=>c[:email],:name=>"contacts", :onclick => "import_contacts()"}
+                        %td
+                          %span.name 
+                            =c[:name]
+                        %td
+                          = c[:email]
+                        %td
+                          /= c[:connection_date]
+                          = distance_of_time_in_words_to_now(c[:connection_date])+" ago" if c[:connection_date].present?
+              /= will_paginate @contacts if @contacts
+              %br
+              %button.btn.btn-primary.btn-success{type: "submit", :disable_with => "Please wait ..."} Import Contacts
+              =link_to "Cancel", contacts_path, :class=> "btn btn-default"
+%br
+:javascript
+  $(document).ready(function() {
+    $('#imported_contacts').dataTable({
+    oLanguage: {"sLengthMenu": "_MENU_" },
+    sPaginationType: "bootstrap",
+    bJQueryUI: true,
+    aLengthMenu: [[30, 50,100, -1], [30, 50, 100,"All"]],
+    iDisplayLength: 30,
+    aoColumnDefs: [
+      { aTargets: [0],bSortable: false}]
+       
+    });
+  } );
+  function check_uncheck(obj)
+  {
+    
+    var checkedValue = $("#chkcontacts:checked").length;
+    var ischecked = (checkedValue == 1 ? true : false);
+    
+    var allcontacts =$("input:checkbox[name='contacts']");
+    if(ischecked==true)
+    {
+      
+      for (var i = 0; i < allcontacts.length; i++) {
+        //if (allcontacts[i].checked == true) {
+        //ids = ids + allcontacts[i].value + ",";
+        //}
+        allcontacts[i].checked = true;
+      }
+      //allcontacts.checked = true;
+      //$("input:checkbox[name='contacts']").attr("checked", true);
+    }
+    else
+    {
+      for (var i = 0; i < allcontacts.length; i++) {
+        //if (allcontacts[i].checked == true) {
+        //ids = ids + allcontacts[i].value + ",";
+        //}
+        allcontacts[i].checked = false;
+      }
+      //allcontacts.checked = false;
+      //$("input:checkbox[name='contacts']").attr("checked", false);
+    }
+  }
+  function import_contacts()
+  {
+    var emailids = "";
+    $("input:checkbox[name='contacts']:checked").each(function(i) {
+      var values = $(this).val() + "|";
+      emailids += values;
+    });  
+    $("#emailids").val(emailids);
+    //$.ajax( {
+    //  type: "POST",
+    //  url: "/import_contacts",
+    //  data: {emailids: emailids},
+    //  success: function(result) {
+    //    //window.location.reload();
+    //    alert(result);
+    //  }
+    //});
+  }
+          

@@ -1,0 +1,123 @@
+:javascript
+  $(function(){
+    $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+  });
+.count_nav_block.bggry
+  .fl.count_total
+    You Have
+  .cb
+.count_nav_block
+  - task_call_count = Task.last_three_months.task_list(current_user,nil,nil,nil,'Call').count
+  .fl.ic_t_call
+  - if task_call_count > 0
+    = link_to tasks_url(:type=>"all", :t_type=>@current_organization.task_types.where(:name => "Call").first.id), :style=>"color:#78808A" do
+      .fl.count_total        
+        Total Calls
+      .fr.fnt30
+        =task_call_count
+  - else
+    .fl.count_total        
+      Total Calls
+    .fr.fnt30
+      =task_call_count 
+  .cb
+.count_nav_block.bggry
+  - task_apointment_count = Task.last_three_months.task_list(current_user,nil,nil,nil,'Appointment').count
+  .fl.ic_t_appo
+  - if task_apointment_count > 0
+    = link_to tasks_url(:type=>"all", :t_type=>@current_organization.task_types.where(:name => "Appointment").first.id), :style=>"color:#78808A" do
+      .fl.count_total
+        Total Appointments
+      .fr.fnt30    
+        =task_apointment_count
+  - else
+    .fl.count_total
+      Total Appointments
+    .fr.fnt30    
+      =task_apointment_count
+  .cb
+/.count_nav_block
+/  .fl.ic_t_outs
+/  .fl.count_total.txtblue
+/    Outstanding Tasks
+/  .fr.fnt30.txtblue
+/    - if badge_overdue  > 0
+/      = link_to tasks_url(:type=>"overdue"), :style=>"color:#49AFCD" do
+/        =badge_overdue
+/    - else
+/      =badge_overdue
+/  .cb
+/.count_nav_block.bggry
+/  .fl.ic_t_upcom
+/  .fl.count_total.txtgrn
+/    Upcoming Tasks
+/  .fr.fnt30.txtgrn
+/    - if badge_upcoming > 0
+/      = link_to tasks_url(:type=>"upcoming"), :style=>"color:#4F8E50" do
+/        =badge_upcoming
+/    - else
+/      =badge_upcoming
+/  .cb
+.count_nav_block
+  .fl.ic_t_lead
+  - if new_deals_three_month > 0
+    = link_to leads_url(:type=>"incoming", :daterange => "3m"), :onclick => "document.cookie='dt_range=3m';",:style=>"color:#78808A" do
+      .fl.count_total
+        Leads to nurture
+      .fr.fnt30
+        = new_deals_three_month
+  - else
+    .fl.count_total
+      Leads to nurture
+    .fr.fnt30
+      = new_deals_three_month
+    /- if @current_user.is_super_admin? || @current_user.is_admin?
+    /  - if new_deals_three_month > 0
+    /    = link_to deals_url(:type=>"incoming"), :style=>"color:#78808A" do
+    /      =new_deals_three_month
+    /  - else
+    /    = new_deals_three_month
+    /- else
+    /  - if new_deals_three_month > 0
+    /    = link_to deals_url(:assigned_to=>@current_user.id), :style=>"color:#78808A" do
+    /      =new_deals_three_month
+    /  - else
+        
+  .cb
+.count_nav_block
+  .fl.ic_l_deal
+  .fl.count_total
+    - if @last_deal.present?
+      - tooltip_text = ("#{@last_closed_deal.title}").html_safe
+      = link_to lead_url(@last_closed_deal), style: "font-size:15px", rel: "tooltip", title: "#{tooltip_text}" do
+        Last lead close
+    - else
+      Last lead closed
+    - if @last_deal.present?
+      %br
+      %span{style: "font-size:13px"} 
+        By: 
+        = @last_closed_user
+  .fr.fnt30
+    - if @last_deal.present?
+      - tooltip_text = ("#{@last_closed_deal.title}").html_safe
+      = link_to lead_url(@last_closed_deal), style: "font-size:15px", rel: "tooltip", title: "#{tooltip_text}" do
+        /= truncate(@last_closed_deal.title, :length => 15, :omission => '...')
+        = @last_close_deal_date
+    - else
+      %span{style: "font-size:15px"}
+        Yet to close a lead.
+  .cb
+.count_nav_block
+  .fl.ic_t_outs
+  .fl.count_total
+    Avg time to close a lead
+    %span{style:"font-size:14px;font-style:italic"} (in days)
+  .fr.fnt30
+    - if @last_deal.present? && @ratio.present?
+      = @ratio.to_i
+    - else
+      %span{style: "font-size:15px"}
+        Yet to close a lead.
+  .cb
+

@@ -1,0 +1,128 @@
+:css
+  #my_alert_msg ul li{list-style-type: none}
+%script{src: "assets/jquery.tagsinput.min.js"}
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .con-box1.p0
+        .col-md-2.p0.style_bod
+          .mtop30{style: "padding-left:15px"}
+            %h4 Settings
+          %hr
+          .p0
+            %ul.nav.settings-navleft.nav-sidebar
+              %li.hd_active
+                %a{ href: "#"}Public
+
+              %li.c_acn#li_feed
+                %a{ href: "#", :onclick=>"display_section('feed')"} Feed Keywords
+
+              %li.c_acn#li_sns
+                %a{ href: "#", :onclick=>"display_sectionajax('sns')"} SNS Medias
+
+              %li.c_acn#li_widgets
+                %a{ href: "#", :onclick=>"display_sectionajax('widgets')"} Widgets
+            %ul.nav.settings-navleft.nav-sidebar
+              %li.hd_active
+                %a{ href: "#"}Personal
+
+              %li.c_acn#li_chart
+                %a{ href: "#", :onclick=>"display_sectionajax('chart')"} Charts
+              - if user_signed_in? && @current_user.is_super_admin?
+
+                %li.c_acn#li_group
+                  %a{ href: "#", :onclick=>"display_sectionajax('group')", class: "mygroups"} Groups
+            %ul.nav.settings-navleft.nav-sidebar
+              %li.hd_active
+                %a{ href: "#"}Account
+              - if current_user.is_super_admin?
+                
+                %li.c_acn#li_org
+                  %a{ href: "#", :onclick=>"display_sectionajax('org')"} Organization
+                %li.c_acn#li_priority
+                  %a{ href: "#", :onclick=>"display_sectionajax('priority')"} Priority
+                %li.c_acn#li_deal
+                  %a{ href: "#", :onclick=>"display_sectionajax('deal')"} Deal Status
+
+              %li.c_acn#li_user_label
+                %a{ href: "#", :onclick=>"display_sectionajax('user_label')", class: "mylabels"} Label
+              %li.c_acn#li_api_token
+                %a{ href: "#", :onclick=>"display_sectionajax('api_token')"} API Token
+              %li.c_acn#li_weekly_digest
+                %a{ href: "#", :onclick=>"display_sectionajax('weekly_digest')"} Weekly Digest                
+              %li.c_acn#li_task_outcome
+                %a{ href: "#", :onclick=>"display_sectionajax('task_outcome')"} Task Outcomes
+
+          .cb10
+        .col-md-10
+          - if user_signed_in?
+            #feed
+              = render :partial=> "feeds"   
+            #sns{:style=>"display:none"}
+            #widgets{:style=>"display:none"}
+            #chart{:style=>"display:none"}
+            - if current_user.is_super_admin?
+              #group{:style=>"display:none"}
+              #org{:style=>"display:none"}
+              #priority{:style=>"display:none"}
+              #task_outcome{:style=>"display:none"}
+            #deal{:style=>"display:none"}
+            #user_label{:style=>"display:none"}
+            #email_notification{:style=>"display:none"}
+            #api_token{:style=>"display:none"}
+            #weekly_digest{:style=>"display:none"}            
+        .cb
+      
+:javascript 
+  function display_section(tab){
+  //alert($('.col-md-10').find('.active').html());
+   $('.col-md-10').find('.active').css('display','none');
+   $('.c_acn').removeClass('active');
+   $('#li_'+tab).addClass('active');
+   $('#'+tab).addClass('active').css('display','block');
+  }
+  function display_sectionajax(tab){
+      $.ajax({
+        beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+        type: "POST",
+        url: "settings/fetch_pages",
+        data: {tab:tab},
+        success: function(data){ 
+          $('#'+tab).html(data);  
+          display_section(tab)
+          
+         },
+        error: function(data){
+          alert('got an error');
+        }
+      });  
+  }
+  $(function() { 
+   var settings = window.location.hash.replace("#","")
+   if(window.location.hash == "")
+     display_section('feed')
+   else
+     display_section(settings)
+   $('#tags_feed_keywords_settings').tagsInput({'defaultText':'Click to add'});
+   $('#tags_feed_keywords_settings_tag').css('width','90px');
+  });
+  function save_feeds_org(){
+    //$('#feed_submit_btn').prop("disabled", true).html("Please wait...");
+    var feed = $('#tags_feed_keywords_settings').val();
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: "POST",
+      url: "settings/update_feed_keyword_org",
+      data: {keywords:feed},
+      success: function(data){ 
+        //$('#feed').html(data);  
+        $(document).trigger("add-alerts", [{'message': "Settings for Feed keywords updated successfully.",'priority': 'info'}]);
+      },
+      error: function(data){
+        alert('got an error');
+      }
+    });  
+  }
+        

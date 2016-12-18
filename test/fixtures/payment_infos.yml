@@ -1,0 +1,29 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  transaction_id: MyString
+  amount: 1.5
+  transaction_date: 2013-10-23 11:11:12
+  last4_digit: MyString
+  customer_id: MyString
+  card_holder_name: MyString
+  street: MyString
+  city: MyString
+  country: MyString
+  zipcode: MyString
+  payment_token: MyString
+
+two:
+  organization: 
+  transaction_id: MyString
+  amount: 1.5
+  transaction_date: 2013-10-23 11:11:12
+  last4_digit: MyString
+  customer_id: MyString
+  card_holder_name: MyString
+  street: MyString
+  city: MyString
+  country: MyString
+  zipcode: MyString
+  payment_token: MyString

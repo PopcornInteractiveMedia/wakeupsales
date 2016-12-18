@@ -1,0 +1,54 @@
+<style type="text/css">
+.well {
+    background-color: #F5F5F5;
+    border: 1px solid #E3E3E3;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+    margin-bottom: 20px;
+    min-height: 20px;
+    padding: 19px;
+}
+
+</style>
+<br/><br/><br/>
+<div class="row contact_row">
+    <div class="col-md-5 contact_div">
+      <div class="well">
+        <legend>Contact Us</legend>
+       <%= form_tag("/contact_us", method: "post") do %>         
+          <div class="form-group">
+             <%= text_field_tag :name,"",:required => 'true',:class => 'form-control',:placeholder => 'Name'  %>
+          </div>
+          <div class="form-group">
+            <%= email_field_tag :email,"",:required => 'true',:class => 'form-control',:placeholder => 'Email' %>
+            <label id="email_contact_us",style="display:none",class="error">
+           </div>
+          
+          <div class="form-group">
+            <%=text_area_tag :comment,"", :size => '15x5',:required => 'true',:class => 'form-control contact_txtarea', :placeholder => 'Write your comment'%>
+            
+           </div>
+               <button class="btn btn-primary" type="submit" onclick="return validate_email_con_us()">Submit</button>  
+      <% end %>
+      </div>
+    </div>
+</div>
+<%=stylesheet_link_tag "home"%>
+<script>
+ function validate_email_con_us()
+ {
+  var email_con=$("#email").val();
+  var atpos=email_con.indexOf("@");
+  var dotpos=email_con.lastIndexOf(".");
+if (email_con != '' && (atpos<1 || dotpos<atpos+2 || dotpos+2>=email_con.length))
+  {
+   $("#email_contact_us").show();
+   $("#email_contact_us").html('Please enter a valid email address.')
+  return false;
+  }
+else
+{
+  $("#email_contact_us").hide();
+}
+ }
+</script>

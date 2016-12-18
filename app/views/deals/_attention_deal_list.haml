@@ -1,0 +1,257 @@
+#deallist.col-md-12.deallist
+  .w-box.tab-pane.active.in.wbox-customize
+    %div.table-responsive
+      %table#dataTableInactiveDeal.table.table-condensed.table-hover.table-striped{:style=>"border:1px solid #D1D1D1", :cellspacing=>"40","data-source"=>leads_url(format: 'json',params: {cuser: current_user.id,_type: 'inactive_deals',filtertype: params[:filtertype],filtervalue: params[:filtervalue], assigned_to: params[:assigned_to], created_by: params[:created_by], cre_by: params[:cre_by], cre_by_val: params[:cre_by_val], asg_by: params[:asg_by], asg_by_val: params[:asg_by_val], loc: params[:loc], loc_val: params[:loc_val], priority: params[:priority], priority_val: params[:priority_val], daterange: params[:daterange], dt_range: params[:dt_range]})}
+        %thead
+          %tr
+            %th.dropdown#deal_label_menu{style: "font-size:18px;color:#F59106;"}
+              %a#incomingDropdown.dropdown-toggle{:href=>"javascript:","data-toggle" => "", :style=> "cursor:default;text-decoration:none;"}
+                #incomingLabel.label_arrow
+                  %span.icon-chevron-down
+              %ul.dropdown-menu.fl{:style=>"right:auto;padding-left:5px;font-size: 11px;"}
+                -current_user.user_labels.all.each do |lbl|
+                  %li
+                    %input{:type=>"checkbox",:value=>lbl.id,:onclick=>"check_apply(this,'incoming');"}
+                    =lbl.name
+                %li.divider
+                %li#incoming_applylabel_li{:onclick=>"addLabelToDeal(this);",:style=>"padding:5px 5px 0px 16px;cursor:pointer;display:none;"}
+                  Apply
+               
+                %li{"data-toggle" => "modal", href: "#labelModal", rel: "popup", title: "Add a Label",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+                  Add Label 
+                %li
+                  %a{:href=>"/settings/#user_label",:style=>"padding:5px 5px 0px 16px;cursor:pointer"}
+                    Manage Label
+            %th Title
+            %th Stage
+            %th Created 
+            %th Amount
+            %th Contact
+            %th Phone
+            %th Priority
+            %th Location
+        %tbody{:style=>"font-size:11px"}
+          
+:javascript
+   $(document).ready(function(){
+    $('#task_loader').show();
+    $(".movedealincomepop").click(function(){ 
+      $("#incoming_move").show();
+      $("#pipeline_move").hide();
+    });
+    
+  });
+  function metisTableIncoming() {
+    "use strict";
+    //$(".sortableTable").tablesorter();
+  }
+
+  $(function(){
+    $('#dataTableInactiveDeal').dataTable({
+      oLanguage: {"sLengthMenu": "_MENU_" },
+      sPaginationType: "bootstrap",
+      bJQueryUI: true,
+      bProcessing: reset_badge_count(),
+      bServerSide: true,
+      aoColumns: [{sWidth: '10px'}, {sClass: 'col-md-3'}, {sClass: 'col-md-2'},{sClass: 'col-md-1'}, {sClass: 'col-md-1'},{sClass: 'col-md-1'}, {sClass: 'center-align col-md-1'},{sClass: 'col-md-1'}],
+      "sDom": '<"dtTop dtTables">rt<"dtBottom"><"dtInfo fl"i><"dtPagination fr"p>',
+      sAjaxSource: $('#dataTableInactiveDeal').data('source'),
+      aaSorting: [[0,'desc']],
+      aoColumnDefs: [
+        {
+          aTargets: [0],
+          bSortable: false,
+          iSortCol_0: 0,
+          mRender: function (data, type, row ) {
+                  if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")) && $("#incoming").hasClass("active"))
+                    $("#badge_incomming").html(row[25]);
+                  return "<input type='checkbox' value=" + row[0] +" title='Check to add label' name='active_incoming_label_menu' class='incoming_chk_box_class' onclick='incoming_chk_box()'>";
+                }
+         },
+        {
+          aTargets: [1],
+          bSortable: true,
+          mRender: function(data, type, row ){
+              var str= "<div style='line-height: 20px;' class='dealrow' > \
+              <span id='deal_popup_menu'> \
+                <a style='cursor:pointer;text-decoration:none;font-size:16px;' href='/leads/" + row[0] + "'> \
+                  "+row[1] +"\
+                </a> \
+              </span> \
+              <div style='color:#201E1E'> \
+                <i class='icon-time' title='Last activity'></i> \
+                " + row[2] +"\
+                <span class='dealspopupmenu'>"
+                if(row[16]=="true"){
+                str+="<div style='display: none;' class='actions dropdown fr'> \
+                  <span style='cursor:pointer;text-decoration:none;color:darkOrange;' href='javascript:' data-toggle='dropdown' class='btn-sm btn-circle dropdown-toggle'> \
+                    <button type='button' class='btn btn-warning btn-xs'><span class='icon-cog icon-1x'></span></button>\
+                  </span> \
+                  <ul class='dropdown-menu'> \
+                    <li> \
+                      <a rel='tooltip' onclick=\"$('#task_form')[0].reset();task_deal(" + row[0] + ");$('#hfield').val('"+ row[0] +"');$('#deal_title').val('"+ row[1] +"').prop('disabled', true);$('#email_err').html('');\" href='#taskModal' data-toggle='modal' data-id='" + row[0] + "'>Add Task</a> \
+                    </li> \
+                    <li> \
+                      <a onclick=\"$('#notable_id').val(" + row[0] + ");$('#notable_type').val('Deal');\" href='javascript:' data-toggle='modal' data-target='#noteModal'>Add Note</a> \
+                    </li> \
+                    <li> \
+                      <a onclick=\"$('#send-mail-popup').get(0).reset();$('#to').val('"+ row[8] +"');$('#mailer_id').val(" + row[0] + ");$('#mailer_type').val('Deal');$('#email_contact_id').val(" + row[14] + ");$('#email_contact_type').val('"+ row[18] +"');reset_email_err_msg();\" href='javascript:' data-toggle='modal' data-target='#SendEmailModal'>Send Email</a> \
+                    </li>\
+                    <li> \
+                      <a href='/leads/" + row[0] + "/edit'>Edit</a> \
+                    </li>"
+                    if(row[21] == "true"){
+                    str+="<li> \
+                      <a rel='nofollow' data-method='delete' data-confirm='Do you want to delete the lead?' href='/leads/" + row[0] + "'>Delete</a> \
+                    </li>";
+                    }
+                    str+="<li> \
+                      <a title='Move Deal' rel='popup'  onclick=\"$('.show_all').show();$('.deal_s_"+ row[22] +"').hide();$('#assigned_to_user').val(" + row[19] + ");$('#new_initr_id').val(" + row[20] + ");$('#new_assign_id').val(" + row[19] + ");move_deal(" + row[0] + ");reset_pop();\" href='#dealmoveModal' data-toggle='modal' data-id='" + row[0] + "' class='movedealincomepop'> \
+                        Move Deal \
+                      </a> \
+                    </li>\
+                    <li> \
+                      <a title='Working On' data-method='post' data-confirm='Are you sure to move the deal to Working On?' href='/leads_woking_on/" + row[0] + "'>Working On</a>\
+                    </li> \
+                  </ul> \
+                </div>";
+                }
+                str+="</span>\
+                <br class='cb'> \
+                <i class='icon-user' title='Assigned to'></i> \
+                " + row[3] + " \
+                <br> \
+              </div> \
+              "+ showlabelicons(row[5],'incoming')+"\
+            </div>"; 
+              return str;
+              }
+        },
+        {
+          aTargets: [2],
+          bSortable: false,
+          iSortCol_0: 0,
+          mRender: function (data, type, row ) {
+                  return  "<span style='font-size:15px;font-weight:bold;'>"+row[26]+"</span>";
+                }
+         },
+         {aTargets: [3],
+            bSortable: true,
+            mRender: function(data, type, row ){
+              str="<br/><div>by " + row[24] + " \
+                </div>"
+              return row[15]+str;
+              
+              }},
+        {
+            aTargets: [4],
+            bSortable: true,
+            mRender: function(data, type, row ){
+            
+            if(row[17] != ''){
+            return  "<span style='font-size:15px;'>$"+row[17]+"</span>";
+            }
+            else{return ""}
+            }},
+        {
+            aTargets: [5],
+            bSortable: false,
+            mRender: function(data, type, row ){
+              return "<a href='/"+row[18]+"/"+row[14]+"' rel='tooltip' title='"+row[23]+"'>"+row[6]+"</a>";
+              
+        }},
+        {aTargets: [6],
+
+            bSortable: false,
+            mRender: function(data, type, row ){
+              if(row[7] != ''){
+              return "<i class='icon-phone'></i> " + row[7];
+              }
+              else{return ""}
+              }},
+        {aTargets: [7],
+
+            bSortable: true,
+            mRender: function(data, type, row ){
+              return "<a href='#' onclick='filterbypriority(\""+ row[10][1]+"\",\"incoming\")'><span class='btn btn-xs btn-sm "+ row[9]+"'>"+ row[10][0]+"</span></a>"
+              
+              }},
+        {aTargets: [8],
+
+            bSortable: true,
+            mRender: function(data, type, row ){
+              
+              if((row[11] == '') && (row[13] == '')){
+              return row[12];
+              }
+              else if((row[11] == '') && (row[13] != '')){
+              return row[13] + ", " + row[12];
+              }
+              else if((row[11] != '') && (row[13] == '')){
+              return row[11] + ", " + row[12];
+              }
+              else{
+              return row[11] + ", " + row[13] + ", " + row[12];
+              }
+              }},
+       
+      ],
+     fnDrawCallback: function() {
+                $('#task_loader').hide();
+                $('a[rel="tooltip"],i,input:checkbox').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+                $(".dealrow" ).hover(
+                  function() {
+                  div_open=$(this).find("div.open")
+                  $(div_open).removeClass("open")
+                  $(this).find("div.dealspopupmenu").show();
+                  }, function() {
+                  $(this).find("div.dealspopupmenu").hide();
+                });
+                $('.dealrow').mouseover(function (e) {
+                  e.stopPropagation();
+                  $('.actions', this).show();
+                });
+                $('.dealrow').mouseout(function (e) {
+                  e.stopPropagation();
+                  $('.actions', this).hide();
+                });    
+                if (Math.ceil((this.fnSettings().fnRecordsDisplay()) / this.fnSettings()._iDisplayLength) > 1)  {
+                        //$('.dataTables_paginate').css("display", "block"); 
+                        //$('.dataTables_length').css("display", "block");
+                        $('.dataTables_processing').css("display", "none");
+                        //$('.dataTables_filter').css("display", "block");                       
+                } else {
+                        //$('.dataTables_paginate').css("display", "none");
+                        //$('.dataTables_length').css("display", "none");
+                        //$('.dataTables_filter').css("display", "none");
+                }
+            }
+      
+    });    
+    //metisTableIncoming();
+    function reset_badge_count(){
+      if((($("#individual_filter_present").val() == false || $("#individual_filter_present").val() == "false")) && $("#incoming").hasClass("active"))
+                    $("#badge_incomming").html(0);
+    }
+  });
+  
+  function incoming_chk_box(){
+    var $cbs = $('input[name="active_incoming_label_menu"]');
+    var total = 0;
+    $cbs.each(function() {
+        if (this.checked){
+            total ++;
+        }
+    });
+    if(total > 0){
+      $("#incomingLabel").removeClass("label_arrow")
+      $("#incomingLabel").addClass("label_arrow_active")
+      $("#incomingDropdown").attr("data-toggle", "dropdown")
+    }else{
+      $("#incomingLabel").addClass("label_arrow")
+      $("#incomingLabel").removeClass("label_arrow_active")
+      $("#incomingDropdown").removeAttr("data-toggle", "dropdown");
+      $(".DataTables_sort_wrapper").removeClass("open")
+    }
+  };
+  

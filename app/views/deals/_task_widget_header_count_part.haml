@@ -1,0 +1,50 @@
+%ul.nav.nav-tabs
+  - all_count = badge_all_deal("Deal", @deal.id)
+  
+  %li#allTask
+    - func = all_count != 0 ? "widget_tasks('all')" : ""
+    - toggle_val = all_count != 0 ? "tab" : ""
+    - href_val = all_count != 0 ? "#all" : "javascript:"
+    - style = all_count == 0 ? "cursor:default;" : ""    
+    %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+      All
+      %span 
+        (
+        =all_count
+        )
+  - today_count = badge_today_deal("Deal", @deal.id)
+  %li#todayTask
+    - func = today_count != 0 ? "widget_tasks('today')" : ""
+    - toggle_val = today_count != 0 ? "tab" : ""
+    - href_val = today_count != 0 ? "#today" : "javascript:"
+    - style = today_count == 0 ? "cursor:default;" : ""
+    %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+      Today
+      %span 
+        (
+        =today_count
+        )
+  - overdue_count = badge_overdue_deal("Deal", @deal.id)
+  %li#overdueTask
+    - func = overdue_count != 0 ? "widget_tasks('overdue')" : ""
+    - toggle_val = overdue_count != 0 ? "tab" : ""
+    - href_val = overdue_count != 0 ? "#overdue" : "javascript:"
+    - style = overdue_count == 0 ? "cursor:default;" : ""
+    %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+      Overdue
+      %span 
+        (
+        =overdue_count
+        )
+  - upcoming_count = badge_upcoming_deal("Deal", @deal.id)
+  %li#upcomingTask
+    - func = upcoming_count != 0 ? "widget_tasks('upcoming')" : ""
+    - toggle_val = upcoming_count != 0 ? "tab" : ""
+    - href_val = upcoming_count != 0 ? "#upcoming" : "javascript:"
+    - style = upcoming_count == 0 ? "cursor:default;" : ""
+    %a{"data-toggle" =>toggle_val, href: href_val, onclick: func, style: style}
+      Upcoming
+      %span 
+        (
+        =upcoming_count
+        )

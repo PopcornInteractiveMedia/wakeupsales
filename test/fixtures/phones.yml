@@ -1,0 +1,17 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  phone_no: MyString
+  extension: MyString
+  phone_type: MyString
+  phoneble_type: MyString
+  phoneble_id: 1
+
+two:
+  organization: 
+  phone_no: MyString
+  extension: MyString
+  phone_type: MyString
+  phoneble_type: MyString
+  phoneble_id: 1

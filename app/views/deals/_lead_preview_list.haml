@@ -1,0 +1,202 @@
+:css
+  .datatable-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+  }
+  .dataTables_filter {
+     width: 50%;
+     float: right;
+     text-align: right;
+  }
+  /*.dataTables_scrollHead{width:1250px !important }
+  .dataTables_scrollBody{width:1250px !important }*/
+
+
+.col-md-12
+  .w-box.tab-pane.active.in.wbox-customize
+    %div#div_scroll.table-responsive{style: "width:1280px;overflow:auto"}
+      %table#dataTableIncoming.table.table-condensed.table-hover.table-striped{:style=>"border:1px solid #D1D1D1", :cellspacing=>"40","data-source"=>leads_url(format: 'json',params: {cuser: current_user.id,_type: 'incoming',filtertype: params[:filtertype],filtervalue: params[:filtervalue]})}
+        %thead
+          %tr
+            %th Title
+            %th Company Name
+            %th Company Size
+            %th Source
+            %th Website
+            %th Contact Name
+            %th Designation
+            %th Work Phone#
+            %th Mobile#
+            %th Email
+            %th Technology
+            %th Location
+            %th Country
+            %th Assigned To
+            %th Task Type
+            %th Industry
+            %th Comment
+            %th Description
+            %th Skype
+            %th Facebook Url
+            %th Twitter Url
+            %th Linkedin Url
+            
+        %tbody{:style=>"font-size:11px"}
+          - if !@leads.nil? || !@leads.blank?
+            - @leads.each do |l|
+              %tr
+                %td
+                  %a.lead_title{href: "#", id: l.id}
+                    = l.title
+                %td
+                  %a.lead_comp_name{href: "#", id: l.id}
+                    = l.company_name
+                %td
+                  %a.lead_comp_size{href: "#", id: l.id, "data-type" => "select", "data-value" => l.company_size}
+                    = l.company_size
+                %td
+                  %a.lead_source{href: "#", id: l.id}
+                    = l.source
+                %td 
+                  %a.lead_web{href: "#", id: l.id}
+                    = l.website
+                %td 
+                  %a.lead_con_name{href: "#", id: l.id}
+                    = l.contact_name
+                %td 
+                  %a.lead_desg{href: "#", id: l.id}
+                    = l.designation
+                %td 
+                  %a.lead_phone{href: "#", id: l.id}
+                    = l.phone ? l.phone : "NA"
+                %td 
+                  %a.lead_mobile{href: "#", id: l.id}
+                    = l.mobile ? l.mobile : "NA"
+                %td 
+                  %a.lead_email{href: "#", id: l.id}
+                    = l.email ? l.email : "N/A"
+                %td 
+                  %a.lead_tech{href: "#", id: l.id}
+                    = l.technology
+                %td 
+                  %a.lead_loc{href: "#", id: l.id}
+                    = l.location
+                %td{} 
+                  
+                  %a.lead_con{:href=> "#", :id=> l.id, "data-type" => "select"}
+                    = l.country
+                %td 
+                  %a.lead_asgn_to{href: "#", id: l.id, "data-type" => "select"}
+                    = l.assigned_to
+                %td 
+                  %a.lead_task_type{href: "#", id: l.id, "data-type" => "select"}
+                    = l.task_type
+                %td 
+                  %a.lead_ind{href: "#", id: l.id}
+                    = l.industry
+                %td 
+                  %a.lead_cmnt{href: "#", id: l.id}
+                    = l.comments
+                %td 
+                  %a.lead_des{href: "#", id: l.id}
+                    = l.description
+                
+                %td
+                  %a.lead_skype{href: "#", id: l.id}
+                    =l.skype_id
+                %td
+                  %a.lead_fb{href: "#", id: l.id}
+                    =l.facebook_url
+                %td
+                  %a.lead_tw{href: "#", id: l.id}
+                    =l.twitter_url
+                %td
+                  %a.lead_li{href: "#", id: l.id}
+                    =l.linkedin_url
+/=hidden_field_tag "check_count","#{v}"
+:javascript
+  $(function() {        
+    $('a.lead_comp_size').editable({
+        url: '/save_compsize_lead',    
+        pk: 1,
+        title: 'Select company sIze',   
+        data: {custom: 'Select company sIze'}, 
+        validate: function(value) {
+          if($.trim(value) == '')
+            return 'Please select company sIze';
+        },
+        success: function(response, newValue) {
+        },
+        source: [
+              {value: '1-10', text: '1-10'},
+              {value: '11-50', text: '11-50'},
+              {value: '51-200', text: '51-200'},
+              {value: '201-500', text: '201-500'},
+              {value: '501-1000', text: '501-1000'},
+              {value: '>1000', text: '>1000'}
+           ]
+    });
+    $('a.lead_con').editable({
+        url: '/save_country_lead',    
+        pk: 1,
+        source: '/get_country_list',
+        title: 'Select Country',   
+        data: {custom: 'Select Country'}, 
+        validate: function(value) {
+          if($.trim(value) == '')
+            return 'Please select country';
+        },
+        success: function(response, newValue) {
+        }
+      });
+      $('a.lead_asgn_to').editable({
+        url: '/save_user_lead',    
+        pk: 1,
+        type: 'select',
+        source: '/get_user_list_lead',
+        title: 'Select User',   
+        data: {custom: 'Select User'}, 
+        validate: function(value) {
+          if($.trim(value) == '')
+            return 'Please select user';
+        },
+        success: function(response, newValue) {
+           
+        }
+      });
+      $('a.lead_task_type').editable({
+        url: '/save_task_type_lead',    
+        pk: 1,
+        type: 'select',
+        source: '/get_task_type_lead',
+        title: 'Select Task Type',   
+        data: {custom: 'Select Task Type'}, 
+        validate: function(value) {
+          if($.trim(value) == '')
+            return 'Please select task type';
+        },
+        success: function(response, newValue) {
+           
+        }
+      });
+  });
+  function validate_fields(){
+     var is_flag = [];
+     $("a.lead_comp_name, a.lead_con_name, a.lead_con, a.lead_asgn_to").each(function(){
+       if($(this).html() == "Empty" || $.trim($(this).html()) == "N/A"){
+         $(this).css("background", "#ffc");
+         is_flag.push("false");
+       }else{
+         $(this).css("background", "none");
+       }
+     });
+     if ($.inArray("false", is_flag)< 0) {
+      return true;
+     }
+    else {
+      alert("Company name/Contact name/Country/Assigned to fields can not be blank!");
+      return false;
+      
+     }
+   }
+

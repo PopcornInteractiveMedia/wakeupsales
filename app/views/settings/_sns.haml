@@ -1,0 +1,29 @@
+.mtop30
+  %h4 SNS Medias  
+.table-responsive.mtop30    
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .row
+      .col-md-2
+        %a{"data-toggle" => "modal", href: "#fbModal"} Link Facebook
+      .col-md-2
+        %a{"data-toggle" => "modal", href: "#twModal"} Link Twitter
+      .col-md-2
+        %a{href: "#liModal", onclick: "if($(this).html() == 'Unlink LinkedIn'){$(this).html( 'Link LinkedIn');} else {$(this).attr( 'data-toggle','modal');$('#lnModal').show();}"} Unlink LinkedIn
+//#fbModal.modal.fade.hide
+//  .modal-header
+//    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} ×
+//    %h3 Facebook
+//  .modal-body
+//    Connecting to facebook ........
+//#twModal.modal.fade.hide
+//  .modal-header
+//    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} ×
+//    %h3 Twitter
+//  .modal-body
+//    Connecting to twitter ........
+//#liModal.modal.fade.hide
+//  .modal-header
+//    %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} ×
+//    %h3 LinkedIn
+//  .modal-body
+//    Connecting to LinkedIn ........          

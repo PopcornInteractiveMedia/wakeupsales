@@ -1,0 +1,181 @@
+/=javascript_include_tag "bootstrap-datetimepicker"
+/=stylesheet_link_tag "bootstrap-datetimepicker"
+:css
+  textarea {
+      color: #444;
+      padding: 5px;
+  }
+  
+  .txtstuff {
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+      overflow: hidden;
+      padding: 11px;
+  }
+  
+  .hiddendiv {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+  }
+  
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+  /* these must be the same for both */
+  .common {
+      width: 500px;
+      min-height: 47px;
+
+      overflow: hidden;
+  }
+  
+  .lbr {
+      line-height: 3px;
+  } 
+=hidden_field_tag "clicked_button_ref",""
+= form_for(Task.new, :remote => true, :html=>{:class => "form",:method=> "post",:id=> "task_form"}) do |f|
+  %input{:type=>"hidden",:id=>"is_edit_deal",:name=> "is_edit_deal"}
+  =f.hidden_field :recurring_type, :value=> "none"
+  .modal-header
+    %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+    %h4.modal-title
+      Follow up the task
+  .modal-body
+    .form-group
+      /%label
+      /  Title
+      =f.text_area :title, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"}, :style=> "height:41px;resize: none;" , :required => true, :placeholder => "Task title", :value=> @follow.title if @follow.present?
+    .row
+      .form-group.col-md-6
+        /%label Due Date
+        - follow_up_date = (@follow.present? && @follow.due_date > Time.zone.now) ? @follow.due_date : Time.zone.now
+        = text_field_tag "due_date_task_follow","",value: "#{Time.zone.now.strftime('%b-%Y')}", id: "datetimepicker_follow" , autocomplete: "off",onchange: "change_mnth_days();" ,:value=> (follow_up_date.strftime("%m-%d-%Y %H:%M") if @follow.present?),:class=> "col-md-12 form-control", :placeholder => "Due date",:required => true,:onkeydown => "disable_text(event);"
+        =f.hidden_field :due_date, required: "true",:class=> "col-md-12 form-control" , :placeholder => "Due date", :required => true, :value=> follow_up_date.strftime("%Y-%m-%d %H:%M")
+      .form-group.col-md-6
+        /%label
+        /  Type
+        =text_field_tag "task_type", "Follow-up",:class=>"col-md-12 form-control", :required => true, :readonly => true
+        =f.hidden_field :task_type_id, value: TaskType.where("organization_id=? AND name=?", @current_organization.id, "Follow-up").first.id
+    .row
+      .form-group.col-md-6
+        /%label Assigned To
+        =f.select :assigned_to, options_from_collection_for_select(all_org_users, 'id', 'full_name', (@follow.assigned_to if @follow.present?)), {:include_blank => '- Assign User -'},:class=>"col-md-12 form-control all_assign_name", :required => true
+      .form-group.col-md-6
+        /%label Mail To
+        =f.email_field :mail_to,:class=>"col-md-12 form-control follow_mail",:required => true, :placeholder => "Mail To", :value=> @follow.mail_to if @follow.present?
+        %label{id:"email_err",class: "error", style:"display:none"}
+    .row
+      .form-group.col-md-6
+        /%label Priority
+        =f.select :priority_id, options_from_collection_for_select(@current_organization.priority_types, 'id', 'name', (@follow.priority_id if @follow.present?)), {:include_blank => '- Task Priority -'},:class=>"col-md-12 form-control", :required => true
+      .form-group.col-md-6
+        =text_field_tag "deal_title", @follow.deal.title,:class=>"col-md-12 form-control", "data-provide"=> "typeahead" , :autocomplete=>"off", :required => true, :placeholder => "Assign Deal", disabled: true
+        =f.hidden_field :deal_id, value: @follow.deal_id
+        =hidden_field_tag :taskable_type,"Deal"
+        =hidden_field_tag :taskable_id
+    .modal-footer
+      .navbar-left
+
+        =f.submit "Create Task", :class=> "btn btn-primary",:onclick=> "return validate_email('task_mail_to')", :disable_with => "Please wait ..."
+        %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+          %span.c_links
+            Cancel
+        
+:javascript
+
+  
+  var date = new Date();
+  date.setDate(date.getDate());
+  var nwdate = new Date();
+  nwdate.setDate(nwdate.getDate() - 1); 
+  $('#datetimepicker_follow').datetimepicker({minDate: nwdate, useCurrent: false,  format: 'MM-DD-YYYY HH:mm'})
+  $('#task_form').bind('ajax:success', function(evt, data, status, xhr)
+    {
+      if(data.status == "true" || data.status == true){
+        $("#taskFollowModal").modal('hide');
+        $('.modal-backdrop').attr('style','display:none');
+        var deal_id = $("#task_deal_id").val();
+        if($('#ref_page_info').val() == "dealsshow"){ 
+            if($("div").hasClass("task_widget_"+deal_id)){
+              reload_task_widget();
+              $(".task_widget_"+deal_id).effect("highlight", {}, 3000);
+            }
+        }else if($('#ref_page_info').val() == "homedashboard"){
+          load_summary_section();
+          load_header_count();
+          load_dashboard_task_widget();
+          get_activity_data();
+        }else if($('#ref_page_info').val() == "tasksindex"){
+          var task_tab = $('#clicked_button_ref').val().split('Task')[0];
+          load_task_tabs(task_tab, (data.tdate == task_tab));          
+        }else{
+          window.location.href ="/tasks";
+        }
+        $(document).trigger("add-alerts", [{'message': data.msg ,'priority': 'success'}]);
+      }else{
+        $("#task_alert_msg").show();
+        $("#task_msg_div").html(data.msg);
+      }
+    });
+
+    $('#task_form').bind('ajax:before', function(evt, data, status, xhr){
+      //$('#loader').show();
+    });
+
+    $("#task_form").bind("ajax:complete", function(evt, data, status, xhr) {
+      //if(("#{params[:controller]}" == "tasks") && ("#{params[:action]}" == "follow_up_task"))
+        //window.location.reload();
+      //else
+        //window.location.href ="/tasks";
+      //$("#taskFollowModal").modal('hide');
+      //alert("complete")
+      //$("#task_header").html(data.responseText);
+      
+    });
+    
+   
+   $('.all_assign_name').on("change",function() {
+
+      if($(this).val() != ""){
+
+       $('#task_loader').show();
+       $.get("/get_user_email",{id: $(this).val() },function(res){
+           if(res != null){
+            $(".follow_mail").val(res.email);
+            $('#task_loader').hide();
+           }
+        });
+      }else{ $(".follow_mail").val("");}
+   });
+  /*auto expandable textarea */
+  var txt = $('#task_title'),
+      hiddenDiv = $(document.createElement('div')),
+      content = null;
+  
+  txt.addClass('txtstuff');
+  hiddenDiv.addClass('hiddendiv common');
+  
+  $('body').append(hiddenDiv);
+  
+  txt.on('keyup', function () {
+  
+      content = $(this).val();
+  
+      content = content.replace(/\n/g, '<br>');
+      hiddenDiv.html(content + '<br class="lbr">');
+  
+      $(this).css('height', hiddenDiv.height());
+  
+  });
+  function change_mnth_days()
+  {
+      period_val=$("#datetimepicker_follow").val();
+      date=period_val.split(" ")[0];
+      time = period_val.split(" ")[1];
+      year = date.split("-")[2]
+      month = date.split("-")[0]
+      day = date.split("-")[1]
+      $("#task_due_date").val(year+"-"+month+"-"+day + " " +time);      
+  }
+  function daysInMonth(month,year) {
+    return new Date(year, month, 0).getDate();
+  }

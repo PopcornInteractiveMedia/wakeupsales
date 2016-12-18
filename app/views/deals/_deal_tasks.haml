@@ -1,0 +1,51 @@
+.container
+  .row
+    .panel.panel-default.widget
+      .panel-heading
+        %span.icon-thumbs-up
+        %h3.panel-title
+          Tasks
+        %span.label.label-info
+          = @deal.tasks.count
+      .panel-body
+        .table-responsive
+          %table.table
+            %thead
+              %tr
+                %th Task Type
+                %th Age
+                %th Due Date
+                %th Title
+                %th Priority
+                %th Assigned To
+                %th Created By
+            %tbody
+              -tasks= @deal.tasks.sort! { |x,y| y.created_at <=> x.created_at }
+              - tasks.each do |task|
+                - style_bg=""
+                - style_text=""
+                - if task.is_completed
+                  - style_bg="background:#EAF2FA;"
+                  - style_text="text-decoration:line-through; "
+                %tr
+                  %td{style: style_bg+style_text} 
+                    %div{class: "label#{task.task_type.name} labelTaskType"}= task.task_type.name
+                    /= task.task_type.name
+                  %td{style: style_bg+style_text}  
+                    %span.icon-time
+                    = format_date(task.created_at)   
+                  %td{style: style_bg+style_text}  
+                    %span.icon-time
+                    = task.due_date   
+                  
+                  %td{style: style_bg+style_text}  
+                    = link_to task.title, task_path(task)
+                  %td{style: style_bg+style_text} 
+                    %span{:class=>"btn btn-xs btn-sm #{(task.priority_type.original_id == 1 ? 'btn-metis-1' : task.priority_type.original_id == 2 ? 'btn-metis-2' : 'btn-metis-3')}"}
+                      =task.priority_type.name
+                  %td{style: style_bg+style_text}  
+                    = task.user.nil? ? "" : task.user.full_name
+                  %td{style: style_bg+style_text}  
+                    =image_tag "no_user.png", :style=>"max-height:18px"
+                    = task.initiator.full_name
+         

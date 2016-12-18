@@ -1,0 +1,115 @@
+:css
+  #contactList_filter{
+    float: right;
+    margin: 10px 25px;
+  }
+  .nav-tabs > li > a{
+    color: #555;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+    cursor: default;
+  }
+#list_view.con-box1
+  %div
+    .navbar-left{style: "margin-left:16px"}
+      %h1
+        Contact Listing
+    .navbar-right{style: "margin-right:16px"}
+      %a{"data-toggle" => "modal", href: "#contactModal", class: "btn btn-default btn-success",onclick: "$('#contact_referrer').val('List View');$('#new-contact')[0].reset();$('#email_err_i').html('');display_company_div('hide')",rel: "tooltip", style: "margin-top: 14px;padding: 5px 10px;"}
+        %span.glyphicon.glyphicon-plus-sign
+        Add A Contact
+      .btn-group{style:"margin-top: 14px;"}
+        %button.btn.btn-default
+          .glyphicon.glyphicon-import.fl
+          .import_contact.fl{style: "width:115px;text-align: left;text-transform: capitalize", type: "button"} Import Contact
+        %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+          %span.caret
+          %span.sr-only Toggle Dropdown
+        %ul.dropdown-menu{role: "menu"}
+          /%li
+          /  %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from Zoho CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('zoho_crm')"} Zoho CRM
+          /%li
+          /  %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from Sugar CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('sugar_crm')"} Sugar CRM
+          /%li
+          /  %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from FatFree CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('fatfree_crm')"} FatFree CRM
+          %li
+            %a{"data-target" => "#ImportContactModal", "data-toggle" => "modal", rel: "tooltip", title: "Import Contact from other CRM",href: "javascript:void(0)",:style=>"cursor: default;", onclick: "open_crm_modal('other_crm')"} Other CRM
+          %li
+            %a{href: "/contacts/gmail", title: "Import Contact from Gmail"}
+              Import Contact from Gmail
+      %a#contacts_export_btn{href: contacts_path(format: "csv"), class: "btn btn-success btn-default", title: "Export Contact", style: "margin: 14px 10px 0px 0px;"}
+        %i.glyphicon.glyphicon-export
+        Export to CSV
+    .clearfix{style: "clear:both"}
+
+  %div.table-responsive
+    - con = Contact
+    %table.table.table-hover.table.white-table.display.borderless{:cellspacing => "0", :width => "100%", id: "contactList","data-source"=>contacts_url(format: 'json',params: {cuser: current_user.id})}
+      %thead{style: "border: 1px solid #ddd"}
+        %tr
+          %th Name
+          %th Email
+          %th Company
+          %th Country
+          %th Ph no.
+          %th Website
+      %tbody
+
+:javascript
+  $('#contactList').dataTable({
+    sPaginationType: "bootstrap",
+    bJQueryUI: true,
+    bProcessing: false,
+    bServerSide: true,
+    serverSide: true,
+    iDisplayLength : 20,
+    sAjaxSource: $('#contactList').data('source'),
+    aoColumnDefs: [
+      
+      { aTargets: [0],
+
+        bSortable: true,
+          mRender: function(data, type, row ){
+          if(row[1] == "individual_contact"){
+            return "<div class='profileIcon fl'><span class='middle-center' style='top:3px'>"+row[2]+"</span></div><div class='fl' style='margin-top: 5px;'><a href='contact/"+row[0]+"'>"+row[3]+"</a></div>";
+          }
+          else{
+            return "<div class='profileIcon fl'><span class='middle-center' style='top:3px'>"+row[2]+"</span></div><div class='fl' style='margin-top: 5px;'><a href='contact/"+row[0]+"?type=company'>"+row[3]+"</a></div>";
+          }
+      }},
+      { aTargets: [1],
+        bSortable: true,
+          mRender: function(data, type, row ){
+            return row[4];
+      }},
+      { aTargets: [2],
+        bSortable: false,
+          mRender: function(data, type, row ){
+            return row[5];
+      }},
+      { aTargets: [3],
+        bSortable: false,
+          mRender: function(data, type, row ){
+            return row[6];
+      }},
+      { aTargets: [4],
+        bSortable: false,
+          mRender: function(data, type, row ){
+            return row[7];
+      }},
+      { aTargets: [5],
+        bSortable: false,
+          mRender: function(data, type, row ){
+            return row[8];
+      }}
+    ],
+    fnPreDrawCallback: function() { $('#task_loader,.fixed_loader').show(); },
+    fnDrawCallback: function() {
+      $('#task_loader,.fixed_loader').hide();
+    }
+      
+  
+  });
+  
+

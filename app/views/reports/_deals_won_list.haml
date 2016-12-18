@@ -1,0 +1,40 @@
+.table-responsive
+  %table.table.white-table.table-hover.table-striped
+    %thead
+      %tr
+        %th Title
+        %th Won Date
+        %th Assigned To
+        %th Created By
+        %th Amount($)
+    %tbody
+
+      - if !@deals.nil? || !@deals.blank?
+        - @deals.each do |deal|
+          %tr
+            %td 
+              = link_to deal.title, lead_path(deal.id)
+            %td
+              = date_format(deal.deal_moves.first.created_at)
+            %td 
+              - if deal.assigned_user.present?
+                - value=((deal.assigned_user.id == current_user.id) ? "me" : deal.assigned_user.full_name)
+                - url="/profile/#{deal.assigned_user.id}"
+              -else
+                - value='NA'
+                - url="javascript:"
+              = link_to value, url
+            %td
+              - if deal.initiator.present?
+                - value=((deal.initiator.id == current_user.id) ? "me" : deal.initiator.full_name)
+                - url="/profile/#{deal.initiator.id}"
+              -else
+                - value='NA'
+                - url="javascript:"
+              = link_to value, url
+            %td
+              = (deal.amount.present? ? deal.amount : "NA")
+              
+      
+            
+

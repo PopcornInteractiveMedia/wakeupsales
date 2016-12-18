@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  organization: 
+  title: MyString
+  task_type: 
+  assigned_to: 1
+  priority_id: 1
+  deal_id: 1
+  due_date: 2013-10-23 11:12:11
+
+two:
+  organization: 
+  title: MyString
+  task_type: 
+  assigned_to: 1
+  priority_id: 1
+  deal_id: 1
+  due_date: 2013-10-23 11:12:11

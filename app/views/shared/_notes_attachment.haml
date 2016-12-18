@@ -1,0 +1,420 @@
+:css
+  .editable-pre-wrapped{white-space: pre-line;}
+= javascript_include_tag "jquery.uploadfile.min"
+= stylesheet_link_tag "uploadfile.min"
+
+#noteModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "noteModalLabel", role: "dialog", tabindex: "-1"}        
+  .modal-dialog
+    .modal-content
+      - note = Note.new()
+      = form_for(note,:url=>"/add_notes", :remote=>true,:html=>{:class => "form",:method=>"post",:id=>"new-notes-popup",:multipart => true}) do |f|
+        = hidden_field_tag :notable_type
+        = hidden_field_tag :notable_id
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title Add Notes & Attachment
+        .modal-body
+          .form-group
+            %label
+              Notes
+            =f.text_area :notes, :required => true ,:class=> "col-md-12 form-control", :style=> "resize: none;", :rows=>"4",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+          .row
+            /.form-group.col-md-6
+            /  %label Attachment
+            /  =f.file_field :attachment,:class=>"form-control btn-metis-7 btn-file", :onchange => "set_required_for_file_descrption(this)"
+            /.form-group.col-md-6
+            /  %label
+            /    File description               
+            /  =f.text_field :file_description,:class=>"form-control"
+            /  /=f.hidden_field :contact_id,:id=>"hfield"
+            /  =hidden_field_tag "note_from_deal", true
+            .form-group.col-md-12
+              =hidden_field_tag "note_from_deal", true
+              #show_file_name{style: "background: #f1f5fa;padding: 10px;width: 50%;margin: 5px;display:none"}
+              =hidden_field_tag "temp_file_ids"
+              %div{:style=>"height:90px;overflow:auto;width:100%"}
+                #fileuploader
+                  Upload
+              #show_file_name
+              .cb
+          .modal-footer
+            .navbar-left
+
+              %button.btn.btn-primary{type: "submit", disable_with: "Please wait...", id: "notes_submit_btn"} Save
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+      
+#output_notes_attachment.hide        
+
+:javascript
+  // prepare the form when the DOM is ready 
+  $(document).ready(function() { 
+    var options = { 
+        target:        '#output_notes_attachment',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_notes_attachment,  // pre-submit callback 
+        success:       showResponse_notes_attachment, // post-submit callback 
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    }; 
+ 
+    // bind to the form's submit event 
+    $('#new-notes-popup').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+        
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+    $("#fileuploader").uploadFile({
+      url:"/upload_multiple_note_attach",
+      multiple:true,
+      fileName:"myfile",
+      showDelete: true,
+      returnType: "json",
+      //showAbort:false,
+      showDone:false,
+      deletelStr: "",
+      abortStr: "",
+      uploadButtonClass:"ajax-file-upload-green",
+      //dynamicFormData: function()
+      //{
+      //  var deal_id = $("#deal_id").val();
+      //  var data ={ deal_id: deal_id }
+      //  return data;
+      //},
+      
+      onSuccess:function(files,data,xhr)
+      {
+        
+        tempids=[];
+        if(data["message"] =="success")
+        {
+          
+          if($("#temp_file_ids").val() != "")
+          {
+          tempids= $("#temp_file_ids").val().split(",");
+          addItem = data["id"];
+          tempids.splice(tempids.length,1, addItem);
+          $("#temp_file_ids").val(tempids);
+          }
+          else
+          {
+            $("#temp_file_ids").val(data["id"]);
+          }
+          set_required_for_file_descrption(this);
+        }
+        
+      },
+      deleteCallback: function (data, pd) {
+      var tempids=[]; 
+      tempids= $("#temp_file_ids").val().split(",");
+      removeItem = data["id"];
+      tempids.removeByValue(removeItem);
+      $("#temp_file_ids").val(tempids);    
+      
+         $.post("/delete_temp_note_attach?tf_id=" + data["id"], {op: "delete",id: data["id"]},
+             function (resp,textStatus, jqXHR) {
+             
+              
+             });
+          
+           pd.statusbar.hide(); //You choice.
+      }
+    });
+  }); 
+ 
+  //function checkFile_withimagedocaudio(flname){
+  //    //var flname = $("#"+obj.id).val().split(/\\/).pop();
+  //    alert(flname);
+  //    var ext = flname.split('.').pop().toLowerCase();
+  //    if (!ext.match('png|gif|jpeg|jpg|doc|docx|xls|xlsx|pdf|mp3|ppt|pptx')) {
+  //      alert("Currently, only photos of .png, .gif, .jpeg, .jpg, .doc, .docx, .xls, .xlsx, .ppt, .pptx, .pdf and .mp3 can be uploaded!");
+  //       $("#"+obj.id).val('')
+  //       return false;
+  //     } 
+  //}   
+  // pre-submit callback 
+  function showRequest_notes_attachment(formData, jqForm, options) { 
+    $('#notes_submit_btn').prop("disabled", true).html("Please wait...");
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+    //if(checkFile_withimagedocaudio($("name='ajax-file-upload-filename'").html()))
+    //{ return false;}
+    //else
+    //{ return true;}
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+    
+    //alert('About to submit: \n\n' + queryString); 
+    //formValidation();
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+  } 
+ 
+  // post-submit callback 
+  function showResponse_notes_attachment(responseText, statusText, xhr, $form)  { 
+    
+    // for normal html responses, the first argument to the success callback 
+    // is the XMLHttpRequest object's responseText property 
+ 
+    // if the ajaxForm method was passed an Options Object with the dataType 
+    // property set to 'xml' then the first argument to the success callback 
+    // is the XMLHttpRequest object's responseXML property 
+ 
+    //     if the ajaxForm method was passed an Options Object with the dataType 
+    //     property set to 'json' then the first argument to the success callback 
+    //     is the json data object returned by the server 
+    var cldurl= "#{ENV['cloudfront']}"
+    //if(responseText != "success"  && responseText.type != "Deal"){
+    if(responseText != "success"){
+      var append_id="#activityList0:first"
+      var count;
+      var html_head=""
+      $("#deal_note_div").hide('slow');
+      $("#show_file_name").hide();
+      $(".ajax-file-upload-statusbar").remove();
+      $("#temp_file_ids").val("");    
+      var  html_str="<div class='table-responsive bor-lf' id='activityList0'>\
+                          <table class='table table-striped' style='margin-bottom:0px'>\
+                            <tbody>\
+                              <tr class='task_row' onmouseover ='show_edit("+responseText.activity_id+")' onmouseout='hide_edit("+responseText.activity_id+")'>\
+                                <td class='bg_td_rt' style='padding: 1px 8px;width:100px'>\
+                                  <div class='dt_stream'>\
+                                    "+responseText.created_at+"\
+                                    <div class='mid_bdr_dasboard' style='right:-28px'>\
+                                    <img class='img-circle img-thumbnail' src='/assets/note.png'>\
+                                    </div>\
+                                  </div>\
+                                </td>\
+                                <td style='vertical-align:top; padding-left: 15px;'>\
+                                  <div class='fl grey_act'> Created note\
+                                    <span id='show_edit_"+responseText.activity_id+"' class='edit' style='cursor:pointer;display:none'>\
+                                      <i class='glyphicon glyphicon-pencil'>\
+                                      </i>\
+                                    </span>\
+                                    <span id='show_trash_"+responseText.activity_id+"' onclick ='delete_activity_note("+responseText.activity_id+")' class='edit' style='cursor:pointer;display:none'>\
+                                      <i class='glyphicon glyphicon-trash'>\
+                                      </i>\
+                                    </span>\
+                                  </div>\
+                                  <div class='fr' rel='tooltip' title='Created By'>\
+                                    <span class='ic_assign'></span>\
+                                    <a href='/profile/"+responseText.created_id+"'>\
+                                      "+responseText.created_by+"\
+                                    </a>\
+                                  </div>\
+                                  <div class='cb'></div>\
+                                  <div>\
+                                  <a class='note_title note_"+responseText.activity_id+"' href='javascript:void(0)' style='border-bottom:1px none #0088CC;' id='"+responseText.activity_id+"'>\
+                                  "+responseText.note+"\
+                                  </a>\
+                                  <br>\
+                                  <i id='edit_note_"+responseText.activity_id+"' style='color:#989898'>\
+                                  </i>"
+      var cou = ((responseText.attachment_url).toString()).split(',');
+      if(responseText.attachment_present == "true" || responseText.attachment_present == true){
+        for(var i = 0; i <= cou.length-1; i++)
+        { 
+          html_str+="<img src='/assets/attachment.png'><a href='"+responseText.attachment_url[i]+"' target='_blank'>\
+                    "+responseText.attachment_name[i]+"\
+                  </a>\
+                  <br>"
+        }
+      }
+        html_str+="         </div>\
+                          </td>\
+                        </tr>\
+                      </table>\
+                  </div>"
+           var date_type = $("#tod:first").html();
+           $("#no_act").hide();
+           if((typeof date_type === "undefined" || date_type === null) || date_type.trim() != "Today"){
+             append_id=".cmn_cl:first";
+             html_head="<div class='act_date' id='activityHead'><div id='tod'> Today </div></div>";
+            html_str=html_head + html_str
+            if((typeof date_type != "undefined") && date_type.trim() != "Today")
+            {
+             $('#activityHead').before(html_str);
+            }
+            else
+            {
+             $(append_id).after(html_str);
+            }
+            
+           }
+           else
+           {
+            html_str=html_head + html_str
+            $(append_id).before(html_str);
+           }  
+     }
+    else{
+     var  html_str=""
+            html_str+="<tr> \
+                          <td> \
+                            <div class='dt_stream'> \
+                              "+responseText.created_at+" \
+                              <div class='mid_bdr_dasboard'> \
+                                <img class='img-circle img-thumbnail' src="+cldurl+"/assets/note.png> \
+                              </div> \
+                            </div> \
+                          </td> \
+                          <td> \
+                            <div class='rs_con_det'> \
+                              Created note \
+                              <span class='green'> \
+                                "+responseText.note+" \
+                              </span> \
+                              by \
+                              <span class='activity_purple'> \
+                                "+responseText.created_by+" \
+                              </span>"
+                              if(responseText.attachment_present == true){
+                                html_str +="<a href='"+responseText.attachment_url+"' rel='tooltip' title='"+responseText.attachment_name+"' target='_blank'> \
+                                              <img src='"+cldurl+"/assets/attachment.png'> \
+                                            </a>"+responseText.attachment_name+". "+responseText.file_desc
+                              }
+                           html_str +=" </div> \
+                          </td> \
+                        </tr>"          
+        if($('#activity_table_id tr:first').length != 0 && $('#activity_table_id tr:first').find(".day_astream").html().trim() != "Today"){
+          heading_str="<tr> \
+                      <td> \
+                        <div class='day_astream'> \
+                          Today \
+                        </div> \
+                      </td> \
+                      <td></td> \
+                    </tr>"
+          if($("#activity_table_id tbody:first").length != 0)
+           $("#activity_table_id tbody:first").before(heading_str + html_str);
+        }else{
+          if($("#activity_table_id tr:first").length != 0)
+            $("#activity_table_id tr:first").after(html_str);
+        }
+    }
+    //$('#note_notes').wysiwyg('clear');
+    $('.note_title').editable({
+      url: '/update_note_ttl' ,
+      pk: 1,
+      mode: 'inline',
+      title: 'Edit Note',
+      type: 'textarea',
+      rows: 8,
+      cols: 10,
+      placement: 'right',
+      data: {custom: 'text'}, 
+      validate: function(value) {
+        if($.trim(value) == '')
+          return "Note can't be blank!";
+      },
+      success: function(data) {
+        
+        //alert(data)
+        var newsource = data.split('~');   
+        $("#edit_note_"+newsource[1]).text('(Edited at '+ newsource[0] +')');
+
+        //var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        //$(o).html(newsource[1]);
+        
+        //$(o).prop('selected', true)
+        //$("#deal_deal_source").append(o);
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    $('.edit').click(function(e){    
+      e.stopPropagation();
+      $(this).parent().parent().find('a.note_title').editable('toggle');
+      $('.edit').hide();
+    });
+    $(document).on('click', function(){
+      //$('.edit').show();
+    })
+    function show_edit(id)
+    {
+      
+      $("#show_edit_"+id).show();
+      $("#show_trash_"+id).show();
+    }
+    function hide_edit(id)
+    {
+      $("#show_edit_"+id).hide();
+      $("#show_trash_"+id).hide();
+    }
+    function delete_activity_note(id)
+    {
+    var answer = confirm('Are you sure you want to delete this?');
+    if (answer)
+    {
+    $.ajax( {
+        type: "POST",
+        url: "/hide_note" ,
+        data: {id: id},
+        success: function(result) {
+          $(".note_"+id).wrap("<strike>");
+          $("#show_edit_"+id).hide();
+          $("#show_trash_"+id).hide();
+          $("#edit_note_"+id).hide();
+        }
+      });
+    }
+    else
+    {
+      console.log('cancel');
+    }
+    
+  }
+    //window.location.href = "/contacts";
+    $('#note_notes').blur();
+    $('#note_from_deal').val(true)
+    $('#noteModal').modal('hide');
+    $("#note_notes").animate({height:'40px'});
+    $("#show_file_name").text('');
+    $(".other_note_fields").hide(400);
+    $(".btn_upload").hide(400);
+    $(".file_des").hide(400);
+    $(".sav_btn").hide(400);
+
+    $(document).trigger("add-alerts", [{'message': "Notes added successfully.",'priority': 'info'}]);
+    $('#notes_submit_btn').removeAttr("disabled").html("Add a Note");
+    
+    //if(responseText == "index"){
+    //  $('#contactModal').modal('hide');
+    //  $("#indi_radio").prop("checked", true);
+    //  $("#email").val('');
+    //  $('input[type="text"],input[type="email"]').val('');
+    //  window.location.href = "/contacts";
+    //  $(document).trigger("add-alerts", [{'message': "Contact added successfully.",'priority': 'info'}]);
+    //}else{
+    //  window.location.href = "/contacts/"+ responseText +"/edit";
+    //}
+    //alert('status: ' + statusText + '\n\nresponseText: \n' + responseText + 
+    //    '\n\nThe output div should have already been updated with the responseText.'); 
+  } 
+  

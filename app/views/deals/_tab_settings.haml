@@ -1,0 +1,99 @@
+#dealsettingModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      -deal_setting = (!current_user.deal_setting.nil? ? current_user.deal_setting : DealSetting.new())
+      = form_for(deal_setting,:url=>leads_setting_path(),  :html=>{:class => "form",:method=>"post",:id=>"move_deal"}) do |f|
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title Select tabs to enable
+        .modal-body
+          .row
+            .col-md-4.form-group{:style=>"height:300px;overflow:auto"}
+              =check_box_tag "tabs[]","1",(!current_user.deal_setting.nil? && current_user.deal_setting.incoming? ? true : false)
+              -if !DealStatus.get_deal_name('1',current_user.organization.id).nil? && !DealStatus.get_deal_name('1',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('1',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","2",(!current_user.deal_setting.nil? && current_user.deal_setting.pipeline? ? true : false)
+              -if !DealStatus.get_deal_name('2',current_user.organization.id).nil? && !DealStatus.get_deal_name('2',current_user.organization.id).blank? 
+                = DealStatus.get_deal_name('2',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","5",(!current_user.deal_setting.nil? && current_user.deal_setting.not_qualify? ? true : false)
+              -if !DealStatus.get_deal_name('3',current_user.organization.id).nil? && !DealStatus.get_deal_name('3',current_user.organization.id).blank? 
+                = DealStatus.get_deal_name('3',current_user.organization.id).name
+              <br><br>
+              -if(current_user.is_admin?)
+                =check_box_tag "tabs[]","3",(!current_user.deal_setting.nil? && current_user.deal_setting.won? ? true : false)
+                -if !DealStatus.get_deal_name('4',current_user.organization.id).nil? && !DealStatus.get_deal_name('4',current_user.organization.id).blank?  
+                  = DealStatus.get_deal_name('4',current_user.organization.id).name
+                <br><br>
+                =check_box_tag "tabs[]","4",(!current_user.deal_setting.nil? && current_user.deal_setting.lost? ? true : false)
+                -if !DealStatus.get_deal_name('5',current_user.organization.id).nil? && !DealStatus.get_deal_name('5',current_user.organization.id).blank?  
+                  = DealStatus.get_deal_name('5',current_user.organization.id).name
+                <br><br>
+              =check_box_tag "tabs[]","6",(!current_user.deal_setting.nil? && current_user.deal_setting.junk? ? true : false)
+              -if !DealStatus.get_deal_name('6',current_user.organization.id).nil? && !DealStatus.get_deal_name('6',current_user.organization.id).blank?  
+                = DealStatus.get_deal_name('6',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","7",(!current_user.deal_setting.nil? && current_user.deal_setting.no_contact? ? true : false)
+              -if !DealStatus.get_deal_name('7',current_user.organization.id).nil? && !DealStatus.get_deal_name('7',current_user.organization.id).blank? 
+                = DealStatus.get_deal_name('7',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","8",(!current_user.deal_setting.nil? && current_user.deal_setting.follow_up_required? ? true : false)
+              -if !DealStatus.get_deal_name('8',current_user.organization.id).nil? && !DealStatus.get_deal_name('8',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('8',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","9",(!current_user.deal_setting.nil? && current_user.deal_setting.follow_up? ? true : false)
+              -if !DealStatus.get_deal_name('9',current_user.organization.id).nil? && !DealStatus.get_deal_name('9',current_user.organization.id).blank?             
+                = DealStatus.get_deal_name('9',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","10",(!current_user.deal_setting.nil? && current_user.deal_setting.quoted? ? true : false)
+              -if !DealStatus.get_deal_name('10',current_user.organization.id).nil? && !DealStatus.get_deal_name('10',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('10',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","11",(!current_user.deal_setting.nil? && current_user.deal_setting.meeting_scheduled? ? true : false)
+              -if !DealStatus.get_deal_name('11',current_user.organization.id).nil? && !DealStatus.get_deal_name('11',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('11',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","12",(!current_user.deal_setting.nil? && current_user.deal_setting.forecasted? ? true : false)
+              -if !DealStatus.get_deal_name('12',current_user.organization.id).nil? && !DealStatus.get_deal_name('12',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('12',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","13",(!current_user.deal_setting.nil? && current_user.deal_setting.waiting_for_project_requirement? ? true : false)
+              -if !DealStatus.get_deal_name('13',current_user.organization.id).nil? && !DealStatus.get_deal_name('13',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('13',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","14",(!current_user.deal_setting.nil? && current_user.deal_setting.proposal? ? true : false)
+              -if !DealStatus.get_deal_name('14',current_user.organization.id).nil? && !DealStatus.get_deal_name('14',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('14',current_user.organization.id).name
+              <br><br>
+              =check_box_tag "tabs[]","15",(!current_user.deal_setting.nil? && current_user.deal_setting.estimate? ? true : false)
+              -if !DealStatus.get_deal_name('15',current_user.organization.id).nil? && !DealStatus.get_deal_name('15',current_user.organization.id).blank?
+                = DealStatus.get_deal_name('15',current_user.organization.id).name
+              
+              <br>
+            .col-md-8
+              Choose which filters to show in your dashboard tabs.
+              %img{:src=>asset_path("category_tab.png")}
+          .row
+            .modal-footer
+              .pull-left
+                %button.btn.btn-primary{type: "submit",onclick: "return chk_validation_tabs();"} Save
+                %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                  %span.c_links
+                    Cancel
+              
+:javascript
+  function chk_validation_tabs()
+  {
+   var atLeastOneIsChecked = $('input[name="tabs[]"]:checked').length > 0;
+   if(atLeastOneIsChecked == false)
+   {
+     alert("Please select atleast one checkbox.")
+     return false;
+   }
+   else if($('input[name="tabs[]"]:checked').length>3)
+   {
+     alert("Please select upto 3 checkboxes.")
+     return false;
+   }
+  }

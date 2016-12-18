@@ -1,0 +1,446 @@
+/=javascript_include_tag "bootstrap-datetimepicker"
+/=stylesheet_link_tag "bootstrap-datetimepicker"
+:css
+  .displaynone{display: none}
+  textarea {
+      color: #444;
+      padding: 5px;
+  }
+  
+  .txtstuff {
+      resize: none; /* remove this if you want the user to be able to resize it in modern browsers */
+      overflow: hidden;
+      padding: 11px;
+  }
+  
+  .hiddendiv {
+      display: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word; /* future version of deprecated 'word-wrap' */
+  }
+  
+  /* the styles for 'commmon' are applied to both the textarea and the hidden clone */
+  /* these must be the same for both */
+  .common {
+      width: 500px;
+      min-height: 47px;
+
+      overflow: hidden;
+  }
+  
+  .lbr {
+      line-height: 3px;
+  }  
+
+- if @task.new_record?
+  - title_text = "Create a new task/event"
+  - submit_value = "Create Task"
+  - method = "POST"
+- else
+  - title_text = "Edit task"
+  - submit_value = "Update Task"
+  - method= "PUT"
+
+.modal-header
+  %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+  %h4.modal-title
+    =title_text
+.modal-body
+  #task_alert_msg.alert.fade.in.alert-danger{style: "display:none;margin-bottom: 10px;"}
+    %button.close{onclick: "$('#task_alert_msg').hide();$('#task_loader').hide();"} ×
+    #task_msg_div
+  = form_for(@task, :remote => true, :html=>{:class => "form",:method=> method,:id=> "task_form"}) do |f|
+    =hidden_field_tag "check_deal_show", "false"
+    =hidden_field_tag "clicked_button_ref",""
+    %input{:type=>"hidden",:id=>"is_edit_deal",:name=> "is_edit_deal"}
+    /- if @task.new_record?
+    /  .row
+    /    .form-group.col-md-6{style: "margin-top:-9px;"}
+    /      =f.check_box :is_event
+    /      %span
+    /        Make it event
+    .form-group{style: "margin-bottom:0"}
+      /%label
+      /  Title
+      =f.text_area :title, :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"}, :style=> "height:41px;resize: none;" , :required => true, :placeholder => "Task title",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .row
+      .form-group.col-md-6
+        /%label Due Date
+        - set_time = @task.new_record? ? (Time.zone.now + 30.minutes).strftime("%Y-%m-%d %H:%M") : @task.due_date.strftime("%Y-%m-%d %H:%M")
+        = text_field_tag "due_date_task","", id: "datetimepicker" , autocomplete: "off",onchange: "change_mnth_days('datetimepicker', 'task_due_date');" ,:value=> @task.new_record? ? (Time.zone.now + 30.minutes).strftime("%m-%d-%Y %H:%M") : @task.due_date.strftime("%m-%d-%Y %H:%M"),:class=> "col-md-12 form-control", :placeholder => "Due date",:required => true,:onkeydown => "disable_text(event);"
+        =f.hidden_field :due_date, required: "true",:class=> "col-md-12 form-control", :placeholder => "Due date", :onkeydown => "disable_text(event);",:value=> set_time
+        /=f.text_field :due_date, required: "true",:class=> "col-md-12 form-control",id: "datetimepicker" , :placeholder => "Due date", :required => true,:onkeydown => "disable_text(event);",:value=> (@task.due_date.strftime("%Y-%m-%d %H:%M") if @task.present? && @task.due_date.present?)
+      .form-group.col-md-6
+        /%label
+        /  Type
+        - if @task.new_record?
+          .task_space
+            =f.select :task_type_id, current_user.organization.task_types.collect {|c| [ c.name, c.id ]}, {:include_blank => '- Task Type -'},:class=>"col-md-12 form-control", :required => true
+          .event_space{:style => "display:none"}
+            = text_field_tag "event_end_date","", id: "event_datetimepicker" , autocomplete: "off",onchange: "change_mnth_days('event_datetimepicker', 'task_event_end_date');" ,:class=> "col-md-12 form-control", :placeholder => "End date",:onkeydown => "disable_text(event);"
+            =f.hidden_field :event_end_date,:class=> "col-md-12 form-control", :placeholder => "Due date", :onkeydown => "disable_text(event);",:value=> (@task.event_end_date.strftime("%Y-%m-%d %H:%M") if @task.present? && @task.event_end_date.present?)
+        - else
+          - if @task.is_event?
+            = text_field_tag "event_end_date","",value: "#{Date.today.strftime('%m-%d-%Y %H:%M')}", id: "event_datetimepicker" , autocomplete: "off",onchange: "change_mnth_days('datetimepicker', 'task_event_end_date');" ,:value=> (@task.event_end_date.strftime("%m-%d-%Y %H:%M") if @task.present? && @task.event_end_date.present?),:class=> "col-md-12 form-control", :placeholder => "Due date",:required => true,:onkeydown => "disable_text(event);"
+            =f.hidden_field :event_end_date, required: "true",:class=> "col-md-12 form-control", :placeholder => "Due date", :onkeydown => "disable_text(event);",:value=> (@task.event_end_date.strftime("%Y-%m-%d %H:%M") if @task.present? && @task.event_end_date.present?)
+          -else
+            =f.select :task_type_id, current_user.organization.task_types.collect {|c| [ c.name, c.id ]}, {:include_blank => '- Task Type -'},:class=>"col-md-12 form-control", :required => true
+    - if @task.new_record?
+      .row.task_recurring_section
+        .recurring_task
+          .form-group.col-md-2
+            Recurring
+          .form-group.col-md-10{onclick: "display_rec_sec()"}
+            Click here to recurring this task
+        .recurring_task_form{style: "display:none"}
+          .form-group.col-md-2
+            Recurring
+          .form-group.col-md-4{style: "padding-left: 8px;"}
+            = f.radio_button :recurring_type, 'none', onclick: "reset_end_datepicker('none')", :checked => true
+            None
+            = f.radio_button :recurring_type, 'daily', onclick: "reset_end_datepicker('daily')"
+            Daily
+            = f.radio_button :recurring_type, 'daily', onclick: "reset_end_datepicker('weekly')"
+            Weekly
+            = f.radio_button :recurring_type, 'monthly', onclick: "reset_end_datepicker('monthly')"
+            Monthly
+            = f.radio_button :recurring_type, 'qtr', onclick: "reset_end_datepicker('qtr')"
+            QTR
+            = f.radio_button :recurring_type, 'yearly', onclick: "reset_end_datepicker('yearly')"
+            Yearly
+          .form-group.col-md-6
+            = text_field_tag "end_date_task","", id: "end_datetimepicker", name: "task[rec_end_date]"  , autocomplete: "off",:class=> "col-md-12 form-control",onchange: "change_mnth_days('end_datetimepicker', 'task_rec_end_date');", :placeholder => "End date",:onkeydown => "disable_text(event);"
+            =f.hidden_field :rec_end_date,:class=> "col-md-12 form-control", :placeholder => "Due date", :onkeydown => "disable_text(event);",:value=> (@task.rec_end_date.strftime("%Y-%m-%d %H:%M") if @task.present? && @task.rec_end_date.present?)
+    -else
+      - if @task.recurring_type != "none"
+        .row
+          .form-group.col-md-6
+            %label Recurring type:
+            =@task.recurring_type.camelize
+          .form-group.col-md-6
+            %label End Date:
+            =@task.rec_end_date.strftime("%m-%d-%Y %H:%M") if @task.rec_end_date.present?
+    .row
+      .form-group.col-md-6
+        /%label Assigned To
+        
+        =f.select :assigned_to, all_org_users.collect {|c| [ c.full_name, c.id ]}, {:selected => @task.new_record? ? @current_user.id : @task.assigned_to},:class=>"col-md-12 form-control assign_task_usr_email", :required => true
+      .form-group.col-md-6
+        /%label Mail To
+        =f.email_field :mail_to,:class=>"col-md-12 form-control assign_mail",:required => true, :placeholder => "Mail To",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))", :value=> @task.new_record? ? @current_user.email : @task.mail_to
+        %div{id:"email_err",class: "error"}
+    .row
+      .form-group.col-md-6
+        /%label Priority
+        -if current_user.organization.present? && current_user.organization.priority_types.present?
+          =f.select :priority_id, current_user.organization.priority_types.find(:all).collect {|c| [ c.name, c.id ]}, {:selected => @task.new_record? ? @current_user.organization.warm_priority.id : @task.priority_id},:class=>"col-md-12 form-control", :required => true
+      - if (!@task.new_record? && @task.taskable.class.name == "Contact")
+        .form-group.col-md-6
+          = text_field_tag :contact_fullname, ((!@task.new_record? && @task.taskable.class.name == "Contact") ? @task.taskable.title : ""), :disabled => true, :class=> "col-md-12 form-control" 
+      - else      
+        .form-group.col-md-6.deal_list
+          /%label Deals
+          /=f.select :deal_id, current_user.organization.deals.find(:all).collect {|c| [ c.title, c.id ]}, {:include_blank => '- Assign Deal -'},:class=>"col-md-12 form-control", :required => true,:disabled => true
+          -if(params[:action] == "edit_task")
+            
+            =text_field_tag "deal_title", (@task.new_record? ? "" : (@task.taskable.title.present? ? @task.taskable.title : "")),:class=>"col-md-12 form-control task_deal_typeahead", "data-provide"=> "typeahead" ,:size=>"32" , :autocomplete=>"off", :required => true, :placeholder => "Assign Deal",:disabled => true
+          -else
+
+            =text_field_tag "deal_title_task", (@task.new_record? ? "" : (@task.taskable.title.present? ? @task.taskable.title : "")),:class=>"col-md-12 form-control task_deal_typeahead", "data-provide"=> "typeahead", :size=>"32" , :autocomplete=>"off", :required => true, :placeholder => "Assign Deal"
+        .form-group.col-md-6.contact_firstname_div.displaynone
+          = text_field_tag :contact_fullname, "", :disabled => true, :class=> "col-md-12 form-control" 
+          
+          
+          
+          =f.hidden_field :deal_id,:id=>"hfield"
+         
+        - if @task.new_record? 
+          .form-group.col-md-6{style: "margin-top:-9px;"}
+            %input#puppy_gooddog{name: "puppy", type: "checkbox",checked: "checked",onclick: "update_mail()"}
+            %span
+              Email Notify
+      = hidden_field_tag :taskable_type,"Deal"
+      = hidden_field_tag :taskable_id
+      = f.hidden_field :notify_email, :value => "1"
+    .modal-footer
+      .navbar-left
+
+        =f.submit submit_value, :class=> "btn btn-primary", :disable_with => "Please wait ...",:onclick=> "return validate_email('task_mail_to')"
+        %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+          %span.c_links
+            Cancel
+        
+:javascript
+  $("#deal_title_task").keypress(function() {
+  $('#deal_title_task').addClass('loadinggif');
+   setTimeout(hidetaskload, 510)
+  });
+  
+  function display_rec_sec(){
+    $('.recurring_task').hide();
+    $('.recurring_task_form').show();
+    $("#task_rec_end_date").attr("required", "required");
+  }
+  
+  function update_mail()
+  {
+    if($("#puppy_gooddog").is(':checked'))
+     $("#task_notify_email").val(1)
+    else
+     $("#task_notify_email").val(0)
+  }  
+  
+  $(document).ready(function() {
+    $("#task_is_event").click( function(){
+      if( $(this).is(':checked')){
+        $(".event_space").show(100);
+        $("#task_task_type_id").removeProp('required');
+        $("#task_task_type_id").removeAttr('required');
+        //$("#task_rec_end_date").removeProp('required');
+        
+        $("#event_datetimepicker").attr("required", "required");
+        $("#task_event_end_date").attr("required", "required");
+        $(".task_space").hide(100);
+        $(".task_recurring_section").hide(100);
+      }else{
+        $(".task_space").show(100);
+        $(".task_recurring_section").show(100);
+        $("#task_task_type_id").attr("required", "required");
+        //$("#task_rec_end_date").attr("required", "required");
+        $("#event_datetimepicker").removeProp('required');
+        $("#task_event_end_date").removeProp('required');
+        $(".event_space").hide(100);
+      }
+        
+    });
+  });
+  
+  function reset_event(){
+    if( $("#task_is_event").is(':checked')){
+      $(".event_space").show(100);
+      $("#task_task_type_id").removeProp('required');
+     // $("#task_rec_end_date").removeProp('required');
+      
+      $("#event_datetimepicker").attr("required", "required");
+      $("#task_event_end_date").attr("required", "required");
+      $(".task_space").hide(100);
+      $(".task_recurring_section").hide(100);
+    }else{
+      $(".task_space").show(100);
+      $(".task_recurring_section").show(100);
+      $("#task_task_type_id").attr("required", "required");
+      //$("#task_rec_end_date").attr("required", "required");
+      $("#event_datetimepicker").removeProp('required');
+      $("#task_event_end_date").removeProp('required');
+      $(".event_space").hide(100);
+    }
+  }
+  function reset_recurring_option(){
+    $(".recurring_task_form").hide();
+    $(".recurring_task").show();
+  }
+  function reset_end_datepicker(reset_to){
+    var due_date=$("#datetimepicker").val();
+    if(due_date != "" && typeof(due_date) != "undefined"){
+      reset_date=new Date(due_date)
+      //alert(reset_date)
+      //var reset_date = $("");
+      if(reset_to == "daily"){
+        reset_date = reset_date.setDate(reset_date.getDate()+1);
+      }else if(reset_to == "weekly"){
+        reset_date = reset_date.setDate(reset_date.getDate()+7);
+      }else if(reset_to == "monthly"){
+        reset_date = reset_date.setMonth(reset_date.getMonth()+1);
+      }else if(reset_to == "qtr"){
+        reset_date = reset_date.setMonth(reset_date.getMonth()+3);
+      }else if(reset_to == "yearly"){
+        reset_date = reset_date.setFullYear(reset_date.getFullYear()+1);
+      }
+      date=new Date(reset_date)
+      $('#event_datetimepicker').val(date.format('mm-dd-yyyy HH:MM'));
+      $('#task_event_end_date').val(date.format('yyyy-mm-dd HH:MM'));
+    }
+  }
+  
+  function set_event_end_datepicker(){
+    var due_date=$("#datetimepicker").val();
+    if((due_date != "" && typeof(due_date) != "undefined")) {
+      end_date=new Date(due_date)
+      end_date = end_date.setHours(end_date.getHours()+1);
+      date=new Date(end_date)
+      if($("#task_is_event").is(':checked')){
+        $('#event_datetimepicker').val(date.format('mm-dd-yyyy HH:MM'));
+        $('#task_event_end_date').val(date.format('yyyy-mm-dd HH:MM'));
+      }else
+        $('#event_datetimepicker').val("")
+        $('#event_datetimepicker').data("DateTimePicker").setMinDate(date);
+    }
+  }
+  
+  function hidetaskload()
+  {
+  $('#deal_title_task').removeClass('loadinggif');
+  }
+  var date = new Date();
+  date.setDate(date.getDate());
+  //$('#datetimepicker').datetimepicker({startDate: date, language: 'en',pick12HourFormat: true,format: 'mm-dd-yyyy hh:ii',autoclose: true})
+  var nwdate = new Date();
+  nwdate.setDate(nwdate.getDate() - 1); 
+  $('#datetimepicker').datetimepicker({minDate: nwdate, useCurrent: false,  format: 'MM-DD-YYYY HH:mm'})
+  $('#end_datetimepicker').datetimepicker({minDate: nwdate, useCurrent: false,  format: 'MM-DD-YYYY HH:mm'})
+  $('#event_datetimepicker').datetimepicker({minDate: nwdate, useCurrent: false,  format: 'MM-DD-YYYY HH:mm'})
+  $('#task_form').bind('ajax:success', function(evt, data, status, xhr){
+  });
+  $('#task_form').bind('ajax:before', function(evt, data, status, xhr){
+    $('#task_loader').show();
+  });
+  $("#task_form").bind("ajax:complete", function(evt, data, status, xhr){
+        $('#task_loader').hide();
+        data = $.parseJSON(data.responseText)
+     if(data.status == "true" || data.status == true){
+        $('#task_loader').hide();
+        $('#taskModal').modal('hide');
+        if('#{current_user.token}' == ""){
+          $('#googleCalendarModal').modal('show');
+        }
+        $("#taskEditModal").modal('hide');
+        $("#taskFollowModal").modal('hide');
+        var deal_id = $("#hfield").val();
+        if($('#ref_page_info').val() == "dealsindex"){
+          if( $('#clicked_button_ref').val() == "listmenu" || $('#clicked_button_ref').val() == "headermenu"){
+            if($("div").hasClass("last_task_"+deal_id)){
+              var task_type_html="<div class='label"+data.ttype+" labelTaskType tasktype'>"+data.ttype+"</div><br><div style='font-size: 12px;font-style: italic;'>"+data.date+"</div>"
+              $(".last_task_"+deal_id).html(task_type_html);
+              $(".last_task_"+deal_id).parent("td").parent("tr").effect("highlight", {}, 3000);
+            }
+          }
+        }else if($('#ref_page_info').val() == "dealsshow"){
+          //if( $('#clicked_button_ref').val() == "taskwidget" || $('#clicked_button_ref').val() == "headermenu"){
+            if($("div").hasClass("task_widget_"+deal_id)){
+              reload_task_widget();
+              $(".task_widget_"+deal_id).effect("highlight", {}, 3000);
+            }
+          //}
+        }else if($('#ref_page_info').val() == "homedashboard"){
+          load_summary_section();
+          load_header_count();
+          load_dashboard_task_widget();
+          get_activity_data();
+        }else if($('#ref_page_info').val() == "contactsindex"){
+          load_activity_cum_deals("activity")
+        }else if($('#ref_page_info').val() == "tasksindex"){
+          
+          var task_tab = $('#clicked_button_ref').val().split('Task')[0];
+          load_task_tabs(task_tab, (data.tdate == task_tab));          
+        }else{
+          window.location.href ="/tasks";
+        }
+        $(document).trigger("add-alerts", [{'message': data.msg ,'priority': 'success'}]);
+      }else{
+        $("#task_alert_msg").show();
+        $("#task_msg_div").html(data.msg);
+      }
+      //window.location.href ="/tasks";
+      //alert("complete");
+      //$("#taskEditModal").modal('hide');
+      //$("#task_header").html(data.responseText);
+  });
+    
+   
+   $('.assign_task_usr_email').on("change",function() {
+      if($(this).val() != ""){
+       $('#task_loader').show();
+       $.get("/get_user_email",{id: $(this).val() },function(res){
+           if(res != null){
+            $(".assign_mail").val(res.email);
+            $('#task_loader').hide();
+           }
+        });
+      }else{ $(".assign_mail").val("");}
+   });
+   
+
+  $('.task_deal_typeahead').typeahead([{
+    name: 'deals',
+    valueKey: 'deal_name',
+    remote: {url: '/get_leads/'+ #{current_user.organization.id}+ '?q=%QUERY'},
+    template: '<p><strong>{{deal_name}}</strong></p>',
+    engine: Hogan
+    }]).on('typeahead:selected',onSelectedTask).on('typeahead:opened',onOpened);
+   
+  function onSelectedTask($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    var hfield = document.getElementById('hfield');
+    $('#taskable_id').val(datum.id)
+    //var email = document.getElementById('deal_email');
+    //var country = document.getElementById('deal_country');
+    //var workphone = document.getElementById('deal_work_phone');
+    console.log(datum.id);
+    hfield.value = datum.id;
+    //email.value = datum.email;
+    //country.value=datum.country_id;
+    //workphone.value = datum.phone_no;
+    
+  }
+  //function onSelected($e,datum){
+  //  console.log("autocompleted");
+  //  console.log(datum);
+  //  alert(datum);
+           
+    //var hfield = document.getElementById('hfield');
+    //var email = document.getElementById('deal_email');
+    //    var country = document.getElementById('deal_country');
+    //    var workphone = document.getElementById('deal_work_phone');
+    //    console.log(datum.id);
+    //    hfield.value = datum.id;
+    //    email.value = datum.email;
+    //    country.value=datum.country_id;
+    //    workphone.value = datum.phone_no;
+    
+  //}
+  function onOpened($e){
+    $("#hfield").val("")
+  }
+   
+  function onClosed($e){
+    if($("#hfield").val() == ""){
+      $("#deal_title").val("");
+    }
+  }
+  /*auto expandable textarea */
+  var txt = $('#task_title'),
+      hiddenDiv = $(document.createElement('div')),
+      content = null;
+  
+  txt.addClass('txtstuff');
+  hiddenDiv.addClass('hiddendiv common');
+  
+  $('body').append(hiddenDiv);
+  
+  txt.on('keyup', function () {
+  
+      content = $(this).val();
+  
+      content = content.replace(/\n/g, '<br>');
+      hiddenDiv.html(content + '<br class="lbr">');
+  
+      $(this).css('height', hiddenDiv.height());
+  
+  });
+  function change_mnth_days(from_id, to_id )
+  {
+      period_val=$("#"+from_id).val();
+      date=period_val.split(" ")[0];
+      time = period_val.split(" ")[1];
+      year = date.split("-")[2]
+      month = date.split("-")[0]
+      day = date.split("-")[1]
+      $("#"+to_id).val(year+"-"+month+"-"+day + " " +time);
+  }
+  function daysInMonth(month,year) {
+    return new Date(year, month, 0).getDate();
+  }

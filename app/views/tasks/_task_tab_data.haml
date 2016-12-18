@@ -1,0 +1,45 @@
+- badge_today_count = badge_today
+- badge_overdue_count = badge_overdue
+- badge_upcoming_count = badge_upcoming
+=hidden_field_tag "today_task_count", badge_today_count
+=hidden_field_tag "overdue_task_count", badge_overdue_count
+=hidden_field_tag "upcoming_task_count", badge_upcoming_count
+=hidden_field_tag "task_status_value", "all"
+=hidden_field_tag "task_assigned_to"
+=hidden_field_tag "task_year"
+=hidden_field_tag "task_quarter"
+%li#allTask.active
+  %a{"data-toggle" => "tab", href: "#all", onclick: "display_tasks('all');add_css('all');"}
+    All
+    %span#allBadge
+      (
+      =badge_all
+      )
+%li#todayTask      
+  %a{"data-toggle" => "tab", href: "#today", onclick: "display_tasks('today');add_css('all');"}
+    Today
+    %span#todayBadge
+      (
+      =badge_today_count
+      )
+%li#overdueTask
+  %a{"data-toggle" => "tab", href: "#overdue", onclick: "display_tasks('overdue');add_css('all');"}
+    Overdue
+    %span#overdueBadge
+      (
+      =badge_overdue_count
+      )
+%li#upcomingTask
+  %a{"data-toggle" => "tab", href: "#upcoming", onclick: "display_tasks('upcoming');add_css('all');"}
+    Upcoming
+    %span#upcomingBadge
+      (
+      =badge_upcoming_count
+      )
+%li#completedTask
+  %a{"data-toggle" => "tab", href: "#completed", onclick: "display_tasks('completed');add_css('all');"}
+    Completed
+    %span#completedBadge
+      (
+      =badge_completed
+      )

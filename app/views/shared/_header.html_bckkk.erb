@@ -1,0 +1,103 @@
+<script>
+ $(function(){
+  $(".slide_m").hide('500');
+  $(".nav.navbar-nav li a").hover(function(){
+    $(this).find(".slide_m").show('500');
+  },function(){
+    $(this).find(".slide_m").hide();
+  });
+ })
+</script>  
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><img src="assets/new_logo.png"></a>
+        </div>
+        <div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav hmenu">
+				<li class="activ_mnu">
+					<a href="#">
+						<div class="fl ic_dash"></div>
+						<span class="slide_m"> Dashboard </span>
+						<b class="caret nav_menu_ovd"></b>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<div class="fl ic_deal"></div>
+						<span class="slide_m"> Deals </span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+					<div class="fl ic_task"></div>
+					<span class="slide_m"> Tasks </span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+						<div class="fl ic_con"></div>
+						<span class="slide_m"> Contacts </span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+					<div class="fl ic_rpt"></div>
+					<span class="slide_m"> Reports </span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+					<div class="fl ic_acti"></div>
+					<span class="slide_m"> Activity </span>
+					</a>
+				</li>
+				<li>
+					<a href="#">
+					<div class="fl ic_gtstr"></div>
+					<span class="slide_m"> Getting started </span>
+					</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="border-box">
+					<div onclick="sch_slide()">
+						<div class="navbar-right input-group">
+							<input id="query" class="form-control srch_fld" type="text" required="required" name="query" maxlength="100">
+							<div class="input-group-btn" style="position:inherit;">
+								<input class="nav_srch_box" type="submit" value="" data-disable-with="" maxlength="100">
+							</div>
+						</div>
+
+					</div>
+				</li>
+				<li>
+					<a id="notification_image" class="dropdown-toggle image-effect"  href="#" data-toggle="dropdown">
+						<div class="fl icon-new-bell"></div>
+						<div class="fl"> New </div>
+						<div class="fr dwn_f_arrow"></div>
+					</a>
+				</li>
+				<li id="bell_notification" class="dropdown">
+					<a id="notification_image" class="dropdown-toggle" style="padding: 14px 7px 34px !important;" href="#" data-toggle="dropdown">
+					<div class="fl icon-flag-notify"></div>
+					<span class="badge badge-important"> 7482 </span>
+					</a>
+				</li>
+				<li>
+					<a id="notification_image" class="dropdown-toggle image-effect"  href="#" data-toggle="dropdown">
+						<div class="fl"><img class="profile-circle" src="assets/no_user.png" alt="profile image"/></div>
+						<div class="fl">Jaydev Das </div>
+						<div class="fr dwn_f_arrow"></div> 
+					</a>
+				</li>
+			</ul>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>

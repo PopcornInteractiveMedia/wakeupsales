@@ -1,0 +1,103 @@
+= stylesheet_link_tag "jquery.Jcrop"
+= javascript_include_tag "jquery.Jcrop.min"
+%script{charset: "utf-8", type: "text/javascript"}
+  :cdata
+    $(function() {
+    $('#cropbox').Jcrop({
+    onChange: update_crop,
+    onSelect: update_crop,
+    setSelect: [-50, -50, 500, 500],
+    aspectRatio: 1
+    });
+    });
+    
+    function update_crop(coords) {
+    //var rx = 100/coords.w;
+    //var ry = 100/coords.h;
+    //$('#preview').css({
+    //width: Math.round(rx * #{@tempImage.avatar_geometry(:original).width}) + 'px',
+    //height: Math.round(ry * #{@tempImage.avatar_geometry(:original).height}) + 'px',
+    //marginLeft: '-' + Math.round(rx * coords.x) + 'px',
+    //marginTop: '-' + Math.round(ry * coords.y) + 'px'
+    //});
+    var ratio = #{@tempImage.avatar_geometry(:original).width} / #{@tempImage.avatar_geometry(:original).width};
+    $("#crop_x").val(Math.round(coords.x * ratio));
+    $("#crop_y").val(Math.round(coords.y * ratio));
+    $("#crop_w").val(Math.round(coords.w * ratio));
+    $("#crop_h").val(Math.round(coords.h * ratio));
+    }
+%div{style: "margin:0px;"}
+  = image_tag @tempImage.avatar.url(:original), :id => "cropbox"
+  /%h4 Preview:
+  /%div{style: "width:70px; height:70px; overflow:hidden"}
+  /  = image_tag @tempImage.avatar.url(:original), :id => "preview"
+  = form_for(@tempImage,:url=>"update_profile_image", :html=>{:id=>"img_crop_form",:class => "form-horizontal",:multipart=>"true", :remote => true, :method => "POST"} ) do |f|
+    =hidden_field_tag :user_id , "#{@tempImage.user_id.to_s}"
+    =hidden_field_tag :id , "#{@tempImage.id.to_s}"
+    = f.fields_for :avatar do |i|
+      - for attribute in [:crop_x, :crop_y, :crop_w, :crop_h]
+        = i.hidden_field attribute, :id => attribute
+    %br
+    %button.btn.btn-primary{type: "submit", disable_with: "Please wait...", id: "crop_submit_btn"} Crop Image
+    #crop_output
+    /%p= f.submit "Crop"
+:javascript
+  $(document).ready(function(){
+    $('#crop_loader').hide();
+    $('#img_crop_form').submit(function() { 
+        //formValidation();
+        // inside event callbacks 'this' is the DOM element so we first 
+        // wrap it in a jQuery object and then invoke ajaxSubmit 
+        $(this).ajaxSubmit(options); 
+        
+        // !!! Important !!! 
+        // always return false to prevent standard browser submit and page navigation 
+        return false; 
+    }); 
+    var options = { 
+        target:        '#crop_output',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_CropSave,  // pre-submit callback 
+        success:       showResponse_CropSave, // post-submit callback 
+        //data: { key1: 'value1', key2: 'value2' }
+        // other available options: 
+        //url:       url         // override for form's 'action' attribute 
+        //type:      type        // 'get' or 'post', override for form's 'method' attribute 
+        //dataType:  null        // 'xml', 'script', or 'json' (expected server response type) 
+        clearForm: true        // clear all form fields after successful submit 
+        //resetForm: true        // reset the form after successful submit 
+ 
+        // $.ajax options can be used here too, for example: 
+        //timeout:   3000 
+    };
+    // pre-submit callback 
+    function showRequest_CropSave(formData, jqForm, options) { 
+    $('#crop_submit_btn').prop("disabled", true).html("Please wait...");
+    // formData is an array; here we use $.param to convert it to a string to display it 
+    // but the form plugin does this for you automatically when it submits the data 
+    var queryString = $.param(formData); 
+ 
+    // jqForm is a jQuery object encapsulating the form element.  To access the 
+    // DOM element for the form do this: 
+    // var formElement = jqForm[0]; 
+    
+    //alert('About to submit: \n\n' + queryString); 
+    //formValidation();
+    // here we could return false to prevent the form from being submitted; 
+    // returning anything other than false will allow the form submit to continue 
+    return true; 
+    } 
+    // post-submit callback 
+    function showResponse_CropSave(responseText, statusText, xhr, $form)  { 
+    if(responseText != "success"){
+        //alert(responseText.imagesmall);
+        //alert(responseText.imageicon);
+        //$("#profile_image_div").html(responseText);
+        $("#previewHolder").attr("src",responseText.imagesmall);
+        $("#profile_icon_img").attr("src",responseText.imageicon);
+        $("#crop_data_area").html("");
+        $('#crop_loader').hide();
+        $('#profileImgModal').modal('hide');
+    }
+    }
+  });
+    

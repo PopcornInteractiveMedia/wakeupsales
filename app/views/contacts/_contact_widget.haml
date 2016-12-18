@@ -1,0 +1,49 @@
+= javascript_include_tag 'jquery.nicescroll.min'
+.tabbable.task_tab{style: "margin-top: -5px;padding-top:0px;"}
+  %ul.nav.nav-tabs{style: "padding-left: 14px;"}
+    %li#activity.active
+      %a{"data-toggle" => "tab", href: "#activity", onclick: "widget_contact('activity')"}
+        Activity
+    %li#deals
+      %a{"data-toggle" => "tab", href: "#deals", onclick: "widget_contact('deals')"}
+        Leads
+    - if @contact.is_company?
+      %li#people
+        %a{"data-toggle" => "tab", href: "#people", onclick: "widget_contact('people')"}
+          People
+  #contact_info.body{style: "padding:0px;overflow-y: auto;height: 500px;"}
+    /=render :partial=> "contacts/deal_list"
+    =render :partial => "contacts/time_line_stream"
+
+
+:javascript
+    $(function()
+  {
+    $('#contact_info').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+  });
+        
+  function widget_contact(data){
+    action="/contact_widget"
+    $.ajax({
+        type: "POST",
+        url: action,
+        dataType: 'json',
+        data: {tab_type: data, id: "#{@contact.id}", contact_type: "#{@contact.class.name}"},
+        async: true,
+        beforeSend: function(){
+		  $("#task_loader,.fixed_loader").show();
+        },
+        success: function(data)
+        {
+         
+        },
+        error: function(data) {
+		  $("#task_loader,.fixed_loader").hide();
+        },
+        complete: function(data) {
+          $("#contact_info").html(data.responseText);
+		  $("#task_loader,.fixed_loader").hide();
+        }
+    });
+  }
+

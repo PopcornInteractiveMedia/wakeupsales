@@ -1,0 +1,44 @@
+
+=javascript_include_tag "funnel"
+=javascript_include_tag "exporting"
+.col-lg-12.con-box1{style: "border-top:none;border-radius:0;background:#fff"}
+  .col-lg-8
+    = high_chart("funnel_chart", @funnel_chart)
+  .cb	
+#funnel_chart.body.collapse.in
+
+.col-lg-4{style: "position:absolute;left: 60%; top: 30%"}
+  .row.rpadding
+    .panel.panel-default
+      .panel-body{style: "padding: 10px 20px;"}
+        .row.rpadding{style: "font-size: 12px;"}
+          %b New Deals:
+          - if @new_deals > 0
+            = link_to leads_url(:type=>"incoming", :q=>@quarter ,:y=>@year ) do
+              = @new_deals
+          - else
+            = @new_deals
+        .row.rpadding{style: "font-size: 12px;"}
+          %b  Qualified Deals:
+          - if @qualified_deals > 0
+            = link_to leads_url(:type=>"qualify", :q=>@quarter ,:y=>@year ) do
+              = @qualified_deals
+          - else
+            = @qualified_deals
+        .row.rpadding{style: "font-size: 12px;"}
+          %b  Lost Deals:
+          - if @lost_deals > 0
+            = link_to leads_url(:type=>"lost", :q=>@quarter ,:y=>@year ) do
+              = @lost_deals
+          - else
+            = @lost_deals
+        .row.rpadding{style: "font-size: 12px;"}
+          %b  Won Deals:
+          - if @won_deals > 0
+            = link_to leads_url(:type=>"won", :q=>@quarter ,:y=>@year ) do
+              =@won_deals
+          - else
+            = @won_deals
+.cb
+%br
+= render :partial => "tag_chart_view"

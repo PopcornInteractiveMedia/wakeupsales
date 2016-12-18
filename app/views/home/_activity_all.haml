@@ -1,0 +1,319 @@
+%input{:type=>"hidden",:id=>"pagenoacts",:value=>"1"}
+
+-if @source == "dashboard"
+  .panel-body#tbl_activity1{style: "padding: 5px 0;border:none"}
+    #activity_loader_dash{style: "text-align:center;padding-top: 60px"}
+      =image_tag "ajax-loader2.gif"
+-else
+  %table.table.white-table.table-hover.table-striped  
+    %tbody.panel-body#tbl_activity{style:"border:none"}      
+  
+  
+    
+-if(@source == "dashboard")
+  %input#pagesource{:type=>"hidden",:value=>"dashboard"}
+  .cb10
+  .navbar-right.hide_more
+    .fl.ic_act_stm
+    .fl.v_more
+      =link_to "View more","/activities"
+
+-else
+  %input#pagesource{:type=>"hidden",:value=>"activities"}
+  .cb10
+  %div{style: "text-align:center"}
+    .cb10
+    .v_more
+      //%span#load_more_span.btn.btn-default.btn-xs
+      //  =link_to "Load more","javascript:",{:onclick=>"$('#load_more_span').hide();$('#loading_span').show();Ajax3.call();",:style=>"text-decoration:none"}
+      %span#loading_span.displaynone
+        =image_tag "ajax-loader2.gif"
+    .cb10
+    .cb10
+:css
+  .new_header{
+    background-image: -webkit-gradient(linear, left 0%, left 100%, from(white), to(#F2F2F2));
+    background-image: -webkit-linear-gradient(top, white, 0%, #F2F2F2, 100%);
+    background-image: -moz-linear-gradient(top, white 0%, #F2F2F2 100%);
+    background-image: linear-gradient(to bottom, white 0%, #F2F2F2 100%);
+    background-repeat: repeat-x;
+    border-bottom: 1px solid #D4D4D4;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#fff2f2f2', GradientType=0);
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+    height: 22px;
+  }          
+:javascript
+  $(document).ready(function(){
+    get_activity_data();
+  });
+  
+  var Ajax3 = {
+    active: false,
+    call: function(){
+        if (this.active===false) {
+          this.active=true;
+          var self=this;
+          jqxhr=$.ajax({
+            beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'));$("#overlay_newpop1").show();$("#pop_new1").show();},
+            type: "GET",
+            url: "/get_activities?page=" + $('#pagenoacts').val(),
+            data: {pagesource: $('#pagesource').val()},
+            success: function(data){
+            var str="";
+            cldurl = "#{ENV['cloudfront']}"
+            var date = new Date();
+            var img_class = "";
+            var titleclass="";
+            var strikethrough ="";
+            var assigned_to_cl =""; 
+            var datehead = "";
+            var today = "";
+            var todayexist = false;
+            var yesterdayexist = false;
+            var yesterday = "";
+            var prevdate=new Date();
+            var prevdateexist=false;
+            var attachment = "";
+            var activity_status_type =""; 
+            var activity_txt = ""
+            today= '<tr><td><div class="day_astream" id="today_act">Today</div></td><td></td></tr>' ;
+            yesterday = '<tr><td><div class="day_astream" id="yesterday_act">Yesterday</div></td><td></td></tr>';
+            if($('#pagesource').val() == "activities")
+             str= str + "";
+            else
+              str= str+ "<div class='table-responsive'><table class='table white-table table-hover table-striped'><tbody>"
+            
+            if(data.length == 0 ||  data.length == 1){
+              $('#load_more_span').html('No more activities!')
+              $('#tbl_activity1').css('text-align','center').html('<br/><br/><span style="color:red;" >No activties found!</span>')
+              //$('#activity_view_more_div').html("<div style='color:#BABCBD' class='fr'></div>&nbsp;<span class='inactivelink'>View more&nbsp;&nbsp;</span>");      
+              $('.hide_more').css('display','none');
+            }else if(data.length != 1 ){
+              data.forEach(function(activity){                 
+                strikethrough="";          
+                assigned_to_cl ="";          
+                attachment = "";    
+                created_type="";
+                activity_desc="";          
+               
+                date = new Date();   
+               
+                if(((new Date(activity.created_at_int*1000)).format('yyyy-mm-dd') ==  date.format('yyyy-mm-dd')) && todayexist == false) 
+                {
+                  if( $("#today_act").length.toString() =="0")
+                    datehead = today;
+                  else
+                    datehead ="";
+                  todayexist = true;
+                }
+               else if(((new Date(activity.created_at_int * 1000)).format('yyyy-mm-dd') == (new Date(date.setDate(date.getDate() - 1))).format('yyyy-mm-dd')) && yesterdayexist == false)
+                {
+                  if( $("#yesterday_act").length.toString() =="0")
+                    datehead = yesterday;
+                  else
+                    datehead ="";
+                  yesterdayexist = true;
+                }
+                else if(((new Date(activity.created_at_int * 1000)).format('yyyy-mm-dd') != (new Date(prevdate*1000)).format('yyyy-mm-dd')) )
+                {
+                  if( $("#" +(new Date(activity.created_at_int * 1000)).format('yyyymmdd') + "_act").length.toString() =="0")
+                    if(date.getFullYear() == new Date(activity.created_at).getFullYear()){
+                      datehead = '<tr><td><div class="day_astream" id="'+(new Date(activity.created_at_int*1000)).format('yyyymmdd')+'_act">'+ (new Date(activity.created_at_int*1000)).format('mmm dd') +'</div></td><td></td></tr>';
+
+
+                    }
+                    //else{
+                    //  datehead = '<tr><td><div class="day_astream" id="'+(new Date(activity.created_at_int*1000)).format('yyyymmdd')+'_act">'+ (new Date(activity.created_at_int*1000)).format('mmm dd, yyyy') +'</div></td><td></td></tr>';
+                    //}              
+                  else
+                    datehead ="";
+                }
+                else
+                {
+                  datehead = "";
+                }
+               str= str+datehead;
+               
+                switch (activity.type) 
+                {  
+                  case "Task":
+                    img_class = "task-s15";
+                    titleclass="pink2";
+                    if(activity.is_complete == true)
+                    {  strikethrough="text-decoration:line-through;";
+                    }
+                    if (activity.activity_status_type == "Assign"){
+                    assigned_to_cl ="to<a href='" + activity.task_pro_url + "'><span class='blue bolder'> " + activity.assigned_to +" </span></a><b>•</b>\
+                              <span class='due_date'>Due on &nbsp; " +  activity.due_date+ "</span>";
+                    }else{          
+                    assigned_to_cl ="";          
+                    }
+                    if(activity.active == true)
+                      {
+                      created_type =  "" + activity.activity_txt ;
+                      activity_desc = " <a class='" + titleclass + " bolder' href='" + activity.url + "'>" + activity.title + "</a>&nbsp;";
+                      }
+                    else
+                      {
+                      created_type = "" + activity.activity_txt ; 
+                      activity_desc = " <span class='" + titleclass + " bolder' >" + activity.title + "</span>&nbsp;";
+                      }
+                    break;
+                  case "IndividualContact":
+                    img_class = "con-s15";
+                    titleclass="orange2";
+                    if(activity.active == true)
+                      {
+                      created_type = "" + activity.activity_txt;
+                      activity_desc = " <a class='" + titleclass + " bolder' href='" + activity.url + "'>" + activity.title + "</a>&nbsp;";
+                      }
+                    else
+                      {
+                      created_type = "" + activity.activity_txt ; 
+                      activity_desc =  " <span class='" + titleclass + " bolder'>" + activity.title + "</span>&nbsp;";
+                      }
+                    break;
+                  case "CompanyContact":
+                    img_class = "con-s15";
+                    titleclass="orange2";
+                    if(activity.active == false)
+                      {
+                      created_type = "" + activity.activity_txt ;
+                      activity_desc =  " <span class='" + titleclass + " bolder'>" + activity.title + "</span>&nbsp;";
+                      }
+                    else
+                      {
+                      created_type = "" + activity.activity_txt ; 
+                      activity_desc = " <a class='" + titleclass + " bolder' href='" + activity.url + "'>" + activity.title + "</a>&nbsp;";
+                      }
+                    break;
+                  case "Note":
+                    img_class = "note-s15";
+                    titleclass="green";
+                    created_type = "Created Note" 
+                    activity_desc = "<span class='" + titleclass + " bolder' >  " + activity.title + "</span>&nbsp;";
+                    var cou = ((activity.attachment).toString()).split(',');
+                    
+                    if(activity.attachment != "null"){
+                      for(var i = 0; i < cou.length; i++) {
+                      
+                      attachment += "<a target='_blank' href='" +activity.attachment[i]+ "'><img src='"+cldurl+"/assets/attachment.png'></a>";
+                    }
+                    }else{
+                      attachment = ""
+                    }
+                    break;
+                  case "Deal":
+                    img_class = "deal-s15";
+                    titleclass = "green";           
+                    if (activity.activity_status_type == "Assign"){
+                    assigned_to_cl ="to<a href='/profile/" + activity.created_by_id + "'><span class='blue bolder'> " + activity.assigned_to +" </span></a>";
+                    }else{          
+                    assigned_to_cl ="";
+                    }
+                    if(activity.active == false){
+                      created_type = "" + activity.activity_txt ; 
+                      activity_desc =  " <span class='" + titleclass + " bolder' >" + activity.title + "</span>&nbsp;";
+                      }
+                    else{
+                      created_type = "" + activity.activity_txt ;
+                      activity_desc =  " <a class='" + titleclass + " bolder' href='" + activity.url + "'>" + activity.title + "</a>&nbsp;";
+                      }
+                    break;
+                  case "DealMove":
+                    img_class = "deal-s15";
+                    titleclass="green";
+                    if(activity.active == true)
+                      {
+                      created_type = "Deal"
+                      activity_desc = "<a class='" + titleclass + " bolder' href='" + activity.url + "'>" + activity.title + "</a> status changed to <span class='red'> " + activity.move_status + "</span>&nbsp;";
+                      }
+                    else
+                      {
+                      created_type = "Deal"
+                      activity_desc = "<span class='" + titleclass + " bolder' >" + activity.title + "</span> status changed to <span class='red'> " + activity.move_status + "</span>&nbsp;";
+                      }
+                    break;
+                  case "MailLetter":
+                    img_class = "activity_mail";
+                    titleclass="green";
+                    created_type = activity.title
+                    activity_desc = activity.activity_txt ;
+                    break;
+                
+                  case "Organization":
+                    titleclass="green";
+                    created_type = "Organization created"; 
+                    activity_desc = " <span class='" + titleclass + " bolder' >  " + activity.title + "</span>&nbsp;";
+                     break;
+                  default:
+                }
+                if((activity.type !="Organization") && (created_type !=""))
+                {
+          str= str+ "<tr class='task_row'><td style='padding: 0px; width: 85px;' class='bg_td_rt'>\
+                      <div class='dt_stream'>\
+                        "+  activity.actual_date + "\
+                        <div class='mid_bdr_dasboard'>\
+                          <span class='" + img_class + " img-circle img-thumbnail'>\
+                          </span>\
+                        </div>\
+                      </div>\
+                    </td>\
+                    <td style='vertical-align:top;padding-left:15px;'>\
+                      <div class='fl grey_act'>\
+                        " + created_type + "\
+                        " + assigned_to_cl + "\
+                        </div>\
+                        <div class='fr' rel='tooltip' title='Created by'>\
+                        <span class='ic_assign'></span>\
+                         <a href='/profile/"+activity.created_by_id+"'>"+ activity.created_by+" </a>\
+                       "+ attachment +"\
+                      </div>\
+                      <div class='cb'></div>\
+                      <div style='color:#333333'>\
+                       " + activity_desc + " \
+                      </div>\
+                    </td>\
+                  </tr>";
+                
+                prevdate = activity.created_at_int;
+                }
+                });
+                if($('#pagesource').val() == "activities")
+                  str= str+ "";
+                else
+                   str= str+ "</tbody></table></div>";
+               $(".panel-body").append(str); 
+               
+              }else{
+               $('#load_more_span').html('No more activities!');
+               $('#tbl_activity1').css('text-align','center').html('<br/><br/><span style="color:red;margin-left:230px" >No activties found!</span>');
+               $('#activity_view_more_div').html("<span style='color:#BABCBD' class='fr'></span>&nbsp;<span class='inactivelink'>View more</span>");
+               
+              } 
+            
+            
+            },
+            complete:function() {
+                self.active=false;
+                $('#pagenoacts').val(eval($('#pagenoacts').val())+1);
+                // $('#task_loader').hide();
+                $('#activity_loader_dash').hide();
+                $('#loading_span').hide();
+                $('#load_more_span').show();
+                $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+              }
+          });
+        }
+      
+      }
+  };
+  function get_activity_data()
+  {
+    Ajax3.call();
+  }
+  $(function()
+  {
+    $('#tbl_activity1').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+  });

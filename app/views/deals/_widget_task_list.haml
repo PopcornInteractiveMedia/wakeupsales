@@ -1,0 +1,209 @@
+- if @tasks.present?
+  .table-responsive
+    %table.table.table-striped
+      %tbody
+        - @tasks.each do |task|
+          - clr="green"
+          - if task.priority_id == 1
+            - clr="red"
+          - elsif task.priority_id == 2
+            - clr="blue"
+          - style_bg=""
+          - style_text=""
+          - if task.is_completed
+            - style_bg="background:#F5F8FC;"
+            - style_text="text-decoration:line-through; "
+          %tr.task_row
+            %td{style: "vertical-align:top; width:30px"}
+              - if task.is_completed
+
+
+                = check_box_tag 'complete_task', 'yes', true,:disabled => "disabled", :id => "complete_task_#{task.id}", :onclick => "task_outcome('#{task.id}')",:class=>"task_chk"
+                /-elsif task.is_completed && !current_user.is_admin?
+                /  = check_box_tag 'complete_task', 'yes', true, :disabled => "disabled",:id => "complete_task_#{task.id}", :onclick => "task_outcome('#{task.id}')",:class=>"task_chk"
+              -elsif(task.assigned_to == current_user.id || task.created_by == current_user.id || current_user.is_admin?) 
+                = check_box_tag 'complete_task', 'no', false, :id => "complete_task_#{task.id}", :onclick => "task_outcome('#{task.id}');",:class=>"task_chk"
+              -else
+                = check_box_tag 'complete_task', 'yes', false, :disabled => "disabled",:id => "complete_task_#{task.id}", :onclick => "task_outcome('#{task.id}')",:class=>"task_chk"
+
+              .cb
+
+              
+              .task_widget_setting.pull-left{style: "display:none;"}
+                .actions.dropdown.fr
+                  %span.btn-sm.btn-circle.dropdown-toggle{"data-toggle" => "dropdown", href: "javascript:",:style=> "cursor:pointer;text-decoration:none;color:darkOrange;padding:0px"}
+                    .task_set{rel:"tooltip", title:"Actions"}
+                  %ul.dropdown-menu{style: "margin: 12px 0 0 -6px;"}
+                    -if(task.assigned_to == current_user.id || task.created_by == current_user.id || current_user.is_admin?) 
+                      - unless task.is_completed
+                        %li.arrow_top
+                        %li
+                          = link_to "javascript:void(0)",:style=>"color: #333333;", :onclick=> "$('#taskEditModal').modal('show');edit_popup('#{task.id}')" do
+                            %span.glyphicon.glyphicon-edit{style: "margin-right:5px"}
+                            Edit
+                        %li
+                          = link_to "javascript:void(0)",:style=>"color: #333333;", :onclick=> "$('#taskFollowModal').modal('show');follow_popup('#{task.id}')" do
+                            %span.add_i_flow
+                            Follow up 
+                        %li
+                          - recurring= (task.recurring_type != "none")
+                          = link_to "javascript:void(0)", :id=> "deal_detail_task_delete_btn", :onclick =>"delete_task('#{task.id}', '#{recurring}')", :style=>"color:#333333" do
+                            %span.glyphicon.glyphicon-trash{style: "margin-right:5px"}
+                            Delete
+                      - else
+                        %li.arrow_top
+                        %li
+                          = link_to "javascript:void(0)",:style=>"color: #333333;", :onclick=> "$('#taskFollowModal').modal('show');follow_popup('#{task.id}')" do
+                            %span.add_i_flow
+                            Follow up
+                    - else
+                      %li.arrow_top
+                      %li
+                        = link_to "javascript:void(0)",:style=>"color: #333333;", :onclick=> "$('#taskFollowModal').modal('show');follow_popup('#{task.id}')" do
+                          %span.add_i_flow
+                          Follow up  
+            - if task.is_completed
+              - css_v = "line-through"
+            -else
+              - css_v = "none"
+            %td{align: "left", style: "width:auto;text-decoration:#{css_v};"}
+              - if params[:controller] == "deals"
+                = task.get_title
+              - else
+                = link_to task.get_title, task.get_url
+              %br/
+              %span.due_date
+                %div{class: "label#{task.task_type.name} labelTaskType"}= task.task_type.name
+              %span{style: "font-size:12px;padding-left:3px;color:#999999"}
+                = task.due_date.strftime("%a %d %b %Y @ %H:%M")
+            %td{style: "vertical-align:top;text-align:right"}
+              %span.ic_assign{rel: "tooltip", title: "Assigned To"}
+              %span{style: "font-size:12px;"}
+                - if task.user.present?
+                  = link_to task.user.first_name, "/profile/#{task.user.id}"
+                - else                      
+                  #{(task.user.present? ? task.user.first_name : "")}
+    =render :partial => "tasks/task_edit_popup"
+    =render :partial => "tasks/task_followup_popup"
+    =render :partial => "tasks/task_js"
+
+- else
+  %div{style: "text-align:center;margin-top:0px; padding-top:30px; min-height:240px; color: rgb(146, 82, 189);"}
+    No tasks found!
+ 
+:javascript
+  $(document).ready(function(){
+    $('#taskList').dataTable({
+        "sPaginationType": "bootstrap",
+        "oLanguage": {
+            "sLengthMenu": "Show _MENU_ tasks"
+        },
+        "bLengthChange": false,
+        "bFilter": false,
+        "bSort": false
+        
+    });
+    
+    //    $('#task_delete_btn').bind('ajax:complete', function(evt, data, status, xhr){
+    //      reload_task_widget();
+    //    });
+  });
+  
+  
+  
+  function delete_task(id, recurring){
+    if(confirm("Do you want to delete the task?")){
+        delete_all=false
+        if(recurring == "true" || recurring == true)
+          delete_all=confirm("Do you want to delete all recurring tasks?");
+        $.ajax({
+        type: "DELETE",
+        url: "/tasks/"+id,
+        dataType: 'json',
+        data: {delete_all_task: delete_all},
+        async: false,
+        beforeSend: function(){
+          $("#task_loader").show();
+        },
+        success: function(data)
+        {
+        },
+        error: function(data) {
+          $("#task_loader").hide();
+        },
+        complete: function(data) {
+          reload_task_widget();
+          $("#task_loader").hide();
+          $(document).trigger("add-alerts", [{'message': "Task has been deleted successfully." ,'priority': 'success'}]);
+          $("#deal_"+deal_id).html("<div class='last_task_"+data.responseJSON+"'><div class='label"+data.responseJSON+" labelTaskType tasktype'>"+data.responseJSON+"</div></div>");
+        }
+      });
+    }
+  }
+  
+  $( "tr.task_row" ).hover(
+    function() {
+    div_open=$(this).find("div.open")
+    $(div_open).removeClass("open")
+      $(this).find("div.task_widget_setting").show();
+      //$(this).find("div.task_widget_setting").css("visibility", "visible");
+    }, function() {
+      $(this).find("div.task_widget_setting").hide();
+      //$(this).find("div.task_widget_setting").css("visibility", "hidden");
+    }
+  );
+  function edit_popup(id){
+    $('#taskable_id').val(id);
+    $.ajax({
+      type: "POST",
+      url: "/edit_task",
+      dataType: 'json',
+      async: false,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#form_content").html(data.responseText);
+        $("#clicked_button_ref").val('taskwidget');
+        $("#task_loader").hide();
+        $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+      }
+    });
+  }
+  
+  function follow_popup(id){
+    $.ajax({
+      type: "POST",
+      url: "/follow_up_task",
+      dataType: 'json',
+      async: false,
+      data: {task_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#followform_content").html(data.responseText);
+        $("#clicked_button_ref").val('taskwidget');
+        $("#task_loader").hide();
+        
+      }
+    });
+  }
+  $(function()
+  {
+    $('#dashboardTasks').niceScroll({cursorcolor:"#7e7e7e", autohidemode: false, bouncescroll: true,cursorwidth: "10px", background: "#f8f8f8"});
+  });
+

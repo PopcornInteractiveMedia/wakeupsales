@@ -1,0 +1,16 @@
+#profileImgModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", "data-dismiss" => "modal", type: "button"} ×
+        %h4.modal-title Change Your Profile
+      #crop_data.modal-body{:style=>"min-height:200px"}
+        #crop_loader{style: "display:block;position: fixed;margin-top:25px; height: 100px; width: 100%; z-index: 99999; background:#fff; top:0px; left:0px;opacity:0.4"}
+          %div{:class=>"loader_img",style: "width:100%; text-align:center; dispay:table-cell; vertical-align:middle; margin-top:50px"}
+            = image_tag "ajax-loader2.gif"
+        #crop_data_area
+        /= render partial: "crop"
+      #crop_data.modal-footer
+        
+
+

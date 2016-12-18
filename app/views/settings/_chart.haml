@@ -1,0 +1,83 @@
+.mtop30
+  %h4 Charts
+.table-responsive.mtop30           
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .row
+      -if @current_user.is_admin? || @current_user.is_super_admin?
+        .col-md-4
+          %label.checkbox.inline
+            - if Widget.get_widget("pie_chart", "#{current_user.organization.id}" , "#{current_user.id}")
+              %input#chart_piechart{checked: "checked",type: "checkbox", value: "option1"}/
+              Pie Chart
+            - else
+              %input#chart_piechart{ type: "checkbox", value: "option1"}/
+              Pie Chart
+        .col-md-4
+          %label.checkbox.inline
+            - if Widget.get_widget("column_chart", "#{current_user.organization.id}" , "#{current_user.id}")
+              %input#chart_columnchart{checked: "checked",type: "checkbox", value: "option2"}/
+              Column Chart
+            - else
+              %input#chart_columnchart{ type: "checkbox", value: "option2"}/
+              Column Chart              
+      -else
+        .col-md-4
+          %label.checkbox.inline
+            - if Widget.get_widget("statistics_chart", "#{current_user.organization.id}", "#{current_user.id}")
+              %input#chart_statisticschart{checked: "checked", type: "checkbox", value: "option3"}/
+              statistics_chart
+            - else
+              %input#chart_statisticschart{type: "checkbox", value: "option3"}/
+              Statistics Chart      
+        .col-md-4
+          %label.checkbox.inline
+            - if Widget.get_widget("line_chart", "#{current_user.organization.id}", "#{current_user.id}")
+              %input#chart_linechart{checked: "checked", type: "checkbox", value: "option4"}/
+              Line Chart
+            - else
+              %input#chart_linechart{type: "checkbox", value: "option4"}/
+              Line Chart    
+                  
+    %hr/
+    .row
+      .col-md-12
+        %button.btn.btn-primary{type: "button", id: "chart_submit_btn", onclick: "save_chart_org()"}
+          Save
+          
+      
+:javascript
+  function save_chart_org(){
+    $('#chart_submit_btn').prop("disabled", true).html("Please wait...");
+    if($('#chart_piechart').is(':checked'))
+      var piechart = 1;
+    else
+      var piechart = 0;
+    if($('#chart_columnchart').is(':checked'))
+      var columnchart = 1;
+    else
+      var columnchart = 0;
+    if($('#chart_statisticschart').is(':checked'))
+      var statisticschart = 1;
+    else
+      var statisticschart = 0;               
+    if($('#chart_linechart').is(':checked'))
+      var linechart = 1;
+    else
+      var linechart = 0;   
+    
+    var page = "chart"
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: "POST",
+      url: "settings/update_widget_org",
+      data: {piechart:piechart,columnchart:columnchart,statisticschart:statisticschart,linechart:linechart,page:page},
+      success: function(data){ 
+        $('#chart').html(data);  
+        $(document).trigger("add-alerts", [{'message': "Settings for chart updated successfully.",'priority': 'info'}]);
+      },
+      error: function(data){
+        alert('got an error');
+      }
+    });  
+  }
+

@@ -1,0 +1,54 @@
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .con-box1 
+        /= form_for(@contact,:action=>edit_contact_path(), :remote => true, :html=>{:class => "form",:method=>"put",:id=>"new_contact"}) do |f|
+        = form_for(@contact, url: contact_path(@contact), :html=>{:class => "form",:method=>"put",:id=>"new_contact"}) do |f|    
+          =f.hidden_field :organization_id, value: current_user.organization_id.to_s
+          /=f.hidden_field :created_by, value: current_user.id.to_s
+          %header
+            - if @contact.class.name == "CompanyContact"
+              /.navbar-right.glyphicon.glyphicon-trash
+              %h4 
+                Edit Company Detail
+            - else
+              /.navbar-right.glyphicon.glyphicon-trash
+              %h4 
+                Edit Individual Detail
+          %hr
+          .container
+            =render :partial=>"shared/edit_contact",:locals=>{:f => f}
+          %hr
+          .cb
+          .col-md-1{style:"margin-right:17px"}
+          .col-md-6
+            %button.btn.btn-primary.btn-success.navbar-left{type: "submit", "data-disable-with" => "Saving...", onclick: "return chk_validation('contact')"} Update
+            =link_to "Cancel","javascript:",:class=>"btn btn-default navbar-left", :style=>"margin-left:20px", :onclick => "history.go(-1);"     
+          .cb10
+:javascript
+  $(function() {     
+    $('#contact_country').trigger('change')
+    if ($("#contact_contact_type_company").prop("checked")) {
+      $('#div_company_name_strength').show();
+      $("#contact_name").prop("required", true);
+      $("#deal_name").prop("required", true);
+      $("#contact_company_strength").prop("required", true);      
+      $("#deal_company_strength").prop("required", true);
+    }else{ 
+      $('#div_company_name_strength').hide();
+      $("#contact_name").removeAttr("required")
+      $("#contact_company_strength").removeAttr("required")
+       $("#deal_name").removeAttr("required")
+      $("#deal_company_strength").removeAttr("required")
+    }
+    $('#contact_messanger_type').trigger('change');
+    $('#contact_messanger_type').change(function() {
+      if($(this).val() != ""){
+        $("#contact_messanger_id").prop("required", true);
+      }else{
+        $("#contact_messanger_id").removeAttr("required")
+      }
+    });
+  });

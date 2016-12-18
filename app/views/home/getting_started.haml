@@ -1,0 +1,70 @@
+.container
+  .cb10
+  .cb10
+  .col-md-12.p0
+    .con-box1
+      .panel.panel-primary
+        .panel-heading{style: "font-size: 20px"}
+          %span
+            Getting Started with WakeUpSales
+          %span.pull-right
+            =link_to "Close", "/dashboard", style: "font-size: 13px", class: "btn btn-warning btn-xs"
+        .panel-body
+          -#.row.margin10
+          -#  .col-md-1
+          -#    =link_to (image_tag "contact-icon-large.png"), "#contactModal", "data-toggle" => "modal"
+          -#  .col-md-11
+          -#    %div
+          -#      =link_to "Add a contact", "#contactModal", "data-toggle" => "modal", style: "font-size: 17px"
+          -#    %div
+          -#    Contact are the people in a company with whom you communicate and interact in pursuit of a business opportunity.
+          -#%hr
+          .row.margin10
+            .col-md-1
+              =link_to (image_tag "deal2_btn.png"), "#dealModal", "data-toggle" => "modal"
+            .col-md-11
+              %div
+                =link_to "Add a Lead", "#dealModal", "data-toggle" => "modal", style: "font-size: 17px"
+              %div
+                Leads are the sales opportunities you've identified through one of your contacts.
+          %hr
+          .row.margin10
+            .col-md-1
+              =link_to (image_tag "task-icon-larger.png"), "#taskModal", "data-toggle" => "modal"
+            .col-md-11
+              %div
+                =link_to "Create a task", "#taskModal", "data-toggle" => "modal", style: "font-size: 17px"
+              %div
+                Tasks are the activities for contact or deal.
+        .panel.panel-info{style: "border-bottom: none;"}
+          .panel-heading Personalize settings
+          .panel-body
+            .row.margin10
+              .col-md-1
+                =link_to (image_tag "Clock.png"), "/profile"
+              .col-md-11
+                %div
+                  =link_to "Timezone & Profile settings", "/profile", "data-toggle" => "modal", style: "font-size: 17px"
+                %div
+                  Personalize your CRM account by setting your country locale, time zone, language and personal details.
+        - if @current_user.is_admin? || @current_user.is_super_admin?
+          .panel.panel-info{style: "border-bottom: none;"}
+            .panel-heading Administrator Setup
+            .panel-body
+              .row.margin10
+                .col-md-1
+                  =link_to (image_tag "AddUser.png"), "#inviteuserModal", "data-toggle" => "modal"
+                .col-md-11
+                  %div
+                    =link_to "Invite a user", "#inviteuserModal", "data-toggle" => "modal", style: "font-size: 17px"
+                  %div
+                    Start building your sales team.
+              %hr
+              .row.margin10
+                .col-md-1
+                  =link_to (image_tag "Customize.png"), "/settings"
+                .col-md-11
+                  %div
+                    =link_to "Settings", "/settings", style: "font-size: 17px"
+                  %div
+                    Customize the CRM to your business needs.

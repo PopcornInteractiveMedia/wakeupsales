@@ -1,0 +1,115 @@
+%link{href: asset_path("lib/tagsinput/jquery.tagsinput"), rel: "stylesheet"}
+%script{src: asset_path("lib/tagsinput/jquery.tagsinput.min")}
+.box 
+  -@deal=Deal.new
+  -if(!params[:contact_id].nil?)
+    -@deal.contact = Contact.find params[:contact_id]
+  -else
+    -@deal.contact = Contact.new
+  = form_for(@deal, url: new_lead_path, :html=>{:class => "form",:multipart => true, :method=>"post",:id=>"edit_deal"}) do |f|
+    %header
+      .icons
+        %i.icon-pencil
+      %h5 EDIT DEAL
+    .container
+      =hidden_field_tag :allnew,"true"
+      =hidden_field_tag "deal[contact_id]",@deal.contact.id
+      =render :partial=>"editdeal",:locals=>{:f => f}
+      -@contact = (!@deal.contact.nil? ? @deal.contact : Contact.new)
+      =render :partial=>"shared/edit_contact",:locals=>{:f => f}
+      .row
+        .col-md-8
+          %button.btn.btn-primary{type: "submit"} Save
+          
+:javascript
+  //history.replaceState({}, '', '/deals/new'); 
+
+  $(function() {     
+    
+    $('#editable_source').editable({
+      url: '/settings/save_source' ,
+      pk: 1,
+      title: 'Enter Source',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Source name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+        //$("#editable_source").text("+NEW");
+        //alert($("#editable_source").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').on('hidden', function(e, editable) {
+      $("#editable_source").text("+ NEW");
+      editable.text = "";
+    });
+    // Save industry
+    $('#editable_industry').editable({
+      url: '/settings/save_industry' ,
+      pk: 1,
+      title: 'Enter Industry',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+NEW",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter industry name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_industry").append(o);
+        //$("#editable_industry").text("+NEW");
+        //alert($("#editable_industry").text());
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_industry').on('hidden', function(e, editable) {
+      $("#editable_industry").text("+ NEW");
+      editable.text = "";
+    });
+    
+  });
+  $(function() { 
+  $('#deal_tags').tagsInput({'defaultText':'Click to add'});
+  });
+

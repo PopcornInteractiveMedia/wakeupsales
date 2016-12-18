@@ -1,0 +1,17 @@
+%div{:align=>"center"}
+  - value = (!params[:quarter].include? 'Past') ? 'Q'+params[:quarter] : params[:quarter][0..-3]
+  - if params[:url] == "get_leads_won"
+    Deals won for
+    = value
+    %br
+    = render :partial => "deals_won_list"
+  - elsif params[:url] == "get_user_list_leaderboard"
+    Leaderboard for
+    = value
+    %br
+    = render :partial => "leaderboard_list"
+  - elsif params[:url] == "get_sales_analytic"
+    Sales Analytics for
+    = value
+    %br
+    = render :partial => "sales_analytic"

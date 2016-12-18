@@ -1,0 +1,88 @@
+- @bug_reports = ReportABug.order("id DESC").paginate(:page => params[:page], :per_page => 10)
+:css
+  body{
+    background-color:#fff;
+  }
+  .digg_pagination {
+  background: white;
+  cursor: default;
+  /* self-clearing method: */ }
+  .digg_pagination a, .digg_pagination span, .digg_pagination em {
+    padding: 0.2em 0.5em;
+    display: block;
+    float: left;
+    margin-right: 1px; }
+  .digg_pagination .disabled {
+    color: #999999;
+    border: 1px solid #dddddd; }
+  .digg_pagination .current {
+    font-style: normal;
+    font-weight: bold;
+    background: #2e6ab1;
+    color: white;
+    border: 1px solid #2e6ab1; }
+  .digg_pagination a {
+    text-decoration: none;
+    color: #105cb6;
+    border: 1px solid #9aafe5; }
+    .digg_pagination a:hover, .digg_pagination a:focus {
+      color: #000033;
+      border-color: #000033; }
+  .digg_pagination .page_info {
+    background: #2e6ab1;
+    color: white;
+    padding: 0.4em 0.6em;
+    width: 22em;
+    margin-bottom: 0.3em;
+    text-align: center; }
+    .digg_pagination .page_info b {
+      color: #000033;
+      background: #6aa6ed;
+      padding: 0.1em 0.25em; }
+  .digg_pagination:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden; }
+  * html .digg_pagination {
+    height: 1%; }
+  *:first-child + html .digg_pagination {
+    overflow: hidden; }
+
+.container{style: "padding: 0px;"}  
+  %div{style: "padding: 0px 15px;"}
+    %h2{style: "text-align:center"}
+      Bug Reports
+    %div{style: "border: 1px solid rgb(221, 221, 221);border-radius: 3px;"}
+      %table
+        %tbody
+          - @bug_reports.each do |bug_report|
+            %tr  
+              .bug_row
+                .bug_desc.fl{title: "Bug description"}
+                  %a{href: "/show_bug_report/#{bug_report.id}", :title => 'Show Report', class: "bug_decr"} 
+                    = bug_report.description[0..50]
+                    ="..."
+                -if bug_report.comments.count != 0
+                  %a{href: "/show_bug_report/#{bug_report.id}", :title => 'Show Report', class: "comment-icon"}
+                    .light-gray.fr
+                      %svg{"aria-hidden" => "true", :height => "16", :width => "16", style: "vertical-align: middle !important;"}
+                        %path{:d => "M14 1H2c-.55 0-1 .45-1 1v8c0 .55.45 1 1 1h2v3.5L7.5 11H14c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1zm0 9H7l-2 2v-2H2V2h12v8z"}
+                      = bug_report.comments.count
+                    .cb
+                .cb
+                .light-gray.fl
+                  Opened :
+                  =distance_of_time_in_words(bug_report.created_at, Time.now) + " ago"
+                  by : 
+                  = bug_report.email
+                .cb
+                .bug_type.fl{title: "Bug type"}
+                  Bug type : 
+                  = bug_report.bug_type
+                .cb
+      .digg_pagination.fr{style:"margin-top:15px"}
+        = will_paginate @bug_reports, :container => false
+
+

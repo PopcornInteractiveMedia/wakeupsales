@@ -1,0 +1,107 @@
+.container{style: "max-width: 100%;border: 0"}
+  .row.rpadding{style: "padding-top: 10px;"}
+    .panel.panel-default
+      .panel-body{style: "padding: 15px 20px 15px 20px;"}
+        .row.rpadding
+          %table.table{cellspacing: "20"}
+            - @deals.each do |deal|
+              %tr
+                %td
+                  -if deal.deal_status_name.present?
+                    .row{style: "margin:0"}
+                      -if deal.is_active?
+                        =link_to deal.title, lead_path(deal), style: "font-size: 20px;"
+                      -else
+                        %span{style: "font-size:20px;"}
+                          =deal.title
+                      %span.label.label-warning.arrowed.arrowed-right
+                        =deal.deal_status_name
+                  .row{style: "margin:0;font-size: 16px;"}
+                    %b{title: "Lead amount"}
+                      - if deal.amount.present?
+                        $
+                        %i
+                          =number_with_precision(deal.amount, :precision => 2)
+                      - else
+                        %i
+                          No price set
+                  - if deal.created_at.present?
+                    .row{style: "margin:0;font-size: 13px;"}
+                      %span
+                        %i.icon-time{title: "Created at"}
+                        =deal.created_at.strftime("%b %d, %Y")
+                        by
+                      %span{style: "margin-left: 2px"}
+                        /%i.icon-user{title: "Assigned to"}
+                        %b
+                          =deal.assigned_user.full_name if deal.assigned_user.present?
+                  - if last_activity(deal.id).present?
+                    .row{style: "margin:0;font-size: 13px;"}
+                      %span
+                        %i.icon-time{title: "Last activity"}
+                        =last_activity(deal.id)[0].split("@")[0]
+                        by
+                      %span{style: "margin-left: 2px"}
+                        /%i.icon-user{title: "user"}
+                        =last_activity(deal.id)[1]
+            
+:css
+  .label.arrowed-right {
+  margin-right: 5px;
+  }
+  .label.arrowed {
+  margin-left: 5px;
+  }
+
+  .label.arrowed-right, .label.arrowed-in-right {
+    position: relative;
+    z-index: 1;
+  }
+
+  .label.arrowed, .label.arrowed-in {
+  position: relative;
+  z-index: 1;
+  }
+
+  .label-warning, .badge-warning {
+  background-color: #f89406!important;
+  }
+
+  .label.arrowed:before {
+  left: -10px;
+  border-width: 10px 5px;
+  }
+
+  .label-warning.arrowed:before {
+  border-right-color: #f89406;
+  }
+
+  .label.arrowed:before, .label.arrowed-in:before {
+  display: inline-block;
+  content: "";
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-right-color: #abbac3;
+  }
+
+
+  .label.arrowed-right:after {
+  right: -10px;
+  border-width: 10px 5px;
+  }
+
+
+  .label.arrowed-right:after, .label.arrowed-in-right:after {
+  display: inline-block;
+  content: "";
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-left-color: #abbac3;
+  }
+
+
+

@@ -1,0 +1,38 @@
+=javascript_include_tag "funnel"
+=javascript_include_tag "exporting"
+.col-lg-12.con-box1{style: "border-top:none;border-radius:0;background:#fff;margin-top:-26px;"}
+  - if @current_user.present? && @current_organization.present? && (w=@current_user.widget).present?
+    -if w.chart
+      - if @current_user.is_admin? || @current_user.is_super_admin?
+        .con-box1
+
+          .cb10
+          %div
+            .bar_tag_chart_div{style: "padding:0 10px;"}
+              %div{style: "text-align:center;padding-top: 60px"}
+                %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}
+      .cb
+/=hidden_field_tag "pie_tag_display", pie_tag_display
+:css
+  #bar_tag_chart .highcharts-legend{display:none;}
+:javascript
+  $( document ).ready(function() {
+    display_lead_bar_chart();
+    //alert('pie_tag_display == 1');
+  });  
+  
+  function display_lead_bar_chart()
+  {
+    selected_quarter = $('#selected_lead_value').val();
+    
+    $.ajax({
+      type: "POST",
+      url: "/lead_age_bar_chart",
+      data:{quarter: selected_quarter},
+      complete: function(data) {
+        //alert(data.responseText);
+        //alert('complete');
+        $(".bar_tag_chart_div").html(data.responseText);
+      }
+    });
+  }

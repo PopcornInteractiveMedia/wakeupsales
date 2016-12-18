@@ -1,0 +1,414 @@
+- @deal.deals_contacts.each do |c|
+  - if c.contactable.present?
+    -ccode =  c.contactable.address.present? &&  c.contactable.address.country ?  c.contactable.address.country.isd_code : ""
+    - if c.contactable.is_individual?
+      -contact_page="individual_contact" 
+    - elsif c.contactable.is_company?
+      -contact_page="company_contact"
+    =hidden_field_tag "contact_type", contact_page
+    =hidden_field_tag "cur_selected_contact", ""
+    .con-box1
+
+      .fl.prf_img
+        - if c.contactable.image.present?
+          - image_path = c.contactable.image.image.url(:thumb)
+          %img{alt: "", src: image_path }
+        - elsif c.contactable.is_individual? && !c.contactable.image.present?
+          -image_path = "no_user50.png"
+          =image_tag image_path
+        - elsif c.contactable.is_company? && !c.contactable.image.present?
+          -image_path = "comp_logo_50.png"
+          =image_tag image_path
+
+      .prof_addr.fl
+        %div
+          = link_to ((fn=c.contactable.full_name) ? fn : "(no name)"), "/#{contact_page}/#{c.contactable.id}"
+          %span 
+          - if c.contactable.is_individual? && c.contactable.position.present?
+            %span{style: "font-size: 12px;"}
+              (
+              = c.contactable.position
+              )
+        %div 
+          - if c.contactable.is_individual? && c.contactable.company_contact.present? && c.contactable.company_contact.name.present?
+            = link_to c.contactable.company_contact.name, "/company_contact/"+c.contactable.company_contact.id.to_s
+        .cb10
+        - @contact = c.contactable
+        - if @contact.linkedin_url.present?
+          -if @contact.linkedin_url.include?("http" || "https")
+            =link_to @contact.linkedin_url, target: "_blank" do
+              .fl.soc_links_lin{title: "#{@contact.linkedin_url}", rel: "tooltip"}
+          -else
+
+            =link_to "//"+@contact.linkedin_url, target: "_blank" do
+              .fl.soc_links_lin{title: "#{@contact.linkedin_url}", rel: "tooltip"}
+        -else
+          .fl.soc_links_lin.n_active
+        - if @contact.facebook_url.present?
+          -if @contact.facebook_url.include?("http" || "https")
+            =link_to @contact.facebook_url, target: "_blank" do
+              .fl.soc_links_fb{title: "#{@contact.facebook_url}", rel: "tooltip"}
+          -else
+            =link_to "//"+@contact.facebook_url, target: "_blank" do
+              .fl.soc_links_fb{title: "#{@contact.facebook_url}", rel: "tooltip"}
+        -else
+          .fl.soc_links_fb.n_active
+        - if @contact.twitter_url.present?
+          -if @contact.twitter_url.include?("http" || "https")
+            =link_to @contact.twitter_url, target: "_blank" do
+              .fl.soc_links_twt{title: "#{@contact.twitter_url}", rel: "tooltip"}
+          -else
+            =link_to "//"+@contact.twitter_url, target: "_blank" do
+              .fl.soc_links_twt{title: "#{@contact.twitter_url}", rel: "tooltip"}
+        -else    
+          .fl.soc_links_twt.n_active
+
+
+        /%br/
+        /%a.grey_act{href: "#"}
+        /%span.glyphicon.glyphicon-user
+        /Contacts Involved
+      .fr
+        - if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+          %a{"data-toggle" => "modal", href: "#addCon", rel: "tooltip", class:"",style: "text-decoration:none", title: "Associate a contact",onclick: "$('#associate_con')[0].reset();$('#show_er_deal_em').hide();$('#show_er').hide();$('#contactable_id').val('');$('#extension_for_contact_deal').html('+1')"}
+            %span.add_con_icn_black
+          =link_to "/edit_#{contact_page}/#{c.contactable.id}" ,class: "grey_act",  style:"font-size: 12px;text-decoration:none;", rel: "tooltip", title: "Edit",:remote=>true, :onclick=>"$('#editPopContactModal').modal('show');edit_contact_popup('#{c.contactable.id}','#{c.contactable.is_individual?}','#{@deal.id}')" do
+            %span.glyphicon.glyphicon-pencil
+          - if @deal.deals_contacts.count > 1
+            =link_to "/delete_lead_con/#{c.id}", :id=>"delete_con",:remote=>true, :onclick=>"delete_contact(#{c.id})", class: "grey_act" ,style: "margin-left: 5px;font-size: 12px;", rel: "tooltip", title: "Delete" do
+              %span.glyphicon.glyphicon-trash
+      .cb10
+      .fl
+        .fl.grey_act Company:
+        .fl 
+          - if c.contactable.is_individual? && c.contactable.company_contact.present? && c.contactable.company_contact.name.present?
+            = link_to c.contactable.company_contact.name, "/company_contact/"+c.contactable.company_contact.id.to_s
+          -elsif c.contactable.is_company? && c.contactable.name.present?
+            = link_to c.contactable.name, "/company_contact/"+c.contactable.id.to_s
+          -else
+            Not Avl.
+        .cb10
+        .fl.grey_act Email:
+        .fl 
+          - if c.contactable.email.present?
+            %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", rel: "tooltip", title: "#{c.contactable.email}", href: "javascript:",onclick: "$('#send-mail-popup').get(0).reset();$('#to').val(\"#{c.contactable.email}\");$('#mailer_id').val(\"#{@deal.id}\");$('#mailer_type').val('Deal');$('#email_contact_id').val(\"#{c.contactable.id}\");$(\"#email_contact_type\").val(\"#{c.contactable.is_company? ? 'company_contact' : 'individual_contact'}\");reset_email_err_msg();"}
+              =c.contactable.email
+          -else
+            Not Avl.
+        .cb10
+        .fl.grey_act Website:
+        .fl 
+          - if c.contactable_type == "CompanyContact" && c.contactable.website.present?
+            
+            -if c.contactable.website.include?("http" || "https")
+              =link_to c.contactable.website, target: "_blank" do
+                =c.contactable.website
+            -else
+              =link_to "//"+c.contactable.website, target: "_blank" do
+                =c.contactable.website
+                
+          - elsif c.contactable.is_individual? && c.contactable.company_contact.present? && c.contactable.company_contact.website.present? 
+            
+            -if c.contactable.company_contact.website.include?("http" || "https")
+              =link_to c.contactable.company_contact.website, target: "_blank" do
+                =c.contactable.company_contact.website
+            -else
+              =link_to "//"+c.contactable.company_contact.website, target: "_blank" do
+                =c.contactable.company_contact.website
+          -else
+            Not Avl.
+        .cb10
+        .fl.grey_act Company Size:
+        .fl 
+          - if c.contactable_type == "CompanyContact" && c.contactable.company_strength.present?
+            =c.contactable.company_strength.range
+          - elsif c.contactable.is_individual? && c.contactable.company_contact.present? && c.contactable.company_contact.company_strength.present? 
+            =c.contactable.company_contact.company_strength.range
+          -else
+            Not Avl.
+        .cb10
+
+        .fl.grey_act Work:
+        .fl 
+          - @work_phone =  c.contactable.phones.present? ? ( c.contactable.phones.by_phone_type("work")) : ''
+          - if @work_phone.present? && @work_phone.first.phone_no.present?
+            - phone_code= c.contactable.phones.first.extension.nil? ? "" : c.contactable.phones.first.extension
+
+
+            %span.soc_skyp
+            =link_to "+" + ccode + @work_phone.first.phone_no, "skype:+" + ccode + (@work_phone.first.phone_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+
+            -if phone_code.present?
+              -if phone_code.include?("+")
+                -phone_code.slice!(0)
+
+              x
+              =phone_code
+          -else
+            Not Avl.
+        .cb10
+        .fl.grey_act Cell:
+        .fl 
+          - mobile_phone= c.contactable.phones.present? ? ( c.contactable.phones.by_phone_type("mobile")) : ''
+          - if mobile_phone.present? && mobile_phone.first.phone_no.present?
+            /- phone_code= c.contactable.address.country.present? ? c.contactable.address.country.isd_code : ""
+            -phone_code= c.contactable.phones.first.extension.nil? ? "" : c.contactable.phones.first.extension
+
+            %span.soc_skyp
+            =link_to "+" + ccode + mobile_phone.first.phone_no, "skype:+" + ccode+ (mobile_phone.first.phone_no).gsub(/\W+/, '') + "?call", rel: "tooltip", title: "Click to call"
+
+          -else
+            Not Avl.
+        .cb10
+        .fl.grey_act Skype ID:
+        .fl 
+          - if c.contactable.present? && !c.contactable.messanger_id.nil?
+            -phone_code= c.contactable.phones.first.extension.nil? ? "" : c.contactable.phones.first.extension
+            %span.soc_skyp
+            =link_to c.contactable.messanger_id, "skype:" + c.contactable.messanger_id+ "?call", rel: "tooltip", title: "Click to call"
+
+          -else
+            Not Avl.
+        - if c.contactable.present? && !c.contactable.address.nil?
+          - address = c.contactable.address
+          .cb10
+          .fl.grey_act Location:
+          .fl 
+            - city = address.city 
+            - if !city.blank?
+              = city
+              ,
+            - state = address.state 
+            - if !state.blank?
+
+              = state
+              ,
+            - country = address.country_id.present? ? (Country.find address.country_id).name : ''
+            - if !country.blank?
+
+              = country
+        .cb10
+        - if c.contactable.time_zone.present?
+          .fl.grey_act Time Zone:
+          .fl 
+            
+            %div{style: "float:left"}
+              %a.profile_time_zone{:href => "#", :id => c.contactable.id, :"data-value"=> c.contactable.time_zone , :onclick=> "$('#cur_selected_contact').val(#{c.contactable.id})"}
+          .cb10   
+          %div{id: "my_curtime#{c.contactable.id}"}
+            .fl.grey_act Current Time:
+            .fl 
+
+              %div{style: "float:left;font-weight:bold;color:#2A64A2"}
+                =DateTime.parse(ActiveSupport::TimeZone[c.contactable.time_zone].now.to_s(:rfc822)).strftime('%a, %d %b %H:%M:%S')
+        -else
+          .fl.grey_act Time Zone:
+          .fl 
+            %div{style: "float:left"}
+              %a.profile_time_zone{:href => "#", :id => c.contactable.id, :"data-value"=> ActiveSupport::TimeZone, :onclick=> "$('#cur_selected_contact').val(#{c.contactable.id})", style: "color: red;font-style: italic;"}
+                Add Time Zone +
+          .cb10
+          %div{id: "my_curtime#{c.contactable.id}"}
+      .cb
+= render :partial => "edit_deal"
+= render :partial => "shared/edit_popup_contact"
+:javascript
+  function edit_contact_popup(id,ind,dealid){
+    $.ajax({
+      type: "POST",
+      url: "/get_contact",
+      dataType: 'json',
+      async: true,
+      data: {contact_id:id, individual:ind, dealid:dealid},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#contact_append").html(data.responseText);
+        $("#task_loader").hide();
+      }
+    });
+  }
+  $('.profile_time_zone').editable({
+      url: '/save_contact_timezone',
+      pk: $("#contact_type").val(),
+      title: 'Enter time zone',
+      type: 'select',
+      placement: 'top',
+      validate: function(value) {
+        if($.trim(value) == '' || $.trim(value) == 'NA')
+          return 'Please enter time zone';
+       
+      },
+      source: [
+              {value: 'Hawaii', text:'(GMT-10:00) Hawaii'},
+              {value: 'Alaska', text:'(GMT-09:00) Alaska'},
+              {value: 'Pacific Time (US & Canada)', text:'(GMT-08:00) Pacific Time (US & Canada)'},
+              {value: 'Arizona', text:'(GMT-07:00) Arizona'},
+              {value: 'Mountain Time (US & Canada)', text:'(GMT-07:00) Mountain Time (US & Canada)'},
+              {value: 'Central Time (US & Canada)', text:'(GMT-06:00) Central Time (US & Canada)'},
+              {value: 'Eastern Time (US & Canada)', text:'(GMT-05:00) Eastern Time (US & Canada)'},
+              {value: 'Indiana (East)', text:'(GMT-05:00) Indiana (East)'},
+              {value: '', text:'-------------'},
+              {value: 'American Samoa', text:'(GMT-11:00) American Samoa'},
+              {value: 'International Date Line West', text:'(GMT-11:00) International Date Line West'},
+              {value: 'Midway Island', text:'(GMT-11:00) Midway Island'},
+              {value: 'Tijuana', text:'(GMT-08:00) Tijuana'},
+              {value: 'Chihuahua', text:'(GMT-07:00) Chihuahua'},
+              {value: 'Mazatlan', text:'(GMT-07:00) Mazatlan'},
+              {value: 'Central America', text:'(GMT-06:00) Central America'},
+              {value: 'Guadalajara', text:'(GMT-06:00) Guadalajara'},
+              {value: 'Mexico City', text:'(GMT-06:00) Mexico City'},
+              {value: 'Monterrey', text:'(GMT-06:00) Monterrey'},
+              {value: 'Saskatchewan', text:'(GMT-06:00) Saskatchewan'},
+              {value: 'Bogota', text:'(GMT-05:00) Bogota'},
+              {value: 'Lima', text:'(GMT-05:00) Lima'},
+              {value: 'Quito', text:'(GMT-05:00) Quito'},
+              {value: 'Caracas', text:'(GMT-04:30) Caracas'},
+              {value: 'Atlantic Time (Canada)', text:'(GMT-04:00) Atlantic Time (Canada)'},
+              {value: 'Georgetown', text:'(GMT-04:00) Georgetown'},
+              {value: 'La Paz', text:'(GMT-04:00) La Paz'},
+              {value: 'Santiago', text:'(GMT-04:00) Santiago'},
+              {value: 'Newfoundland', text:'(GMT-03:30) Newfoundland'},
+              {value: 'Brasilia', text:'(GMT-03:00) Brasilia'},
+              {value: 'Buenos Aires', text:'(GMT-03:00) Buenos Aires'},
+              {value: 'Greenland', text:'(GMT-03:00) Greenland'},
+              {value: 'Mid-Atlantic', text:'(GMT-02:00) Mid-Atlantic'},
+              {value: 'Azores', text:'(GMT-01:00) Azores'},
+              {value: 'Cape Verde Is', text:'(GMT-01:00) Cape Verde Is.'},
+              {value: 'Casablanca', text:'(GMT+00:00) Casablanca'},
+              {value: 'Dublin', text:'(GMT+00:00) Dublin'},
+              {value: 'Edinburgh', text:'(GMT+00:00) Edinburgh'},
+              {value: 'Lisbon', text:'(GMT+00:00) Lisbon'},
+              {value: 'London', text:'(GMT+00:00) London'},
+              {value: 'Monrovia', text:'(GMT+00:00) Monrovia'},
+              {value: 'UTC', text:'(GMT+00:00) UTC'},
+              {value: 'Amsterdam', text:'(GMT+01:00) Amsterdam'},
+              {value: 'Belgrade', text:'(GMT+01:00) Belgrade'},
+              {value: 'Berlin', text:'(GMT+01:00) Berlin'},
+              {value: 'Bern', text:'(GMT+01:00) Bern'},
+              {value: 'Bratislava', text:'(GMT+01:00) Bratislava'},
+              {value: 'Brussels', text:'(GMT+01:00) Brussels'},
+              {value: 'Budapest', text:'(GMT+01:00) Budapest'},
+              {value: 'Copenhagen', text:'(GMT+01:00) Copenhagen'},
+              {value: 'Ljubljana', text:'(GMT+01:00) Ljubljana'},
+              {value: 'Madrid', text:'(GMT+01:00) Madrid'},
+              {value: 'Paris', text:'(GMT+01:00) Paris'},
+              {value: 'Prague', text:'(GMT+01:00) Prague'},
+              {value: 'Rome', text:'(GMT+01:00) Rome'},
+              {value: 'Sarajevo', text:'(GMT+01:00) Sarajevo'},
+              {value: 'Skopje', text:'(GMT+01:00) Skopje'},
+              {value: 'Stockholm', text:'(GMT+01:00) Stockholm'},
+              {value: 'Vienna', text:'(GMT+01:00) Vienna'},
+              {value: 'Warsaw', text:'(GMT+01:00) Warsaw'},
+              {value: 'West Central Africa', text:'(GMT+01:00) West Central Africa'},
+              {value: 'Zagreb', text:'(GMT+01:00) Zagreb'},
+              {value: 'Athens', text:'(GMT+02:00) Athens'},
+              {value: 'Bucharest', text:'(GMT+02:00) Bucharest'},
+              {value: 'Cairo', text:'(GMT+02:00) Cairo'},
+              {value: 'Harare', text:'(GMT+02:00) Harare'},
+              {value: 'Helsinki', text:'(GMT+02:00) Helsinki'},
+              {value: 'Istanbul', text:'(GMT+02:00) Istanbul'},
+              {value: 'Jerusalem', text:'(GMT+02:00) Jerusalem'},
+              {value: 'Kyiv', text:'(GMT+02:00) Kyiv'},
+              {value: 'Pretoria', text:'(GMT+02:00) Pretoria'},
+              {value: 'Riga', text:'(GMT+02:00) Riga'},
+              {value: 'Sofia', text:'(GMT+02:00) Sofia'},
+              {value: 'Tallinn', text:'(GMT+02:00) Tallinn'},
+              {value: 'Vilnius', text:'(GMT+02:00) Vilnius'},
+              {value: 'Baghdad', text:'(GMT+03:00) Baghdad'},
+              {value: 'Kuwait', text:'(GMT+03:00) Kuwait'},
+              {value: 'Minsk', text:'(GMT+03:00) Minsk'},
+              {value: 'Nairobi', text:'(GMT+03:00) Nairobi'},
+              {value: 'Riyadh', text:'(GMT+03:00) Riyadh'},
+              {value: 'Tehran', text:'(GMT+03:30) Tehran'},
+              {value: 'Abu Dhabi', text:'(GMT+04:00) Abu Dhabi'},
+              {value: 'Baku', text:'(GMT+04:00) Baku'},
+              {value: 'Moscow', text:'(GMT+04:00) Moscow'},
+              {value: 'Muscat', text:'(GMT+04:00) Muscat'},
+              {value: 'St. Petersburg', text:'(GMT+04:00) St. Petersburg'},
+              {value: 'Tbilisi', text:'(GMT+04:00) Tbilisi'},
+              {value: 'Volgograd', text:'(GMT+04:00) Volgograd'},
+              {value: 'Yerevan', text:'(GMT+04:00) Yerevan'},
+              {value: 'Kabul', text:'(GMT+04:30) Kabul'},
+              {value: 'Islamabad', text:'(GMT+05:00) Islamabad'},
+              {value: 'Karachi', text:'(GMT+05:00) Karachi'},
+              {value: 'Tashkent', text:'(GMT+05:00) Tashkent'},
+              {value: 'Chennai', text:'(GMT+05:30) Chennai'},
+              {value: 'Kolkata', text:'(GMT+05:30) Kolkata'},
+              {value: 'Mumbai', text:'(GMT+05:30) Mumbai'},
+              {value: 'New Delhi', text:'(GMT+05:30) New Delhi'},
+              {value: 'Sri Jayawardenepura', text:'(GMT+05:30) Sri Jayawardenepura'},
+              {value: 'Kathmandu', text:'(GMT+05:45) Kathmandu'},
+              {value: 'Almaty', text:'(GMT+06:00) Almaty'},
+              {value: 'Astana', text:'(GMT+06:00) Astana'},
+              {value: 'Dhaka', text:'(GMT+06:00) Dhaka'},
+              {value: 'Ekaterinburg', text:'(GMT+06:00) Ekaterinburg'},
+              {value: 'Rangoon', text:'(GMT+06:30) Rangoon'},
+              {value: 'Bangkok', text:'(GMT+07:00) Bangkok'},
+              {value: 'Hanoi', text:'(GMT+07:00) Hanoi'},
+              {value: 'Jakarta', text:'(GMT+07:00) Jakarta'},
+              {value: 'Novosibirsk', text:'(GMT+07:00) Novosibirsk'},
+              {value: 'Beijing', text:'(GMT+08:00) Beijing'},
+              {value: 'Chongqing', text:'(GMT+08:00) Chongqing'},
+              {value: 'Hong Kong', text:'(GMT+08:00) Hong Kong'},
+              {value: 'Krasnoyarsk', text:'(GMT+08:00) Krasnoyarsk'},
+              {value: 'Kuala Lumpur', text:'(GMT+08:00) Kuala Lumpur'},
+              {value: 'Perth', text:'(GMT+08:00) Perth'},
+              {value: 'Singapore', text:'(GMT+08:00) Singapore'},
+              {value: 'Taipei', text:'(GMT+08:00) Taipei'},
+              {value: 'Ulaan Bataar', text:'(GMT+08:00) Ulaan Bataar'},
+              {value: 'Urumqi', text:'(GMT+08:00) Urumqi'},
+
+              {value: 'Irkutsk', text:'(GMT+09:00) Irkutsk'},
+              {value: 'Osaka', text:'(GMT+09:00) Osaka'},
+              {value: 'Sapporo', text:'(GMT+09:00) Sapporo'},
+              {value: 'Seoul', text:'(GMT+09:00) Seoul'},
+              {value: 'Tokyo', text:'(GMT+09:00) Tokyo'},
+              {value: 'Adelaide', text:'(GMT+09:30) Adelaide'},
+              {value: 'Darwin', text:'(GMT+09:30) Darwin'},
+              {value: 'Brisbane', text:'(GMT+10:00) Brisbane'},
+              {value: 'Canberra', text:'(GMT+10:00) Canberra'},
+              {value: 'Guam', text:'(GMT+10:00) Guam'},
+              {value: 'Hobart', text:'(GMT+10:00) Hobart'},
+              {value: 'Melbourne', text:'(GMT+10:00) Melbourne'},
+              {value: 'Port Moresby', text:'(GMT+10:00) Port Moresby'},
+              {value: 'Sydney', text:'(GMT+10:00) Sydney'},
+              {value: 'Yakutsk', text:'(GMT+10:00) Yakutsk'},
+              {value: 'New Caledonia', text:'(GMT+11:00) New Caledonia'},
+              {value: 'Vladivostok', text:'(GMT+11:00) Vladivostok'},
+              {value: 'Auckland', text:'(GMT+12:00) Auckland'},
+              {value: 'Fiji', text:'(GMT+12:00) Fiji'},
+              {value: 'Kamchatka', text:'(GMT+12:00) Kamchatka'},
+              {value: 'Magadan', text:'(GMT+12:00) Magadan'},
+              {value: 'Marshall Is.', text:'(GMT+12:00) Marshall Is.'},
+              {value: 'Solomon Is.', text:'(GMT+12:00) Solomon Is.'},
+              {value: 'Wellington', text:'(GMT+12:00) Wellington'},
+              {value: 'Nuku alofa', text:'(GMT+13:00) Nuku alofa'},
+              {value: 'Samoa', text:'(GMT+13:00) Samoa'},
+              {value: 'Tokelau Is', text:'(GMT+13:00) Tokelau Is'}
+      ],
+      success: function(data) {
+       name =$("#cur_selected_contact").val();
+       $("#my_curtime"+name).html(data);
+       $(".profile_time_zone").css({"color": "#3E6BA1","font-style": "normal"});
+      },
+      error: function(data) {
+        //alert('error') 
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+

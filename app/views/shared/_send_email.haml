@@ -1,0 +1,86 @@
+/=javascript_include_tag 'bootstrap-wysihtml5-0.0.3'
+/= stylesheet_link_tag 'bootstrap-wysihtml5'
+:css
+  ul.wysihtml5-toolbar a.btn{
+    padding: 8px 5px;
+  }
+  ul.wysihtml5-toolbar .btn-group{
+     border: 0px;
+     margin-top: 0px;  
+  }
+  div.wysiwyg{width: auto !important;}
+  #message-wysiwyg-iframe{width:558px !important;margin-bottom:18px;}
+  .send_email_field {
+    padding-right: 30px;
+  }
+
+  .send_email_field + .glyphicon {
+    position: absolute;
+    right: 0;
+    padding: 8px 27px;
+  }
+#SendEmailModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "SendEmailModal", role: "dialog", tabindex: "-1"}        
+  .modal-dialog
+    .modal-content
+      - sendmail = Contact.new()
+      = form_for(sendmail,:url=>"/send_email", :html=>{:class => "form",:method=>"post",:id=>"send-mail-popup",:multipart => true}) do |f|
+        =hidden_field_tag "mailer_id"
+        =hidden_field_tag "mailer_type"
+        =hidden_field_tag "email_contact_id"
+        =hidden_field_tag "email_contact_type"
+        
+        %input{:type=>"hidden",:id=>"contact_id_send_mail_popup",:name=> "contact_id_send_mail_popup"}
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title Send Email 
+        .modal-body
+          .form-group
+            /= f.email_field :to, :placeholder => "To",:required => true ,:class=> "col-md-12 form-control"
+            = email_field_tag :to, "",:placeholder => "To",:required => true ,:class=> "col-md-12 form-control"
+            %label{id:"email_err_to",class: "error"}
+            %a{href: "javascript:", id: "cc_link", onclick: "show_cc_bcc('cc')"} Cc
+            %a{href: "javascript:", id: "bcc_link", onclick: "show_cc_bcc('bcc')"} Bcc
+          .row.displaynone#cc_bcc_div
+            .form-group.col-md-6#cc_div
+              = email_field_tag :cc, "",:placeholder => "Cc",:class=> "col-md-12 form-control send_email_field"
+              %span.glyphicon.glyphicon-remove{onclick: "hide_cc_bcc('cc')",style: "cursor:pointer;"}
+              %label{id:"email_err_cc",class: "error"}
+            .form-group.col-md-6#bcc_div
+              = email_field_tag :bcc,"", :placeholder => "Bcc",:class=> "col-md-12 form-control send_email_field"
+              %span.glyphicon.glyphicon-remove{onclick: "hide_cc_bcc('bcc')",style: "cursor:pointer;"}
+              %label{id:"email_err_bcc",class: "error"}
+          .form-group
+            = text_field_tag :subject, "",:placeholder => "Subject", :required => true ,:class=> "col-md-12 form-control",:html=>{:maxlength=> "100"}, :style=> "resize: none;", :rows=>"4"
+          .form-group
+            %label
+              .cb10
+              Message
+            .col-md-12.p0
+              = text_area_tag :message, "",:required => true ,:class=> "col-md-12 form-control",:style=> "resize:none;"
+            %label{id:"email_err_msg",class: "error"}
+            = file_field_tag :attachment,:class=>"form-control btn-metis-7 btn-file",:style=>"margin-top:200px;"
+          .cb
+
+          .modal-footer
+            .navbar-left
+
+              %button.btn.btn-primary{type: "submit", disable_with: "Please wait...", id: "send_email_submit_btn", onclick: "return validate_send_email()"} Send
+              %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+                %span.c_links
+                  Cancel
+              
+#output_send_email
+
+:javascript
+  $('#message').wysiwyg({
+    rmUnusedControls: true,
+    controls: {
+      bold: { visible : true },
+      underline: { visible: true },
+      italic: { visible: true },
+      insertOrderedList: { visible: true },
+      insertUnorderedList: { visible: true } 
+    }
+  });
+
+  

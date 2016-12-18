@@ -1,0 +1,103 @@
+:css
+  .border-tb{padding: 8px;}
+  .inc_div{opacity: 0.6;background: #F5F9FF;}
+#accordion.panel-group
+  - @users.keys.sort.each_with_index do |first_letter,i|
+    .panel.panel-default
+      .panel-heading{"data-parent" => "#accordion", "data-toggle" => "collapse", href: "#collapse#{first_letter}", style: "cursor:pointer"}
+        .panel-title  
+          .fl.box_ac
+            = first_letter.upcase   
+      -if i==0
+        -cl="in"
+      -else
+        -cl=""
+      /%div{id:"collapse#{first_letter}",class: "panel-collapse collapse #{cl}"}
+      %div{id:"collapse#{first_letter}",class: "panel-collapse collapse"}
+        .table-responsive{style: "border:none;"}
+          %table.table.table{style: "margin-bottom:0px;"}
+            %tbody              
+              - @users[first_letter].each do |user|
+                %tr.task_row{class: "#{user.is_active ? '' : 'inc_div'}"}
+                  %td    
+                    - if user.image.present?
+                      - image_path = user.image.image.url(:icon)
+                    - else
+                      - image_path = "no_user.png"
+                    =image_tag image_path, :class=> "profile-circle", :style=> "width:30px;height:30px;margin-top:3px;"
+                  %td
+                    -if user.is_active
+                      - unless user.admin_type == 1
+                        =link_to user.full_name+",", "/profile/#{user.id}", class: "link_n"
+                      - else
+                        =link_to user.full_name+",", "javascript:void(0)", class: "link_n"
+
+                    -else
+                      =user.full_name + ","
+                    - if user.admin_type == 1
+                      Super Admin
+                    - elsif user.admin_type == 2
+                      Admin
+                    -elsif user.role.present?
+                      =user.role.name
+                    %br/
+                    %div{style: "width:170px"}
+                      = user.email
+                    %br
+                    - if user.invitation_token.present? && user.is_active
+                      %a.labelBilling.labelTaskType{href: "/resend_invitation?user_id=#{user.id}",style: "text-decoration:none;color:#fff"}
+                        Resend Invitation
+                  %td{style: "vertical-align:top;text-align:right"}
+                    - if user.admin_type == 1                      
+                      = link_to "javascript:void(0)", :onclick => "edit_user('#{user.id}')", :class=>"grey_act", :style=> "font-size:12px;color:#333333;text-decoration:none", rel: "tooltip", title: "Edit"  do
+                        %span.glyphicon.glyphicon-pencil
+                    - unless user.admin_type == 1
+                      -if user.is_active
+                        = link_to "javascript:void(0)", :onclick => "edit_user('#{user.id}')", :class=>"grey_act", :style=> "font-size:12px;color:#333333;text-decoration:none", rel: "tooltip", title: "Edit"  do
+                          %span.glyphicon.glyphicon-pencil
+                        = link_to user_path(user),:class=>"grey_act",  :style=> "text-decoration:none", :method => :delete,:data => { :confirm => 'Do you want to delete the user?'} do
+                          %span.glyphicon.glyphicon-trash{rel: "tooltip", title: "Delete"}
+                      -else
+                        = link_to "enable_user/"+user.id.to_s ,:class=>"grey_act",  :style=> "text-decoration:none", :data => { :confirm => 'Do you want to active the user?'} do
+                          %span.glyphicon.glyphicon-ok-circle{rel: "tooltip", title: "Active"}
+                      %br/
+                      %span.grey_act 
+                        - if user.time_zone.present?
+                          &bull;
+                          = ActiveSupport::TimeZone[user.time_zone]
+
+:javascript
+  
+  function edit_user(id){
+    $.ajax({
+      type: "POST",
+      url: "/edit_user",
+      dataType: 'json',
+      async: false,
+      data: {user_id: id},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#editUserModal").modal("show");
+        $("#content").html(data.responseText);
+        $("#task_loader").hide();
+        $('form input[type="text"].bfh-phone, form input[type="phone"].bfh-phone, span.bfh-phone').each(function () {
+          var $phone = $(this);
+          $phone.bfhphone($phone.data());
+        });
+      }
+    });
+  
+  
+  }
+
+
+
+

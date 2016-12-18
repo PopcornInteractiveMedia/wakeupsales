@@ -1,0 +1,97 @@
+-badge_today_val=badge_today
+-badge_overdue_val=badge_overdue
+-badge_upcoming_val=badge_upcoming
+=hidden_field_tag "today_count", badge_today_val
+=hidden_field_tag "overdue_count", badge_overdue_val
+=hidden_field_tag "upcoming_count", badge_upcoming_val
+
+.tabbable.task_tab
+  %ul.nav.nav-tabs
+    %li#todayTask
+
+      - func = badge_today_val != 0 ? "widget_tasks('today')" : ""
+      - toggle_val = badge_today_val != 0 ? "tab" : ""
+      - href_val = badge_today_val != 0 ? "#today" : "javascript:"
+      - style = badge_today_val == 0 ? "cursor:default;" : "cursor:pointer;"
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style, style: "border-radius:5px 0 0 0 "}
+        Today
+        %span
+          &#40;
+
+          =badge_today_val
+          &#41;
+    %li#overdueTask
+      - func = badge_overdue_val != 0 ? "widget_tasks('overdue')" : ""
+      - toggle_val = badge_overdue_val != 0 ? "tab" : ""
+      - href_val = badge_overdue_val != 0 ? "#overdue" : "javascript:"
+      - style = badge_overdue_val == 0 ? "cursor:default;" : "cursor:pointer;"
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+        Overdue
+        %span
+          &#40;
+
+          =badge_overdue_val 
+          &#41;
+    %li#upcomingTask
+      - func = badge_upcoming_val  != 0 ? "widget_tasks('upcoming')" : ""
+      - toggle_val = badge_upcoming_val != 0 ? "tab" : ""
+      - href_val = badge_upcoming_val != 0 ? "#upcoming" : "javascript:"
+      - style = badge_upcoming_val == 0 ? "cursor:default;" : "cursor:pointer;"
+      %a{"data-toggle" => toggle_val, href: href_val, onclick: func, style: style}
+        Upcoming
+        %span
+          &#40;
+
+          =badge_upcoming_val 
+          &#41;
+
+#task_list{style: "padding:0px;"}
+  =render :partial => "home/widget_task_list"
+:javascript
+  
+  //$(function() {
+    tc=$("#today_count").val();
+    oc=$("#overdue_count").val();
+    uc=$("#upcoming_count").val();
+    if( tc == 0 && oc > 0){
+      $("#overdueTask").addClass("active");
+      widget_tasks('overdue');
+    }else if(tc==0 && oc ==0 && uc > 0){
+      $("#upcomingTask").addClass("active");
+      widget_tasks('upcoming');
+    }else{
+      $("#todayTask").addClass("active");
+      widget_tasks('today');
+    }
+    
+  //});
+  function widget_tasks(data){
+    $("#task_type").val(data);
+    var cldurl= "#{ENV['cloudfront']}"
+    action="/task_widget"
+    $.ajax({
+        type: "GET",
+        url: action,
+        beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+        dataType: 'json',
+        data: {task_type: data},
+        async: true,
+        beforeSend: function(){
+  //          $("#task_loader").show();
+          $("#task_list").html("<div style='text-align:center;padding-top: 30px'> \
+                                      <img alt='Ajax-loader2' src='"+cldurl+"/assets/ajax-loader2.gif'> \
+                              </div>")
+        },
+        success: function(data)
+        {
+         
+        },
+        error: function(data) {
+  //          $("#task_loader").hide();
+        },
+        complete: function(data) {
+            $("#task_list").html(data.responseText);
+  //          $("#task_loader").hide();
+        }
+    });
+  }

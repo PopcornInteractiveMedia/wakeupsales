@@ -1,0 +1,31 @@
+%div
+  - if @allowed_user
+    - url_task = "#{@task_url}"
+  - else
+    - url_task = "javascript:"
+
+  %a.btn.btn-default.btn-lg{role: "button",href: url_task}
+    %span.fnt_od 
+      =@task_count     
+    %span 
+      =@task_text
+  - if @allowed_user
+    - url_ndeal = "/leads"
+  - else
+    - url_ndeal = "javascript:"
+  %a.btn.btn-default.btn-lg{role: "button",href: url_ndeal}
+    %span.fnt_dl 
+      =@new_deals
+    %span 
+      -if !DealStatus.get_deal_name('1',@current_user.organization_id).nil? && !DealStatus.get_deal_name('1',@current_user.organization_id).blank?	
+        = DealStatus.get_deal_name('1',@current_user.organization_id).name
+  - if @allowed_user
+    - url_qdeal = "/leads?type=qualify"
+  - else
+    - url_qdeal = "javascript:"
+  %a.btn.btn-default.btn-lg{role: "button", style: "margin-right:0px;",href: url_qdeal}
+    %span.fnt_qf 
+      =@qualified_deals
+    %span 
+      -if !DealStatus.get_deal_name('2',@current_user.organization_id).nil? && !DealStatus.get_deal_name('2',@current_user.organization_id).blank?	
+        = DealStatus.get_deal_name('2',@current_user.organization_id).name

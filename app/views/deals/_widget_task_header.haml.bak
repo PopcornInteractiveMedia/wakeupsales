@@ -1,0 +1,103 @@
+.tabbable.task_tab
+  #task_tab_data
+  #task_list.body{style: "padding:0px;"}
+    =render :partial => "deals/widget_task_list"
+=hidden_field_tag "today_count", badge_today_deal("Deal", @deal.id)
+=hidden_field_tag "overdue_count", badge_overdue_deal("Deal", @deal.id)
+=hidden_field_tag "upcoming_count", badge_upcoming_deal("Deal", @deal.id)
+
+:javascript
+  $(function() {
+    display_task_count_section_tasks();
+  });
+  
+  
+  function load_task_widget_deal_detail(){
+      tc=$("#today_count").val();
+      oc=$("#overdue_count").val();
+      uc=$("#upcoming_count").val();
+      //alert("tc="+tc);
+      //alert("oc="+oc);
+      //alert("uc="+uc);
+      if(tc > 0){
+         $("#todayTask").addClass("active");
+         widget_tasks('today');
+      }else if( tc == 0 && oc > 0){
+        $("#overdueTask").addClass("active");
+        widget_tasks('overdue');
+      }else if(tc==0 && oc ==0 && uc > 0){
+        $("#upcomingTask").addClass("active");
+        widget_tasks('upcoming');
+      }else{
+         $("#allTask").addClass("active");
+         widget_tasks('all');
+        
+      }
+  }
+  
+  
+  
+  function display_task_count_section_tasks(){
+    action="/task_widget_header_count"
+    $.ajax({
+        type: "POST",
+        url: action,
+        dataType: 'json',
+        data: {deal_id: "#{@deal.id}"},
+        async: true,
+        beforeSend: function(){
+          $("#ajax-loader_task").show();
+		  
+        },
+        success: function(data)
+        {
+          
+         $("#ajax-loader_task").hide();
+        },
+        error: function(data) {
+          $("#ajax-loader_task").hide();
+        },
+        complete: function(data) {
+          
+          $("#task_tab_data").html(data.responseText);
+          $("#ajax-loader_task").hide();
+          
+          if(#{@comp_task_type.present?}){
+            widget_tasks("#{@comp_task_type}")
+            $("li").removeClass("active")
+            $("##{@comp_task_type}Task").addClass("active")
+          }
+          else{
+            load_task_widget_deal_detail();
+          }
+          timeout_trigger();
+        }
+    });
+  }
+  
+  function widget_tasks(data){
+    action="/lead_task_widget"
+    $.ajax({
+        type: "POST",
+        url: action,
+        dataType: 'json',
+        data: {task_type: data, deal_id: "#{@deal.id}"},
+        async: true,
+        beforeSend: function(){
+          $("#ajax-loader_task").show();
+		  
+        },
+        success: function(data)
+        {
+         $("#ajax-loader_task").hide();
+        },
+        error: function(data) {
+          $("#ajax-loader_task").hide();
+        },
+        complete: function(data) {
+          $("#task_list").html(data.responseText);
+          $("#ajax-loader_task").hide();
+          timeout_trigger();
+        }
+    });
+  }

@@ -1,0 +1,61 @@
+.mtop30
+  %h4 Priority   
+.table-responsive.mtop30            
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .form-group
+      .row
+        .col-md-2
+          Hot
+        .col-md-2
+          %input{type: "text", value: "#{PriorityType.get_priority_name('1',current_user.organization.id).name}", class: "form-control testBox pri", id: "prio_hot", onblur: "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"}/
+    .form-group
+      .row
+        .col-md-2
+          Warm
+        .col-md-2
+          %input{type: "text", value: "#{PriorityType.get_priority_name('2',current_user.organization.id).name}", class: "form-control testBox pri", id: "prio_warm", onblur: "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"}/
+    .form-group
+      .row
+        .col-md-2
+          Cold
+        .col-md-2
+          %input{type: "text", value: "#{PriorityType.get_priority_name('3',current_user.organization.id).name}", class: "form-control testBox pri", id: "prio_cold", onblur: "this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"}/
+      %hr/
+      .row
+        .col-md-12
+          %button.btn.btn-primary#prio_submit_btn{type: "button", onclick: "return save_priority_org()"}
+            Save
+        
+:javascript
+  function save_priority_org(){
+    $('#prio_submit_btn').prop("disabled", true).html("Please wait...");
+    var pro1 = $('#prio_hot').val();
+    var pro2 = $('#prio_warm').val();
+    var pro3 = $('#prio_cold').val();
+    is_flag = "false";   
+    $.each(["prio_hot", "prio_warm", "prio_cold"], function (key,value) {
+        if($("#"+value).val() == "null" || $.trim($("#"+value).val()) == ""){
+          alert('All the fields are mandatory!');
+          $("#"+value).focus();
+          is_flag =" true";
+          $('#prio_submit_btn').removeAttr("disabled").html("Save");
+          return false;
+        }
+    });
+    if(is_flag == "false" ){
+      $.ajax({
+        beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+        type: "POST",
+        url: "settings/update_priority_org",
+        data: {hot:pro1,warm:pro2,cold:pro3},
+        success: function(data){ 
+          $('#priority').html(data);            
+          $(document).trigger("add-alerts", [{'message': "Settings for priority updated successfully.",'priority': 'info'}]);
+        },
+        error: function(data){
+          alert('got an error');
+        }
+      });
+    }
+  }
+

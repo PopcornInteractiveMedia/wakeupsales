@@ -1,0 +1,234 @@
+/= render :partial => "shared/move_deal"
+:css
+  .actions_show .dropdown-menu {
+    border: 1px solid darkOrange;
+  }
+  .panel-body.map img{width:100%}
+  .actions_show .dropdown-menu a:hover {
+    background-color:#FFBD5C;
+    font-weight:bold
+  }
+  .soc_icon{margin-left:22px;}
+  .soc_icon img{margin-right:8px;}
+  blockquote{padding:0px 20px; margin-bottom:10px;}
+  .actions_show .dropdown-menu::after {
+    position: absolute;
+    top: -6px;
+    left: 12px;
+    display: inline-block;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #FF8C00;    
+    border-left: 6px solid transparent;
+    content: '';
+  }
+  .actions_show:hover .dropdown-menu {
+    display: block;
+  }
+  .dropdown-menu-arrow::before {
+    border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    content: "";
+    display: inline-block;
+    left: 9px;
+    position: absolute;
+    top: -7px;
+  }
+
+  .dropdown-menu-arrow::after {
+    border-bottom: 6px solid #FFFFFF;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    content: "";
+    display: inline-block;
+    left: 10px;
+    position: absolute;
+    top: -6px;
+  }
+  .actions_show .dropdown-menu {min-width: 100px;}
+  .actions_show .dropdown-menu > li > a {padding: 2px 9px;}
+  .inactive_contact{color: #CCC;cursor: default;}
+  .tab-content {padding:0px}
+  .pull-right .dropdown-menu {
+    left:0px  
+  }
+
+=hidden_field_tag 'contact', 'contact'
+-cache do
+  .box{style: "border: 0px"}
+    .container{style: "max-width: 100%;border: 0"}
+      .row
+        .col-md-3
+          .row.rpadding
+            .col-sm-3.col-md-3{:style=>"padding:0px;text-align: center;"}
+              - if @contact.present? && @contact.image.present? && @contact.image.image.present? 
+                - image_path = @contact.image.image.url(:icon)
+              - else
+                - image_path = "http://critterapp.pagodabox.com/img/user.jpg"
+              =image_tag image_path, class: "img-thumbnail"
+              - if @deals > 0
+                %div{style: "background: green;width:100%;height:5px;margin-top:5px", rel: "tooltip", title: "Prospect"}
+            .col-sm-8.col-md-8{style: "margin-left: 10px"}
+              .row.rpadding{style: "word-wrap: break-word;"}
+                %span{style: "font-size: 27px;color:#3399f3;"}
+                  - if @contact.contact_type == "Company"
+                    = @contact.name
+                  - else
+                    = @contact.full_name
+              .row.rpadding
+                .soc_icon{style: "margin-left: 2px;"}
+                  - if @contact.linkedin_url.present?
+                    =link_to image_tag('lnk_icn_i.png'), @contact.linkedin_url, rel: "tooltip", title: "LinkedIn profile", target: "_blank"
+                  - if @contact.facebook_url.present?
+                    =link_to image_tag('f_icn_i.png'), @contact.facebook_url, rel: "tooltip", title: "Facebook profile", target: "_blank"
+                  - if @contact.twitter_url.present?
+                    =link_to image_tag('t_icn_i.png'), @contact.twitter_url, rel: "tooltip", title: "twitter profile", target: "_blank"
+                  - if(current_user.is_admin? || current_user.is_super_admin?) || (current_user.id == @contact.created_by)
+                    =link_to edit_contact_path(@contact), style: "margin-left: 2%", title: "Edit" do
+                      %span.icon-pencil
+                    =link_to contact_path(@contact), :method => :delete, :confirm => "Are you sure?" ,style: "margin-left: 5px;" , title: "Delete" do
+                      %span.icon-trash.red
+              .row.rpadding{style: "margin-top: 5px;"}
+                - if !@contact.website.nil? && !@contact.website.blank?
+                  =link_to @contact.website ,@contact.website, :target=> "_blank"
+                
+          //        .row.rpadding
+          //          %small
+          //            %cite{title: "Source Title"}
+          //              - if @contact.address && @contact.address.country
+          //                = @contact.address.country.name
+          //                %i.icon-map-marker
+          .row.rpadding{style: "padding-top: 10px;"}
+            //          -activ_date = contact_last_activity(@contact.id)[0]
+            //          -activ_by = contact_last_activity(@contact.id)[1]
+            //          - if activ_date && activ_by
+            //            - if activ_by.present? && activ_date.present?
+            //              %span{style: "font-size:12px;"}
+            //                %i.glyphicon.glyphicon-time{ rel: "tooltip", title: "Last activity"}
+            //                %b
+            //                  =activ_date
+            //              - if current_user.is_admin? || current_user.is_super_admin?
+            //                by
+            //                %b
+            //                  =activ_by
+            - if @contact.initiator.present?
+              %span{style: "font-size:12px;"}
+                %i.icon-time{ rel: "tooltip", title: "Created at"}
+                %b
+                  =@contact.created_at.strftime("%b %d, %Y")
+                //- if current_user.is_admin? || current_user.is_super_admin?
+                by  
+                %b
+                  =@contact.initiator.first_name
+          .row.rpadding{style: "padding-top: 10px;"}
+            .panel.panel-default
+              .panel-body{style: "padding: 15px 20px 15px 20px;"}
+                - if @contact.contact_type == "Company"
+                  .row.rpadding
+                    - if !@contact.company_strength.nil?
+                      .col-md-1
+                        %i.icon-user{:title=> "Company size", style: "margin: 0px 10px 10px 0px;"}
+                      .col-md-8{style: "word-wrap: break-word;"}
+                        = @contact.company_strength.range
+                - if @contact.email
+                  .row.rpadding
+                    .col-md-1
+                      %i.glyphicon.glyphicon-envelope{:title=> "Email", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", href: "javascript:",:style=>@contact.is_active == false ? "cursor: default;" : "font-size: 15px;", onclick: "$('#send-mail-popup').get(0).reset();$('#to').val(\"#{@contact.email}\");$('#mailer_id').val("\#{@contact.id}\");$('#mailer_type').val(\"#{@contact.class.name}\");$('#email_contact_id').val("\#{@contact.id}\");$('#email_contact_type').val(\"#{@contact.class.name}\");reset_email_err_msg();"}
+                        = @contact.email
+                - if @contact.address && (!@contact.address.address.nil? && !@contact.address.address.blank?)
+                  .row.rpadding
+                    .col-md-1
+                      %i.icon-home{:title=> "Address", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      = @contact.address.address
+                      %br
+                      - if @contact.address.city.present?
+                        = @contact.address.city
+                        , 
+                      - if @contact.address.state.present?
+                        = @contact.address.state
+                        , 
+                      - if @contact.address.zipcode.present?
+                        = @contact.address.zipcode
+                - if @contact.address && @contact.address.country
+                  .row.rpadding
+                    .col-md-1
+                      %i.icon-globe{:title=> "Country", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      = @contact.address.country.name
+                - if @mobile_phone.present? && @mobile_phone.first.present? && @mobile_phone.first.phone_no.present?
+                  .row.rpadding
+                    .col-md-1
+                      %i.icon-phone{:title=> "Mobile number", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      - mobile_code= @contact.phones.first.extension.nil? ? (@contact.address && @contact.address.country ? @contact.address.country.isd_code : "") : @contact.phones.first.extension
+                      - mobile_no = @mobile_phone.first.phone_no
+                      =link_to mobile_code+mobile_no, "tell://"+mobile_code+mobile_no
+                - if @contact.messanger_id.present?
+                  .row.rpadding
+                    .col-md-1
+                      %i.glyphicon.glyphicon-comment{:title=> "Skype", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      = @contact.messanger_id
+                - if !@work_phone.blank? && @work_phone.first.present? && @work_phone.first.phone_no.present?
+                  .row.rpadding
+                    .col-md-1
+                      %i.icon-phone{:title=> "Work phone", style: "margin: 0px 10px 10px 0px;"}
+                    .col-md-8{style: "word-wrap: break-word;"}
+                      - phone_code= @contact.phones.first.extension.nil? ? (@contact.address && @contact.address.country ? @contact.address.country.isd_code : "") : @contact.phones.first.extension
+                      =link_to phone_code + @work_phone.first.phone_no, "tell://"+phone_code + @work_phone.first.phone_no
+                /- if @contact.contact_type == "Company"
+                /  - if @contact.website.present?
+                /    .row.rpadding
+                /      .col-md-1
+                /        %i.icon-globe{:title=> "Website", style: "margin: 0px 10px 10px 0px;"}
+                /      .col-md-8{style: "word-wrap: break-word;"}
+                /        =link_to @contact.website ,@contact.website, :target=> "_blank"
+            - if @contact.address && @contact.address.country
+              .panel.panel-default
+                .panel-body{style: "padding: 0px 15px 0px 15px;"}
+                  .row.rpadding{style: "padding:5px"}
+                    %a{href: "https://maps.google.com/maps?q=#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", target: "_blank"}
+                      %img{src: "https://maps.google.com/maps/api/staticmap?&size=570x247&sensor=true&maptype=terrain&markers=size:small|color:red|#{@contact.address.address},#{@contact.address.city},#{@contact.address.state},#{@contact.address.country.name}", style: "max-height:400px; max-width: 313px"}/
+        .col-md-5
+          .row.rpadding{style: "padding-right: 20px;"}
+            %span.pull-right
+              %a{"data-target" => "#noteModal", "data-toggle" => "modal", rel: "tooltip",title: "Add a Note",href: "javascript:",  onclick: "$('#notable_id').val(#{@contact.id});$('#notable_type').val('Contact');$('#note_from_deal').val(true)", style: "margin:0px 0px 5px 20px;"}
+                %span.icon-plus-sign
+                Add Note
+            %span.pull-right
+              %a{"data-toggle" => "modal", href: "#taskModal",onclick: "$('#task_referrer').val('Contact Details');$('#task_form')[0].reset();setTimeout(\"$('#deal_title').val('#{@contact.title}');$('#hfield').val('#{@contact.id}');task_deal('#{@contact.id}')\",1000);$('#deal_title').attr('disabled', true);$('#taskable_id').val(\"#{@contact.id}\");$('#taskable_type').val('Contact');$('#email_err').html('');", "data-id" => @contact.id,rel: "tooltip", title: "Add a task", style: "margin:0px 0px 5px 20px;"} 
+                %span.icon-plus-sign
+                Add Task
+            %span.pull-right
+              %a{"data-toggle" => "modal", title:"Add Lead", rel:"tooltip", href: "#dealModal", onclick: "$('#new_deal')[0].reset();$('#deal_first_name').val(\"#{@contact.first_name}\");$('#hfield').val(\"#{@contact.id}\");$('#deal_email').val(\"#{@contact.email}\");$('#deal_country').val(\"#{@contact.address.country_id}\");$('#deal_work_phone').val(\"#{!@work_phone.blank? ? @work_phone.first.phone_no : ''}\");$('#deal_country').trigger('change')"}
+                %span.icon-plus-sign
+                Add Lead
+          .row.rpadding
+            .panel
+              .panel-body{style: "padding-top: 0px;"}
+                .row.rpadding{style: "padding-top: 0px;"}
+                  = render partial: "contact_widget"
+        .col-md-4
+          .panel
+            .panel-body{style: "padding-top: 0px;"}
+              #contact_task_list.row.rpadding{style: "padding-top: 0px;"}
+                = render partial: "contacts/task_widget"
+              = render partial: "tasks/task_js"
+:css
+  .dp
+    {
+        border:10px solid #eee;
+        transition: all 0.2s ease-in-out;
+    }
+  .dp:hover
+    {
+        border:2px solid #eee;
+        transform:rotate(360deg);
+        -ms-transform:rotate(360deg);  
+        -webkit-transform:rotate(360deg);  
+        /*-webkit-font-smoothing:antialiased;*/
+    }  
+

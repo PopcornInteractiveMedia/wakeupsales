@@ -1,0 +1,48 @@
+%li.dropdown-header.drop_loaded{style: "text-align:center;color:#C447B7;background:#F7ECF2;border-radius: 5px 5px 0 0;padding: 6px;"}
+  %span.glyphicon.glyphicon-flag{style: "font-size:14px;"}
+  =@tnc
+  Notifications
+- if new_deals_count > 0
+  %li.divider
+  %li
+    - unless @current_user.is_admin? || @current_user.is_super_admin?
+      %a{href: "/leads?assigned_to=me"}
+        .clearfix
+          %span.pull-left
+            %span.deal-mid
+            = new_deals_count
+            New Deals assigned
+    - else
+      %a{href: "/leads"}
+        .clearfix
+          %span.pull-left
+            %span.deal-mid
+            = new_deals_count
+            New Deals
+- if qualified_deals_count > 0
+  %li.divider
+  %li
+    %a{href: "/leads?type=qualify"}
+      .clearfix
+        %span.pull-left
+          %span.deal-mid
+          =qualified_deals_count
+          Qualified Deals           
+- if badge_overdue.to_i > 0
+  %li.divider
+  %li
+    %a{href: "/tasks?type=overdue"}
+      .clearfix
+        %span.pull-left
+          %span.task-mid
+          =badge_overdue
+          Overdue Tasks
+- if badge_today.to_i > 0
+  %li.divider
+  %li
+    %a{href: "/tasks?type=today"}
+      .clearfix
+        %span.pull-left
+          %span.task-mid
+          =badge_today
+          New Tasks

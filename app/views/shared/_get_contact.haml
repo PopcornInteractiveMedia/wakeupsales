@@ -1,0 +1,214 @@
+=javascript_include_tag "bootstrap-formhelpers-phone.js"
+= form_for @contact, :url=>contact_path(@contact),:remote=>true, :html=>{:class => "form",:method=>"put",:id=>"update-contact",:multipart => true} do |f|
+  .col-md-20.p0
+    .col-md-2.p0
+      .cms-file-input.ace-file-multiple.file_upld
+        =f.file_field :contact_image,:class=>"form-control btn-metis-7 btn-file file_hid_block", :onchange=> "checkFile_withtype(this)"
+        /%img{alt: "", src: @contact.image.nil? ? (@contact.is_company? ? "/assets/comp_logo.png" : "/assets/no_user.png") : @contact.image.image.url(:medium), title: "Click to edit", style: "max-width:130px; max-height:130px"}
+        =image_tag (@contact.image.nil? ? (@contact.is_company? ? "/assets/comp_logo.png" : "/assets/no_user.png") : @contact.image.image.url(:thumb)), title: "Click to edit", style: "max-width:80px; max-height:80px", :id=>"previewHolder"
+      .click_img
+        Change Image
+    .col-md-8
+      - if @contact.class.name == "CompanyContact"
+        .col-md-5.p0
+          =f.text_field :name,:class=>"form-control",:value=>@contact.name, :placeholder => "Company name",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+        .col-md-6
+          =f.text_field :website,:class=>"form-control" ,:value=>@contact.website.nil? ? "http://" : @contact.website, :placeholder => "Website",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+      - elsif @contact.class.name == "IndividualContact"
+        .col-md-5.p0
+          =f.text_field :first_name,:class=>"form-control",:placeholder => "First Name", :onkeyup=>"return onlycharacters(event)",:onkeydown=>"return onlycharacters(event)", "data-provide"=> "typeahead" , :autocomplete=>"off", :required => true,:value=>@contact.first_name,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+        .col-md-6
+          =f.text_field :last_name,:class=>"form-control",:placeholder => "Last Name", :onkeyup=>"return onlycharacters(event)",:onkeydown=>"return onlycharacters(event)", "data-provide"=> "typeahead" , :autocomplete=>"off",:value=>@contact.last_name,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+      .cb
+      %br
+      %span.grey_act
+        Visibility
+        %span{style:"padding-left:25px;"}
+      %label.checkbox-inline{style:"padding-left:0;color:#999999"} 
+        = f.radio_button :is_public, true, :checked => @contact.is_public == true ? true : ""
+        Everyone
+      %label.checkbox-inline{style:"color:#999999"}    
+        = f.radio_button :is_public, false, :checked =>  @contact.is_public == false ? true : ""
+        Only I can
+      .cb
+      %br
+  .cb
+  - if @contact.class.name == "CompanyContact"
+    %hr{style:"margin-right:38px;margin-bottom: 9px;margin-top:0"}
+  -else
+    %hr{style:"margin-right:38px;margin-top:0"}
+  .col-md-6.p0
+    -if  @contact.class.name == "IndividualContact"
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10{for: "company_contact_name"} Company:
+        .col-md-7
+          =f.text_field :name,:class=>"form-control company_name_typeahead",:value=>(@contact.company_contact.name if @contact.company_contact.present?), :placeholder => "Company name",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"      
+          = hidden_field_tag "company_id", "#{@contact.company_contact.id if @contact.company_contact.present?}"
+      .cb10
+    - if @contact.class.name == "CompanyContact"
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10 Size:
+        .col-md-7
+          =f.select :company_strength_id, CompanyStrength.find(:all).collect {|c| [ c.range, c.id ]}, {:include_blank => '- Strength -',:selected=>@contact.company_strength.nil? ? "" : @contact.company_strength.id},:class=>"form-control"
+      .cb10
+    - else
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10 Email:
+        .col-md-7
+          =f.text_field :email,:class=>"form-control", :required => true,:value=>@contact.email,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+      .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Street:
+      .col-md-7
+        = f.text_field :street, :class => 'form-control', :onblur=>"this.value=$.trim(this.value)",:value=>!@contact.address.nil? ? @contact.address.address : "",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10      
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 City:
+      .col-md-7
+        =f.text_field :city,:class=>"form-control",:autocomplete=>"off",:value=>!@contact.address.nil? ? @contact.address.city : "",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 State:
+      .col-md-7
+        =f.text_field :state,:class=>"form-control",:value=>!@contact.address.nil? ? @contact.address.state : ""
+    .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Country:
+      .col-md-7
+        =f.select :country, Country.find(:all).collect {|c| [ c.name, c.id ]}, {:include_blank => '- Country -',:selected=>(!@contact.address.nil? && !@contact.address.country_id.nil?) ? @contact.address.country_id  : "" },:class=>"col-md-12 form-control", :required => true, :onchange => "prefill_extension(this.value,'extension_for_contact','individual_contact_extension');prefill_extension(this.value,'extension_for_contact1','company_contact_extension');"
+    .cb10      
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Zip Code:
+      .col-md-7
+        =f.text_field :zip_code,:class=>"form-control",:value=>!@contact.address.nil? ? @contact.address.zipcode : "",:onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+    .cb10   
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Time Zone:
+      .col-md-7
+        = f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones,{}, {:class=>"col-md-12 form-control"}
+    .cb10
+   
+
+  .col-md-6.p0
+    - if @contact.class.name == "IndividualContact"
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10 Designation:
+        .col-md-7
+          =f.text_field :position,:class=>"form-control",:value=>@contact.position, :placeholder => "Designation",:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))" 
+      .cb10
+    - else
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10 Email:
+        .col-md-7
+          =f.text_field :email,:class=>"form-control", :required => true,:value=>@contact.email,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+      .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Extension:
+      .col-md-7
+        = f.text_field :extension, :class => 'form-control', :value=> (@contact.phones.first.present? && @contact.phones.first.extension.present?) ? @contact.phones.first.extension : "", :onkeyup=>"return numbersonly(event)",:onkeydown=>"return numbersonly(event)"
+    .cb10      
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Work Phone:
+      .col-md-7
+        = f.text_field :work_phone,:class=>"form-control bfh-phone",:type=>"text","data-format"=>" (ddd) ddd-dddd",:placeholder=>"(999) 999 9999",:value => @work_phone.blank? ? "" : @work_phone.first.phone_no
+        - contact_ext = @work_phone.blank? ? (@mobile_phone.blank? ? "+1" : @mobile_phone.first.extension) : @work_phone.first.extension
+        - phone_ext = (@contact.address.present? && @contact.address.country.present? ? @contact.address.country.isd_code : "")
+    .cb10
+    - if @contact.class.name == "IndividualContact"
+      .col-md-12.p0
+        .col-md-4.p0.grey_act.mt10 Mobile Phone:
+        .col-md-7
+          =f.text_field :mobile_number,:class=>"form-control bfh-phone",:type=>"text", "data-format"=>" (ddd) ddd-dddd","data-number"=>"15555555555",:placeholder=>"(999) 999 9999",:value => @mobile_phone.blank? ? "" : @mobile_phone.first.phone_no
+      .cb10
+    .col-md-12.p0
+      /.col-md-4.p0.grey_act.mt10 Instant Messenger:
+      .col-md-4.p0.grey_act.mt10 Skype ID:
+      .col-md-7
+        =f.text_field :messanger_id,:class=>"form-control",:autocomplete=>"off",:value=>@contact.messanger_id,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Facebook:
+      .col-md-7
+        =f.text_field :facebook_url,:class=>"form-control",:value=>@contact.facebook_url,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Linkedin:
+      .col-md-7
+        =f.text_field :linkedin_url,:class=>"form-control",:value=>@contact.linkedin_url,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10
+    .col-md-12.p0
+      .col-md-4.p0.grey_act.mt10 Twitter:
+      .col-md-7
+        =f.text_field :twitter_url,:class=>"form-control",:value=>@contact.twitter_url,:onblur =>"this.value = jQuery.trim((this.value).replace(/^\s*/g,''))"
+    .cb10     
+  
+  .cb10
+  .modal-footer
+    .navbar-left
+      .col-md-12.p0
+        %button.btn.btn-primary{type: "submit","data-disable-with" => "Saving...", :onclick=>"$('#is_update_contact').val('false');",:id=>"contact_update_btn",:onclick=> "return validate_email_contact()"} Update
+        %a{href:"#", "aria-hidden" => "true","data-dismiss" => "modal"}
+          %span.c_links Cancel        
+:javascript
+  function readURL(input) {
+   if (input.files && input.files[0]) {
+     var reader = new FileReader();
+     reader.onload = function(e) {
+       $('#previewHolder').attr('src', e.target.result);
+     }
+     reader.readAsDataURL(input.files[0]);
+   }
+   }
+   $("#individual_contact_contact_image").change(function() {
+    readURL(this);
+   });
+   $("#company_contact_contact_image").change(function() {
+    readURL(this);
+   });  
+  $('#editPopContactModal').on('show.bs.modal', function (e) {
+    $('#edit-contact-alert-msg').hide();
+  });
+  // prepare the form when the DOM is ready
+  $('#update-contact').bind('ajax:complete', function(evt, data, status, xhr){
+    $('#editPopContactModal').modal('hide');
+    $('.modal-backdrop').attr('style','display:none');
+    $("#show_loader").show();
+    reload_deal_contacts();
+    $("#show_loader").hide();
+    $(document).trigger("add-alerts", [{'message': data.responseJSON.msg ,'priority': data.responseJSON.atype}]);
+  });
+  $('.company_name_typeahead').typeahead([{
+    name: 'company_contacts',
+    valueKey: 'company_name',
+    remote: {url: '/get_companies/'+ #{current_user.organization.id}+ '?q=%QUERY'},
+    template: '<p><strong>{{company_name}}</strong></p>',
+    engine: Hogan
+    }]).on('typeahead:selected',onSelectedTask).on('typeahead:opened',onOpened);
+   
+  function onSelectedTask($e,datum){
+    console.log("autocompleted");
+    console.log(datum);
+    //alert(datum);
+           
+    var hfield = document.getElementById('company_id');
+    //var email = document.getElementById('deal_email');
+    //var country = document.getElementById('deal_country');
+    var workphone = document.getElementById('work_phone');
+    alert(workphone);
+    console.log(datum.id);
+    hfield.value = datum.id;
+    //email.value = datum.email;
+    //country.value=datum.country_id;
+    workphone.value = datum.phone_no;
+    
+  }
+  function onOpened($e){
+    $("#company_id").val("")
+    $("#text_loader").hide()
+  }
+   
+  function onClosed($e){
+    if($("#company_id").val() == ""){
+      $("#company_name").val("");
+    }
+  }        

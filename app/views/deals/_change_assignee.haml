@@ -1,0 +1,46 @@
+#assignDealModal.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "myModalLabel", role: "dialog", tabindex: "-1"}
+  .modal-dialog
+    .modal-content
+      -deal_setting = (!current_user.deal_setting.nil? ? current_user.deal_setting : DealSetting.new())
+      = form_tag "reassign_user_to_deals",  :class => "form",:method=>"post",:id=>"reassign_deals", :remote => true do |f|
+        .modal-header
+          %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal"} ×
+          %h4.modal-title Select user to reassign
+        .modal-body
+          .row
+            .col-md-12.form-group
+              .cb10.ht-20
+                /.col-md-3
+                /  .grey_act Assigned To:
+                .col-md-6{style: "margin-left: -15px;"}
+                  = hidden_field_tag "reassign_deal_ids",""
+                  /-@assign_people = @current_organization.users.where("invitation_token IS ? and is_active = ?", nil,true).order("first_name ASC")
+                  /= select_tag "reassigned_to", options_from_collection_for_select(@assign_people, "id", "full_name"), :prompt => '- Users -',:class=>"col-md-5 form-control", :required => true
+                  = select_tag "reassigned_to", options_for_select(all_org_users.collect {|c| [ c.full_name, c.id ]}), :prompt => '- Users -',:class=>"col-md-5 form-control", :required => true
+          .row
+            .modal-footer
+              /.pull-left
+              .navbar-left{style: "margin-left: 15px;"}
+                = submit_tag "Update", class: "btn btn-primary", disable_with: "Please wait..."
+                %a{href:"javascript:", "aria-hidden" => "true","data-dismiss" => "modal"}
+                  %span.c_links
+                    Cancel
+:javascript
+  $(function(){
+    $('#assignDealModal').on('show.bs.modal', function (e) {
+      $('#reassigned_to').prop('selectedIndex',0);
+    });
+    $("#reassign_deals").bind("ajax:complete", function(evt, data, status, xhr){
+        if(data.responseText == "success"){
+          $("#reassigned_to").val('');
+          $('#assignDealModal').modal('hide');
+          if($("li#incoming" ).hasClass("active")){
+            get_deals("", "", "");
+          }
+          if($("#change_assigned").val() == "1")
+          {
+           window.location.reload();
+          }
+        }
+    });
+  })

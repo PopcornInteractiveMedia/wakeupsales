@@ -1,0 +1,70 @@
+:javascript
+  $('.privacy_file').hover( function() { $(this).find('.pencilr').toggle();} );
+  $('.edit_pr_file').click( function() { $(this).parent().parent().parent().find('.edit_pr_file_div').slideToggle("slow");} );
+
+-if @attach.present?
+  -@attach.each do |at_a|
+    -at_a.note_attachments.each do |att|
+      -if att.attachment.present? 
+        -@filename = att.attachment_file_name.split("/").last
+        -@ext = File.extname(@filename)
+
+   
+        -if (@deal.associated_users.include?@current_user.id) || (@current_user.is_admin? || @current_user.is_super_admin?)
+          %div.privacy_file{style: "border: 1px solid #ddd;padding:3px;min-height: 42px;height: auto"}
+
+            .fl{style: "width:87%;"}
+              %a{href: att.attachment.url,target: "_blank"}
+                %div{style: "width: 28px;float: left;"}
+                  %img{src: asset_path(get_file_type_img(@filename))}
+                %div{style: "margin-left: 33px;line-height: 1;word-wrap: break-word;"}
+                  =att.attachment_file_name
+
+            .fl{style: "padding-right: 2px;color: #999999;font-size:12px;margin-top: 6px;width: 37px;"}
+              %div
+                =att.created_at.strftime("%b %d") 
+              - if (@current_user.is_admin? || at_a.created_by == @current_user.id)
+                %div{style: "margin-top: 8px;"}
+                  %a.pencilr.edit_pr_file{href: "javascript:",style: "display:none;text-decoration:none"}
+                    %i.glyphicon.glyphicon-pencil{title: "Edit", rel: "tooltip"}
+                    
+                  %a.pencilr{href: "/delete_note_attachment/#{att.id}","data-confirm"=>"Do you want to delete the file?",style: "display:none;text-decoration:none"}
+                    %i.glyphicon.glyphicon-trash{title: "Delete", rel: "tooltip"}
+            .cb
+            %div{style: "width: 100%;"}
+              %div.edit_pr_file_div{style: "padding-left: 5px;padding-bottom: 10px;background-color: rgb(241, 245, 250);margin: 5px;display:none"}
+                = form_for(at_a,:url=>"/edit_note", :html=>{:class => "form",:method=>"post"}) do |f|
+                  = hidden_field_tag :noteid, at_a.id
+                  %div{style: "float: left;width: 145px;margin-top: 8px;"}
+                    %label.checkbox-inline{style: "padding-left:0;color:#999999"}
+                      = f.radio_button :is_public, '0', :checked => (at_a.is_public == false)
+                      Private
+                    %label.checkbox-inline{style: "padding-left:0;color:#999999"}
+                      = f.radio_button :is_public, '1', :checked => (at_a.is_public == true)
+                      Public
+                  %div
+                    %button.glyphicon.glyphicon-ok{type: "submit", style: "color:#3E6BA1;cursor:pointer;margin-right:10px;margin-top:9px;border: none;background: #F1F5FA;"} 
+                    %span.glyphicon.glyphicon-remove{onclick: "$(this).parent().parent().parent('div').slideToggle('slow')", style: "color:#3E6BA1;cursor:pointer;margin-right:10px;margin-top:9px"}
+            .cb   
+        - elsif at_a.is_public
+          %div{style: "border: 1px solid #ddd;padding:3px;min-height: 41px;height: auto"}
+
+            .fl{style: "width:89%"}
+              %a{href: att.attachment.url,target: "_blank"}
+                %div{style: "width: 28px;float: left;"}
+                  %img{src: asset_path(get_file_type_img(@filename))}
+                %div{style: "margin-left: 33px;line-height: 1;word-wrap: break-word;"}
+                  =att.attachment_file_name
+
+            .fr{style: "padding-right: 2px;color: #999999;font-size:12px;margin-top: 6px;width: 34px;"}
+              =att.created_at.strftime("%b %d")    
+            .cb       
+                   
+        -else
+          %div{style: "text-align:center;color:rgb(146, 82, 189);border: 1px solid #ddd;padding: 10px;"}
+            No files found!
+        %br
+-else
+  %div{style: "text-align:center;color:rgb(146, 82, 189);border: 1px solid #ddd;padding: 10px;"}
+    No files found!
+    

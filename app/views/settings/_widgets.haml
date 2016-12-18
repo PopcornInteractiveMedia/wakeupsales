@@ -1,0 +1,92 @@
+.mtop30
+  %h4 Widgets   
+.table-responsive.mtop30             
+  %div{style: "border: 1px solid #DAD7D7;padding: 27px;min-height: 294px;height: auto;"}
+    .row
+      .col-md-2
+        %label.checkbox.inline
+          - if Widget.get_widget("charts", "#{current_user.organization.id}", "#{current_user.id}")
+            %input#checkbox_chart{checked: "checked", type: "checkbox", value: "checkbox1"}/
+            Chart
+          - else
+            %input#checkbox_chart{ type: "checkbox", value: "checkbox1"}/
+            Chart
+      .col-md-2
+        %label.checkbox.inline
+          - if Widget.get_widget("activities", "#{current_user.organization.id}", "#{current_user.id}")
+            %input#checkbox_activity{checked: "checked",type: "checkbox", value: "checkbox2"}/
+            Activities
+          - else
+            %input#checkbox_activity{type: "checkbox", value: "checkbox2"}/
+            Activities
+      .col-md-2
+        %label.checkbox.inline
+          - if Widget.get_widget("summary", "#{current_user.organization.id}", "#{current_user.id}")
+            %input#checkbox_summary{checked: "checked",type: "checkbox", value: "checkbox2"}/
+            Summary
+          - else
+            %input#checkbox_summary{type: "checkbox", value: "checkbox2"}/
+            Summary
+            
+      .col-md-2
+        %label.checkbox.inline
+          - if Widget.get_widget("usage", "#{current_user.organization.id}", "#{current_user.id}")
+            %input#checkbox_usage{checked: "checked",type: "checkbox", value: "checkbox2"}/
+            Usage
+          - else
+            %input#checkbox_usage{type: "checkbox", value: "checkbox2"}/
+            Usage
+      .col-md-2
+        %label.checkbox.inline
+          - if Widget.get_widget("tasks", "#{current_user.organization.id}", "#{current_user.id}")
+            %input#checkbox_tasks{checked: "checked", type: "checkbox", value: "checkbox2"}/
+            Tasks
+          - else
+            %input#checkbox_tasks{type: "checkbox", value: "checkbox2"}/
+            Tasks
+    %hr/
+    .row
+      .col-md-12
+        %button.btn.btn-primary{type: "button",id: "widget_submit_btn",onclick: "save_widget_org()"}
+          Save
+      
+:javascript
+  function save_widget_org(){
+    //$('#widget_submit_btn').prop("disabled", true).html("Please wait...");
+    if($('#checkbox_chart').is(':checked'))
+      var chart = 1;
+    else
+      var chart = 0;   
+    if($('#checkbox_activity').is(':checked'))
+      var activity = 1;
+    else
+      var activity = 0;
+    if($('#checkbox_summary').is(':checked'))
+      var summary = 1;
+    else
+      var summary = 0;
+    if($('#checkbox_usage').is(':checked'))
+      var usage = 1;
+    else
+      var usage = 0;      
+    if($('#checkbox_tasks').is(':checked'))
+      var tasks = 1;
+    else
+      var tasks = 0;
+    //return false;
+    var page = "widget"
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'))},
+      type: "POST",
+      url: "settings/update_widget_org",
+      data: {chart:chart,activity:activity,usage:usage,summary:summary,tasks:tasks,page:page},
+      success: function(data){ 
+        $('#widgets').html(data);  
+        $(document).trigger("add-alerts", [{'message': "Settings for widget updated successfully.",'priority': 'info'}]);
+      },
+      error: function(data){
+        alert('got an error');
+      }
+    });  
+  }
+

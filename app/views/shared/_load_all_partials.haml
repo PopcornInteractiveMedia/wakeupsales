@@ -1,0 +1,16 @@
+- if user_signed_in?
+  - unless current_user.is_siteadmin?
+    = render :partial => "shared/deal",:cache=> true
+    = render :partial => "shared/add_contact",:cache=> true
+    = render :partial => "shared/notes_attachment",:cache=> true
+    = render :partial => "shared/send_email",:cache=> true
+    = render :partial => "shared/apply_label",:cache=> true
+    = render :partial => "users/invite_user"
+    = render :partial => "tasks/task_popup"
+    - if params[:controller] == "deals"
+      = render :partial => "shared/bulk_lead",:cache=> true
+
+
+    /- if params[:controller] == "contacts"
+    /  = render :partial => "shared/bulk_contact",:cache=> true	  
+    /= render :partial => "shared/source"

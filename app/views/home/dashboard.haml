@@ -1,0 +1,302 @@
+- if @current_user.is_siteadmin?
+  = render :partial => "siteadmin_dashboard"
+- else
+  .jumbotron
+    .container
+      .header_user_data
+
+  -w = @current_user.widget
+
+  .container
+    .row
+      .col-md-4
+        -if w && w.tasks
+          .con-box1
+            .fl.ic_t_list
+            .fl.head_font Tasks List
+            .cb10
+            =render :partial => "home/task_widget"
+            //.cb10
+            //.navbar-right
+            //  .fl.ic_t_list
+            //  .fl.v_more
+            //    %a{href: "#"} View more
+            .cb
+        -if w && w.usage
+          .con-box1{style: "padding:10px 0"}
+            .fl.ic_usag
+            .fl.head_font Usage
+            = render :partial => "usage"
+      .col-md-4
+        -if w && w.summary
+          .con-box1{style: "padding:10px 0"}
+            .fl.ic_sum
+            .fl.head_font Summary - last 3 months
+            .cb10
+            .summary_data
+              %div{style: "text-align:center;padding-top: 60px"}
+                %img{alt: "Ajax-loader2", src: "#{ENV['cloudfront']}/assets/ajax-loader2.gif"}
+
+        -if w && w.activities
+          .con-box1
+            .fl.ic_act_stm
+            .fl.head_font Activity Stream
+            .cb10
+            -@source="dashboard"
+            =render :partial=>"activity_all",:objects=>{source: @source}
+            .cb
+      .col-md-4
+        -pie_donut_display=0
+        -pie_chart_display=0
+        -statistics_display=0
+        -line_chart_display=0
+        - if @current_user.present? && @current_organization.present? && w.present?
+          -if w.chart
+            - if @current_user.is_admin? || @current_user.is_super_admin?
+              -if w.pie_chart
+
+                .con-box1
+                  .fl.ic_d_sta
+                  .fl.head_font
+                    Deals by Stage - last 1 month
+                  .cb10
+                  - pie_donut_display=1
+                  %div
+                    = render :partial => "pie_donut"
+
+              -if w.column_chart
+
+                .cb
+                .con-box1
+                  .fl.ic_graph
+                  .fl.head_font
+                    Deal statistics - last 3 months
+                  .cb10
+                  -pie_chart_display=1
+                  %div
+                    = render :partial => "pie_chart"
+            - else
+              -if w.statistics_chart
+                .cb
+                -statistics_display=1
+                = render :partial => "load_deal_statistics"
+
+              -if w.line_chart
+                .cb
+                .con-box1
+                  .fl.ic_graph
+                  .fl.head_font
+                    Lead statistics weekly basis
+                  .cb10
+                  - line_chart_display=1
+                  %div
+                    = render :partial => "line_chart"
+      =hidden_field_tag "pie_donut_display", pie_donut_display
+      =hidden_field_tag "pie_chart_display", pie_chart_display
+      =hidden_field_tag "statistics_display", statistics_display
+      =hidden_field_tag "line_chart_display", line_chart_display      
+      =hidden_field_tag 'dashboard', 'dashboard'
+
+  -if user_signed_in? && params[:action] == "dashboard" &&  params[:controller] =="home"
+    -dispaly_count=1
+  -else
+    -dispaly_count=0
+  =hidden_field_tag "show_header_count", dispaly_count
+
+  :javascript
+    $( document ).ready(function() {
+      if('#{cookies[:redirect_deal_id]}' != ''){
+        setTimeout('redirect_deal()', 5000);
+        $.removeCookie("redirect_deal_id");
+      }
+    });
+    function redirect_deal()
+    {
+      window.location.href ="/leads/#{cookies[:redirect_deal_id]}";
+    }
+    $(function() {
+     $( document ).ajaxComplete(function() {
+      //alert('comple')
+      $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+     });
+     //Turbolinks.pagesCached(20);
+      $("#task_loader").hide();
+
+      $.ajax({
+        type: "POST",
+        url: "/usage",
+        dataType: 'json',
+        async: true,
+        beforeSend: function(){
+          //$("#task_loader").show();
+        },
+        success: function(data)
+        {
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+        if(data.responseJSON.task_cmpl != 0)
+          $("#usage_task_cmpl").html("<a href='/tasks?type=completed' style='color:#4F8E50'>"+data.responseJSON.task_cmpl+"</a>");
+        else
+          $("#usage_task_cmpl").html(data.responseJSON.task_cmpl);
+        var call_id = "#{@current_organization.task_types.where(:name => "Call").first.id if @current_organization.task_types.present?}";
+        if("#{@current_user.is_admin? || @current_user.is_super_admin?}" == "true"){
+          if(data.responseJSON.owndeal != 0)
+            $("#usage_won_deal").html("<a href='/leads?type=won' style='color:#4F8E50'>"+data.responseJSON.owndeal+"</a>");
+          else
+            $("#usage_won_deal").html(data.responseJSON.owndeal);
+          if(data.responseJSON.call_cmpl != 0)
+            $("#usage_call_cmpl").html("<a href='/tasks?type=completed&t_type=" + call_id + "' style='color:#78808A'>"+data.responseJSON.call_cmpl+"</a>");
+          else
+            $("#usage_call_cmpl").html(data.responseJSON.call_cmpl);
+
+
+          $("#usage_lead_generated").html(data.responseJSON.deals);
+          $("#usage_nurtured_deal").html(data.responseJSON.leadsnortured);
+        }else{
+          $("#usage_won_deal").html(data.responseJSON.owndeal);
+          var user_id = "#{@current_user.id}";
+          if(data.responseJSON.call_cmpl != 0)
+            $("#usage_call_cmpl").html("<a href='/tasks?type=completed&t_type=" + call_id + "&assigned_to="+user_id+"' style='color:#78808A'>"+data.responseJSON.call_cmpl+"</a>");
+          else
+            $("#usage_call_cmpl").html(data.responseJSON.call_cmpl);
+          $("#usage_lead_generated").html(data.responseJSON.deals);
+          $("#usage_nurtured_deal").html(data.responseJSON.leadsnortured);
+        }
+        if(data.responseJSON.lostdeal != 0)
+          $("#usage_lost_deal").html("<a href='/leads?type=lost' style='color:#FAAB3D'>"+data.responseJSON.lostdeal+"</a>");
+        else
+          $("#usage_lost_deal").html(data.responseJSON.lostdeal);
+        }
+      });
+      if($("#pie_donut_display").val() == 1){
+        $.ajax({
+          type: "POST",
+          url: "/pie_donut_chart",
+          dataType: 'json',
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".pie_donut_chart_div").html(data.responseText);
+          }
+        });
+      }
+      if($("#pie_chart_display").val() == 1){
+        $.ajax({
+          type: "POST",
+          url: "/pie_chart_display",
+          dataType: 'json',
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".pie_chart_div").html(data.responseText);
+          }
+        });
+      }
+      if($("#line_chart_display").val()==1){
+        $.ajax({
+          type: "POST",
+          url: "/line_chart_display",
+          dataType: 'json',
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".line_chart_div").html(data.responseText);
+          }
+        });
+      }
+      if($("#statistics_display").val()==1){
+        $.ajax({
+          type: "POST",
+          url: "/lead_statistics_info",
+          dataType: 'json',
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".statistics_div").html(data.responseText);
+          }
+        });
+      }
+        load_summary_section();
+        load_header_count();
+    });
+    function load_summary_section(){
+        $.ajax({
+          type: "POST",
+          url: "/summary",
+          dataType: 'json',
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".summary_data").html(data.responseText);
+          }
+        });
+
+    }
+
+    function load_header_count(){
+
+        //header_count
+        if($("#show_header_count").val() == 1){
+         $.ajax({
+          type: "POST",
+          url: "/load_header_count_section",
+          async: true,
+          beforeSend: function(){
+            //$("#task_loader").show();
+          },
+          success: function(data)
+          {
+          },
+          error: function(data) {
+            //$("#task_loader").hide();
+          },
+          complete: function(data) {
+            $(".header_user_data").html(data.responseText);
+          }
+        });
+      }
+      //end header count
+    }

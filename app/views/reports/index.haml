@@ -1,0 +1,243 @@
+-current_year=Time.zone.now.strftime("%Y")
+-prev_year=current_year.to_i - 1
+.container
+  .row
+    .cb10
+    .cb10
+    .col-md-12
+      .navbar-right
+        = link_to "PDF View","#",:id => "pdf_view",:target => "_blank",:class => 'btn btn-primary',:style => "display:none;"
+        .btn-group.lead_range_btn{style: "display:none;"}
+          %button.btn.btn-default.selected_lead_range{type: "button"}
+            30-Days
+          %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+            %span.caret
+            %span.sr-only Toggle Dropdown
+          %ul#lead_menu.dropdown-menu{role: "menu"}
+            %li.arrow_top{style: "left:111px"}
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('30-Days');"}  
+                30-Days 
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('60-Days');"} 
+                60-Days  
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('90-Days');"} 
+                90-Days  
+        .btn-group.q_range_btn
+
+          %button.btn.btn-default.selected_range{type: "button"}
+            Q1-2014
+          %button.btn.btn-default.dropdown-toggle{"data-toggle" => "dropdown", type: "button"}
+            %span.caret
+            %span.sr-only Toggle Dropdown
+          %ul#q_menu.dropdown-menu{role: "menu"}
+            %li.arrow_top{style: "left:111px"}
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('1-#{current_year}');"} 
+                Q1-
+                = current_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('2-#{current_year}');"} 
+                Q2-
+                = current_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('3-#{current_year}');"} 
+                Q3-
+                = current_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('4-#{current_year}');"} 
+                Q4-
+                = current_year
+            %li.divider
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('1-#{prev_year}');"} 
+                Q1-
+                =prev_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('2-#{prev_year}');"} 
+                Q2-
+                =prev_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('3-#{prev_year}');"} 
+                Q3-
+                =prev_year
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('4-#{prev_year}');"} 
+                Q4-
+                =prev_year
+               
+            %li.divider 
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('Past Week-1');"} 
+                Past Week
+            %li.divider 
+            %li
+              %a{href: "javascript:", onclick: " set_selected_range('Past Month-1');"} 
+                Past Month
+      =hidden_field_tag "selected_range_value","1-#{current_year}"
+      =hidden_field_tag "selected_lead_value","30-Days"
+      .tablisting.task_tab
+        %ul#reportUl.nav.nav-tabs
+          %li#get_user_list_leaderboard.active
+            %a{"data-toggle" => "tab", href: "#leaderdashboard", onclick: "display_result('get_user_list_leaderboard');"} Leaderboard
+          %li#get_funnel_chart
+            %a{"data-toggle" => "tab", href: "#salesfunnel", onclick: "display_result('get_funnel_chart');"} Sales Funnel
+          %li#get_deals_won
+            %a{"data-toggle" => "tab", href: "#deals_won", onclick: "display_result('get_leads_won');"} Deals won
+          %li#get_sales_analytic
+            %a{"data-toggle" => "tab", href: "#", onclick: "display_result('get_sales_analytic');"} Sales Analytics
+          %li#get_lead_report
+            %a{"data-toggle" => "tab", href: "#", onclick: "display_result('get_lead_report');"} Lead Aging Report
+        .cb10.get-space
+      .tab-content
+        #result_div.tab-pane.active
+.cb10{style: "height:30px"}		
+#assignedDealModal.modal.fade.bs-example-modal-lg{"aria-hidden" => "true", "aria-labelledby" => "assignedDealModal", role: "dialog", tabindex: "-1"}
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        %button.close{"aria-hidden" => "true", type: "button", "data-dismiss" => "modal",} ×
+        %h4.modal-title Deals assigned
+      .modal-body
+        #edit-contact-alert-msg.alert.fade.in.alert-danger{style: "display:none;"}
+          %button.close{onclick: "$('#edit-contact-alert-msg').hide();$('#loader').hide();"} x
+          #edit-deal_msg_div
+        #assigned_div
+:javascript
+  $(document).ready(function() {
+    call_display_result()
+  });
+  function call_display_result(){
+    set_selected_range("");
+  }
+  
+  function set_selected_range(range){
+    rvalue = range.replace(/-/g, "").replace(/.$/,'');
+    if(range !=""){
+      
+      if((range == "30-Days") || (range == "60-Days") || (range == "90-Days")){
+         
+        $(".selected_lead_range").text(range);
+        $("#selected_lead_value").val(range)
+      }
+      else
+      {
+        
+        $("#selected_range_value").val(range);
+      }
+      
+      if((rvalue == "Past Week") || (rvalue == "Past Month")) {
+        
+        $(".selected_range").html(rvalue);
+        }
+        
+      else if(range != "60-Days" || range != "30-Days" || range != "90-Days"){
+        
+        var s = $('#selected_range_value').val();
+
+        $(".selected_range").html("Q"+s);
+        }
+    }
+    var selected_tab="leaderdashboard"
+    $("#reportUl li").each(function(){
+      if($(this).hasClass("active")){
+        selected_tab=$(this).attr("id")
+      }
+    });
+    
+    display_result(selected_tab);
+  }
+  function display_result(url){
+   $('#task_loader').show();
+   $("#result_div").html("")
+   selected_quarter = $('#selected_range_value').val();
+   selected_lead = $('#selected_lead_value').val();
+   $.get(url,{quarter: selected_quarter, lead_range: selected_lead},function(res){
+      $("#result_div").html(res);
+      if(url == "get_user_list_leaderboard" || url == "get_leads_won" || url == "get_sales_analytic"){
+        $("#pdf_view").show();
+        $("#pdf_view").attr({href:"report_pdf.pdf?quarter=" + selected_quarter + "&url=" + url});
+      }
+      else{
+        $("#pdf_view").hide();
+      }
+      if(url == "get_lead_report")
+      {
+        display_lead_bar_chart();
+        $(".lead_range_btn").show();
+        $(".q_range_btn").hide();
+      }
+      else
+      {
+        $(".lead_range_btn").hide();
+        $(".q_range_btn").show();
+      }
+      $('#task_loader').hide();
+   });
+  }
+  function display_assigned_deal_user(user_id,start_date, end_date){
+      $.ajax({
+        url: "/assigned_lead_leaderboard",
+        data: {user_id:user_id, start_date:start_date, end_date:end_date},
+        beforeSend: function(){
+          $('#task_loader').show();
+          $('#assignedDealModal').modal('show');
+          $('#assigned_div').html("");
+        },
+        success: function(data)
+        {
+          $('#task_loader').hide();
+        },
+        error: function(data) {
+          //$("#task_loader").hide();
+        },
+        complete: function(data) {
+          //alert(data.responseText);
+          $('#task_loader').hide();
+          $('#assigned_div').html(data.responseText);
+          $('#system-search').keyup( function() {
+               var that = this;
+                // affect all table rows on in systems table
+                var tableBody = $('.table-list-search tbody');
+                var tableRowsClass = $('.table-list-search tbody tr');
+                $('.search-sf').remove();
+                tableRowsClass.each( function(i, val) {
+                
+                    //Lower text for case insensitive
+                    var rowText = $(val).text().toLowerCase();
+                    var inputText = $(that).val().toLowerCase();
+                    if(inputText != '')
+                    {
+                        $('.search-query-sf').remove();
+                        tableBody.prepend('<tr class="search-query-sf"><td colspan="12"><strong>Searching for: "'
+                            + $(that).val()
+                            + '"</strong></td></tr>');
+                    }
+                    else
+                    {
+                        $('.search-query-sf').remove();
+                    }
+
+                    if( rowText.indexOf( inputText ) == -1 )
+                    {
+                        //hide rows
+                        tableRowsClass.eq(i).hide();
+                        
+                    }
+                    else
+                    {
+                        $('.search-sf').remove();
+                        tableRowsClass.eq(i).show();
+                    }
+                });
+                //all tr elements are hidden
+                if(tableRowsClass.children(':visible').length == 0)
+                {
+                    tableBody.append('<tr class="search-sf"><td class="text-muted" colspan="12">No entries found.</td></tr>');
+                }
+            });
+        }
+      });
+  
+  }

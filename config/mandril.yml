@@ -1,0 +1,8 @@
+development: 
+  user_name:  "xxxxxx"
+  password: "xxxxxx"
+test:
+  user_name:  "xxxxxx"
+  password:   "xxxxxx"
+
+  

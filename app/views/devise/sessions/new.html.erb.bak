@@ -1,0 +1,29 @@
+<div style="margin: 130px 0 90px;">
+	<table align="center">
+	  <tr>
+		<td>
+			<h4>Sign in</h4>
+
+			<%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html=>{:class => "form-horizontal well wl_strch"}) do |f| %>
+			  <div><%= f.label :email %>
+			  <%= f.email_field :email, :required => true, :style=>"height:30px;width:330px"  %></div>
+
+			  <div><%= f.label :password %>
+			  <%= f.password_field :password, :required => true, :style=>"height:30px;width:330px" %></div>
+
+			  <% if devise_mapping.rememberable? -%>
+						  <label class="checkbox">
+				<%= f.check_box :remember_me %>
+				<%= f.label :remember_me %>
+			  </label>
+			  <% end -%>
+
+			  
+			  <div><%= f.submit "Sign in", :class=>"btn btn-inverse" %> &nbsp;&nbsp;&nbsp;<%= render "devise/shared/links" %></div> 
+			<% end %>
+
+			
+		</td>
+	  </tr>
+	</table>
+</div>

@@ -1,0 +1,178 @@
+- if current_user.organization.sources.present?
+  .table-responsive{style: "border:none;"}
+    %table#sourceList.table.table-striped{style: "border: 1px solid #E0DEDE","data-source"=>source_list_url(format: 'json',params: {org: current_user.organization.id})}
+      %tbody
+
+:javascript
+  //$(function() {     
+    $('#editable_source').editable({
+      url: '/settings/save_source' ,
+      pk: 1,
+      title: 'Enter Source',
+      type: 'text',
+      data: {custom: 'text'}, 
+      text: "+Add a Source",
+      validate: function(value) {
+        if($.trim(value) == '')
+          return 'Please enter Source name';
+      },
+      success: function(data) {
+        
+        var newsource = data.split('-');
+        var o = new Option(newsource[0],newsource[0]);
+        /// jquerify the DOM object 'o' so we can use the html method
+        
+        $(o).html(newsource[1]);
+        
+        $(o).prop('selected', true)
+        $("#deal_deal_source").append(o);
+      },
+      error: function(data) {
+        /* actions on validation error (or ajax error) */
+        var msg = '';
+        if(data.errors) { //validation error
+          $.each(data.errors, function(k, v) { msg += k+": "+v+"<br>"; });
+        } 
+        else if(data.responseText) { //ajax error
+        msg = data.responseText;
+      }
+    }
+    });
+    
+    $('#editable_source').on('hidden', function(e, editable) {
+      $("#editable_source").text("+Add a Source");
+      editable.text = "";
+    });
+    
+    
+    taskDataTable=$('#sourceList').dataTable({
+      oLanguage: {"sLengthMenu": "_MENU_", "sProcessing": "<img alt='loader' src='/assets/ajax-loader.png'>" },
+      sPaginationType: "bootstrap",
+      bJQueryUI: true,
+      bServerSide: true,
+      sDom: '<"H"f>rtp',
+      aoColumns: [{sClass: 'col-md-9'}],
+      sAjaxSource: $('#sourceList').data('source'),
+      bLengthChange: false,
+      bFilter: false,
+      bSort: false,
+      aoColumnDefs: [
+        {
+          aTargets: [0],
+            mRender: function(data, type, row ){
+              return "<div id='dv_src_"+row[0]+"' style='width:275px;word-wrap:break-word'>"+row[1]+" \
+                      </div> \
+                      <div id='dv_edit_src_"+row[0]+"' style='display:none;height:30px;paddint-top:5px;'> \
+                          <form action='javascript:void(0);' id='editSrcFrm"+row[0]+"' method='post' name='editSrcFrm"+row[0]+"'\"> \
+                            <div class='fl'> \
+                              <input class='form-control' id='edittxt"+row[0]+"' name='data[src_name]' type='text' value='"+row[1]+"' onkeyup='fixme(this)' required=required> \
+                              <label id='edit_valid' class='error' style='display:none;'> \
+                              </label> \
+                              <input name='data[src_id]' type='hidden' value='"+row[1]+"'> \
+                            </div> \
+                            <span style='margin-left:10px;'> \
+                              <span class='glyphicon glyphicon-ok' style='color:#3E6BA1;cursor:pointer;margin-right:10px;margin-top:9px' onclick='return edit_source("+row[0]+")' type='submit' rel='tooltip' title='Update'></span> \
+                              <a href='javascript:void(0);' onclick='cancelSrcEditdiv("+row[0]+")' rel='tooltip' title='Cancel'><span class='glyphicon glyphicon-remove'></span></a> \
+                            </span> \
+                          </form> \
+                        </div>"
+            }
+        },
+        {aTargets: [1],
+            mRender: function(data, type, row ){
+              return "<div class='action_task' style='float: right; display: none;'> \
+                          <a href='javascript:void(0)' onclick='edit_popup("+row[0]+")' class='grey_act'   style='line-height:inherit;color:#333333;font-size:12px;text-decoration:none' > \
+                            <span class='glyphicon glyphicon-pencil' title='Edit' rel='tooltip'></span> \
+                          </a> \
+                          <a href='/delete_source/"+row[0]+"' class='grey_act'   data-confirm='Do you want to delete the source?' style='line-height:inherit;' >\
+                            <span class='glyphicon glyphicon-trash' rel='tooltip' title='Delete'></span> \
+                          </button> \
+                          </a> \
+                        </div>"
+              
+              }},
+      ],
+      fnPreDrawCallback: function() { $('#task_loader').show();},
+      fnDrawCallback: function() {$('#task_loader').hide();$('span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});},
+      fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+        $('#task_loader').hide();
+        $(nRow).addClass('task_row');
+         $(nRow).hover(
+          function() {
+          $(this).find("div.action_task").show();
+          }, function() {
+          $(this).find("div.action_task").hide();
+         });
+         
+      }
+    });
+  //});
+  function edit_popup(id){
+    $('#taskEditModal').modal('show');
+    $('#dv_src_' + id).hide();
+    $('#dv_edit_src_' + id).show();
+  }
+  
+  function fixme(element)
+  {
+   var val = element.value;
+   var pattern = new RegExp('[ ]+', 'g');
+   val = val.replace(/^ +/gm, '');
+   element.value = val;
+  }
+  function cancelSrcEditdiv(id){
+    $('#dv_edit_src_' + id).hide();
+    $('#dv_src_' + id).show();
+  }
+  
+  function edit_source(id){
+    var name = $("#edittxt"+id).val();
+    if(name != ""){
+    $.ajax({
+      type: "POST",
+      url: "settings/edit_source",
+
+      async: false,
+      data: {source_id: id, name:name},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+       if(data == "success")
+       {
+       $('#edit_valid').html('')
+       $('#edit_valid').hide();
+
+       $("#task_loader").hide();
+       //$("#form_content").html(data.responseText);
+       $('#dv_src_'+id).html(name);
+       $('#dv_src_' + id).show();
+       $('#dv_edit_src_' + id).hide();
+       }
+       else
+       {
+       $('#edit_valid').show();
+       $('#edit_valid').html('Source already exists.')
+       $("#task_loader").hide();
+       }
+      },
+      error: function(data) {
+        $("#task_loader").hide();
+      }
+    });
+    }
+  }  
+  $("tr.task_row").hover(
+    function() {
+      $(this).find("div.action_task").show();
+    }, function() {
+      $(this).find("div.action_task").hide();
+    }
+  );
+:css
+  #example_length{
+          display: none;
+  }
+  .dataTables_paginate{margin-left: 7px;}
+  .fg-toolbar{border:none}

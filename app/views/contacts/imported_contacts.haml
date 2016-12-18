@@ -1,0 +1,57 @@
+-@temp_contact = TempContact.where(import_by: current_user.id).paginate(:page => params[:page], :per_page => 10)
+.container{style:"margin-top:50px;"}
+  %h1{style: "text-align:center"}
+    Imported Contacts
+  .row{style:"background:#fff;border-radius: 5px;"}
+    .col-md-12{style: "padding: 20px;"}
+      %table.table.table-hover{style: "border: 1px solid #ddd;"}
+        %thead{style: "background-color: rgb(237, 238, 240);"}
+          %tr
+            %th
+              First Name
+            %th 
+              Last Name
+            %th 
+              Email
+            %th 
+              Phone
+            %th 
+              Company
+            %th
+              Website
+            %th 
+              City
+            %th 
+              State
+            %th 
+              Country
+          %tbody
+            -@temp_contact.each do |temp_contact|
+              %tr
+                %td
+                  = temp_contact.first_name
+                %td
+                  = temp_contact.last_name
+                %td
+                  = temp_contact.email
+                %td
+                  = temp_contact.phone_number
+                %td
+                  = temp_contact.company_name
+                %td
+                  = temp_contact.website
+                %td
+                  = temp_contact.city
+                %td
+                  = temp_contact.region
+                %td
+                  = temp_contact.country
+      - if !@temp_contact.blank?
+        .proceed_to_lead.fl
+          %a.btn.btn-primary{href: "/import_contacts"}
+            Proceed &raquo
+      - else
+        %h4{style: "color:red;text-align: center;"}
+          No data Available.
+      .digg_pagination.fr
+        = will_paginate @temp_contact, :container => false

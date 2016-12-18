@@ -1,0 +1,109 @@
+:javascript
+  $(document).ready(function(){      
+    display_contact_type_per_tab('all');
+    var options = { 
+        target:        '#output_contact_listing',   // target element(s) to be updated with server response 
+        beforeSubmit:  showRequest_search_contact,  // pre-submit callback 
+        success:       showResponse_search_contact // post-submit callback 
+    }; 
+    // bind to the form's submit event 
+    $('.search_form_contact').submit(function() { 
+        $(this).ajaxSubmit(options); 
+        return false; 
+    }); 
+  });  
+  // pre-submit callback 
+  function showRequest_search_contact(formData, jqForm, options) { 
+    $("#overlay_newpop1").show();$("#pop_new1").show();
+    var queryString = $.param(formData); 
+    
+    return true; 
+  } 
+ 
+  // post-submit callback 
+  function showResponse_search_contact(responseText, statusText, xhr, $form)  { 
+    var searchTerm = $('#seach_txt').val();
+    var tab_value = $('#selected_tab').val();
+    if(tab_value == "all"){      
+      $('#company_contacts').html("").removeClass(" w-box w-box-green");
+      $('#individual_contacts').html("").removeClass(" w-box w-box-green");
+      $('#all_contacts').html(responseText).addClass(" w-box w-box-green");
+    }else if (tab_value == "company"){
+      $('#all_contacts').html("").removeClass(" w-box w-box-green");
+      $('#individual_contacts').html("").removeClass(" w-box w-box-green");
+      $('#company_contacts').html(responseText).addClass(" w-box w-box-green");
+    }else if (tab_value == "individual"){
+      $('#individual_contacts').html(responseText).addClass(" w-box w-box-green");
+      $('#all_contacts').html("").removeClass(" w-box w-box-green");
+      $('#company_contacts').html("").removeClass(" w-box w-box-green");
+    }                
+    contact_list.basic();
+    contact_list.scroll_to();
+    $('li.li-contacts').mouseover(function (e) {
+      e.stopPropagation();
+      $('.actions', this).children('ul').hide();
+      $('.actions', this).show();
+    });
+    $('li.li-contacts').mouseout(function (e) {
+      e.stopPropagation();
+      $('.actions', this).hide();
+      $('.actions').find(ul.dropdown-menu).hide()
+      $('.actions', this).children('ul').hide();
+    });
+    $( "li.li-contacts" ).hover(
+      function() {
+      div_open=$(this).find("div.open")
+      $(div_open).removeClass("open")
+      $(this).find("div.contact_listing_setting").show();
+      }, function() {
+      $(this).find("div.contact_listing_setting").hide();
+    });
+    $('body').highlight( searchTerm );
+
+    $("#overlay_newpop1").hide();$("#pop_new1").hide();
+  } 
+  
+  function display_contact_type_per_tab(type){
+    //
+    $("#alphabet_value").val("");
+    $("#contactpageno").val(1);
+    //alert($('#selected_tab').val())  ;
+    if(type=="all"){
+      $('#contacts_export_btn').show();
+    }else{
+      $('#contacts_export_btn').hide();
+    }
+    if(type =="mycontact")
+    {
+        $(".contact_select_type").html("My Contact");  
+    }
+    else
+    {
+    $(".contact_select_type").html(type);  
+    }
+    $('#selected_tab').val(type);
+    $.ajax({
+      beforeSend: function(xhr) {xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'));$("#overlay_newpop1").show();$("#pop_new1").show();},
+      type: "GET",
+      url: "/get_all_contacts",
+      data: {selected_tab:type},
+      success: function(data){
+        if(type == "all" || type == "company" || type == "individual" || type == "customer" || type == "mycontact"){ 
+          $('#all_contacts').html(data);
+        }
+        contact_list.basic();
+        contact_list.scroll_to();
+        $("#overlay_newpop1").hide();$("#pop_new1").hide();
+        $('.jQ-list-scroll').niceScroll();   
+        $('.dropdown-toggle').removeAttr("onclick");     
+        
+      },
+      error: function(data){
+        //alert('got an error');
+        $("#overlay_newpop1").hide();$("#pop_new1").hide();
+      }
+      
+    });
+  }
+
+  

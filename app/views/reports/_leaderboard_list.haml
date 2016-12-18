@@ -1,0 +1,77 @@
+.table-responsive
+  %table.table.white-table.table-hover.table-striped
+    %thead
+      %tr
+        %th Name
+        %th Group
+        %th Deals assigned
+        %th Deals Won
+        %th 
+          Total Revenue($)
+        %th 
+          Avg. time
+          %i  (in days)
+        %th Activity
+        %th Task assigned
+        %th Task completed   
+        %th Overdue tasks
+        
+    %tbody
+      - if !@users.nil? || !@users.blank?
+        - @users.each do |user|
+          %tr
+            %td 
+              /=link_to user.full_name, edit_user_path(user)
+              = user.full_name
+              /= user.id
+            %td 
+              - if user.admin_type == 1
+                Super Admin
+              - elsif user.admin_type == 2
+                Admin
+              -elsif user.user_role.present? && user.user_role.role.present?
+                = user.user_role.role.name
+            %td 
+              /= user.all_assigned_deal.by_range(@start_date,@end_date).count
+              /- assigned_deal = user.all_assigned_deal.by_range(@start_date,@end_date).includes(:deal_status).where("deal_statuses.original_id IN (?)", [1]).count   
+              /- assigned_deal = user.all_assigned_deal.by_range(@start_date,@end_date).where(:is_active=>true,:deal_status_id=>user.organization.incoming_deal_status().id).count
+              - new_deal_piedonut=user.all_assigned_deal.includes(:deal_status).by_range(@start_date,@end_date).where("deals.deal_status_id IS NOT NULL").group("deal_statuses.original_id").count
+              - assigned_deal = new_deal_piedonut.values.sum
+              - if assigned_deal != 0 
+                /= link_to deals_url(:assigned_to=>user.id, :q=>@quarter,:y=>@year) do
+                = link_to "javascript:", :onclick=>"display_assigned_deal_user(\'#{user.id}\',\'#{@start_date.to_date}\',\'#{@end_date.to_date}\' )" do
+                  = assigned_deal
+              - else
+                = assigned_deal
+            %td 
+              = get_deal_status_won_count(user,[4],@start_date,@end_date).count
+            %td 
+              = user.all_assigned_deal.by_range(@start_date,@end_date).joins(:deal_status).where(:is_active=>true).where("deal_statuses.original_id IN (?) ", [4]).select('sum(amount) as total_revenue').first.total_revenue
+            %td 
+              = Deal.find_avg_deal_close_ratio_status_won user.id, user.organization.id, @start_date.strftime("%Y-%m-%d"),@end_date.strftime("%Y-%m-%d")
+            %td 
+              = get_user_activity_count_for_leaderboard user, @start_date, @end_date
+            %td 
+              - taskassigned = user.all_tasks_assigned.by_range(@start_date,@end_date).count
+              - if taskassigned > 0
+                = link_to tasks_url(:type=>"all", :assigned_to=>user.id, :q=>@quarter ,:y=>@year  ) do
+                  = taskassigned
+              - else
+                = taskassigned
+            %td 
+              - taskcompleted = user.all_tasks_assigned.by_range(@start_date,@end_date).by_is_completed.count
+              - if taskcompleted > 0
+                = link_to tasks_url(:type=>"completed", :assigned_to=>user.id, :q=>@quarter ,:y=>@year  ) do
+                  = user.all_tasks_assigned.by_range(@start_date,@end_date).by_is_completed.count
+              - else
+                = taskcompleted
+            %td 
+              - taskoverdue = user.all_tasks_assigned.by_range(@start_date,@end_date).where("is_completed=? AND DATE_FORMAT(DATE_ADD(due_date, INTERVAL #{Time.zone.now.utc_offset} second), '%Y/%m/%d') < ? ", false, @end_date.strftime("%Y/%m/%d")).count
+              - if taskoverdue > 0
+                = link_to tasks_url(:type=>"overdue", :assigned_to=>user.id, :q=>@quarter ,:y=>@year  ) do
+                  = taskoverdue
+              - else
+                = taskoverdue
+
+            
+

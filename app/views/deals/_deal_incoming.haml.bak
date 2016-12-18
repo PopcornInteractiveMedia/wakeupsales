@@ -1,0 +1,142 @@
+#deallist.col-md-12
+  .w-box.tab-pane.active.in.wbox-customize
+    %div.table-responsive
+      %table#dataTableIncoming.table.table-condensed.table-hover.table-striped{:style=>"border:1px solid #D1D1D1", :cellspacing=>"40","data-source"=>deals_url(format: 'json')}
+        %thead
+          %tr
+            %th #
+            %th Title
+            %th Contact
+            %th Phone
+            %th Email
+            %th Priority
+            %th Location
+        %tbody
+          /-incomingdeals = @deals.select { |dl| dl.deal_status_id == current_user.organization.get_deal_status("1")[0].id }
+          
+          -@incoming_deals.each do |deal| 
+            %tr{:style=>"font-size:11px"}
+              %td
+                %input{:type=>"checkbox",:value=>deal.id}
+              %td.dealrow
+                .col-md-10{:style=>"line-height: 20px;"}
+                  %span#deal_popup_menu 
+                    %a{:href=>deal_path(deal), :style=> "cursor:pointer;text-decoration:none;"}
+                      =deal.title
+                  %div{:style=>"color:#AFAFAF"}
+                    %i.icon-time
+                    =format_date(deal.created_at)
+                    .actions.dropdown.fr{style: "display:none"}
+                      %span.btn-sm.btn-circle.dropdown-toggle{"data-toggle" => "dropdown", href: "javascript:",:style=> "cursor:pointer;text-decoration:none;color:darkOrange;"}
+                        %span.icon-cog.icon-1x
+                      %ul.dropdown-menu
+                        %li
+                          %a{"data-target" => "#noteModal", "data-toggle" => "modal", href: "javascript:",  onclick: "$('#notable_id').val(#{deal.id});$('#notable_type').val('Deal');"} Add Note
+                        %li
+                          %a{"data-toggle" => "modal", href: "#taskModal", rel: "tooltip", title: "Add a Task",onclick: "task_deal(#{deal.id})", "data-id" => deal.id} Add Task
+                        %li
+                          %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", href: "javascript:",onclick: "$('#to').val(\"#{deal.contact.email}\");$('#mailer_id').val(#{deal.id});$('#mailer_type').val('Deal');"} Send Email
+                        %li
+                          %a{href: edit_deal_path(deal)} Edit
+                        %li
+                          =link_to("Delete", deal_path(deal), :method => :delete, :confirm => "Are you sure?")
+                        %li
+                          %a.movedealincomepop{"data-toggle" => "modal", href: "#dealmoveModal", rel: "popup", title: "Move Deal",onclick: "move_deal(#{deal.id})", "data-id" => deal.id}
+                            Move Deal    
+                    
+                    %br
+                    %i.icon-user
+                    =deal.assigned_user.first_name
+                    %i.icon-repeat
+                    =deal.attempts
+                    %br
+                  -deal.deal_labels.each do |dlb|
+                    %span.btn-xs{:style=>"font-weight:bold;border:1px solid #{dlb.user_label.color};color:#{dlb.user_label.color};font-size: 11px;margin: 2px;"}
+                      =dlb.user_label.name
+                .col-md-2
+                    
+              %td
+                =deal.contact.first_name
+              %td
+                -if(!deal.contact.phones.empty?)
+                  %i.icon-phone
+                  = deal.contact.phones.first.extension.nil? ? (deal.contact.address && deal.contact.address.country ? deal.contact.address.country.isd_code : "") : deal.contact.phones.first.extension
+                  =deal.contact.phones.first.phone_no
+              %td
+                -if(!deal.contact.email.blank?)
+                  %i.glyphicon.glyphicon-envelope
+                  %a{"data-target" => "#SendEmailModal", "data-toggle" => "modal", href: "javascript:",onclick: "$('#to').val(\"#{deal.contact.email}\");"}
+                    =deal.contact.email
+              %td
+                %span{:class=>"btn btn-xs btn-sm #{(deal.priority_type.original_id == 1 ? 'btn-metis-1' : !deal.priority_type.nil? && deal.priority_type.original_id == 2 ? 'btn-metis-2' : 'btn-metis-3')}"}
+                  =deal.priority_type.name
+              %td
+                -if(!deal.contact.address.nil?)
+                  =deal.contact.address.address
+                  =deal.contact.address.country.name
+                  =deal.contact.address.city
+            
+:javascript
+   $(document).ready(function(){
+    $(".movedealincomepop").click(function(){ 
+      $("#incoming_move").show();
+      $("#pipeline_move").hide();
+    });
+    
+  });
+  function metisTableIncoming() {
+    "use strict";
+    //$('#dataTableIncoming').dataTable({
+    //    "sDom": "<'pull-right'l>t<'row'<'pull-right'p>>",
+    //    "sPaginationType": "bootstrap",
+    //    "oLanguage": {
+    //        "sLengthMenu": "_MENU_"
+    //    },
+    //    "bProcessing": true,
+    //    "bServerSide": true,
+    //    "sAjaxSource": "deals/incoming_deals",
+    //    "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {
+    //      oSettings.jqXHR = $.ajax( {
+    //        "dataType": 'json',
+    //        "type": "POST",
+    //        "url": sSource,
+    //       "data": aoData,
+    //        "success": fnCallback
+    //      } );
+    //     }
+    //    });
+    
+    
+  }
+  //"sDom": "<'pull-right'l>t<'row'<'col-md-4'f><'col-md-4'p>>",
+  //"sDom": "<'row'<'pull-right'l><'pull-right'f>>t<'row'<'pull-right'p>>",
+  $(function() {
+    $('#dataTableIncoming').dataTable({
+      sPaginationType: "bootstrap",
+          bJQueryUI: true,
+          bProcessing: true,
+          bServerSide: true,
+          sAjaxSource: $('#dataTableIncoming').data('source')
+    });
+    
+    //metisTableIncoming();
+    $('#dataTableIncoming').find('tbody').css("font-size","11px");
+    //$('#dataTableIncoming').sortable({});
+    //$('.inner .row').sortable({});
+    
+    
+  });
+  
+  //$(".dealrow").hover(
+  //  function() {
+  //    $(this).find("div.actions").show();
+  //  }, function() {
+  //    $(this).find("div.actions").hide();
+  //  }
+  //); 
+  function move_deal(deal_id)
+  {
+    $("#deal_id_move").val(deal_id);
+  }
+  
+  

@@ -1,0 +1,664 @@
+:css
+  #addData .dropdown-menu::after {
+    position: absolute;
+    top: -6px;
+    left: 6px;
+    display: inline-block;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #9C9FA2;
+    border-left: 6px solid transparent;
+    content: '';
+  }
+  .dropdown-menu .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: block;
+    margin-top: -1px;
+  }
+  .dropdown-menu li:hover .sub-menu {
+    visibility: visible;
+  }  
+  .actions .dropdown-menu {min-width: 105px;top: 25px;}
+  .actions .dropdown-menu > li > a {padding: 2px 9px;}  
+  .dropdown-submenu {
+      position: relative;
+  }
+  .dropdown-submenu>.dropdown-menu {
+      top: 0;
+      left: 100%;
+      margin-top: -6px;
+      margin-left: -1px;
+      -webkit-border-radius: 0 6px 6px 6px;
+      -moz-border-radius: 0 6px 6px;
+      border-radius: 0 6px 6px 6px;
+  }
+
+  .dropdown-submenu:hover>.dropdown-menu {
+      display: block;
+  }
+
+  .dropdown-submenu>a:after {
+      display: block;
+      content: " ";
+      float: right;
+      width: 0;
+      height: 0;
+      border-color: transparent;
+      border-style: solid;
+      border-width: 5px 0 5px 5px;
+      border-left-color: #ccc;
+      margin-top: 5px;
+      margin-right: -10px;
+  }
+
+  .dropdown-submenu:hover>a:after {
+      border-left-color: #fff;
+  }
+
+  .dropdown-submenu.pull-left {
+      float: none;
+  }
+
+  .dropdown-submenu.pull-left>.dropdown-menu {
+      left: -100%;
+      margin-left: 10px;
+      -webkit-border-radius: 6px 0 6px 6px;
+      -moz-border-radius: 6px 0 6px 6px;
+      border-radius: 6px 0 6px 6px;
+  }  
+%ul.tag_filter{style: "margin-left:0px;text-align:center;display:none;"}
+  %li#show_filter_tskmsg
+  %li.deal_type_tag.com_cls{style: "display: none;"}
+    .tag_dd
+      %span#deal_type_tag_txt
+      %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_task_filter('deal_type', 'deal_by');"} x
+  %li.assigned_to_tag.com_cls{style: "display: none;"}
+    .tag_dd
+      %span#assigned_to_tag_txt
+      %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_task_filter('assigned_to', 'asg_by');"} x
+  %li.task_type_tag.com_cls{style: "display: none;"}
+    .tag_dd
+      %span#task_type_tag_txt
+      %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_task_filter('task_type', 'task_by');"} x
+  %li.task_status.com_cls{style: "display: none;"}
+    .tag_dd
+      %span#task_status_tag_txt
+      %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_task_filter('task_status');"} x
+  %li.date_tag.com_cls{style: "display: none;"}
+    .tag_dd
+      %span#date_tag_txt
+      %a.filter_tag_deal{href: "javascript:void(0);", onclick: "reset_task_filter('date', 'date');"} x
+  %li.task_reset_tag.com_cls
+    %div
+      %a{href: "javascript:void(0);", onclick: "reset_all_task_filter();", class: "btn btn-xs btn-warning"} RESET
+.navbar-right
+  .btn-group  
+    %a{"data-toggle" => "tab", href: "#all", onclick: "add_css('all');", :style=> "text-decoration:none;", rel:"tooltip", title:"List View"}
+      %button.btn.btn-default.active#btn_task_all{type: "button", style: "border-radius:4px 0 0 4px;outline:none;cursor:default;"}
+        %span.glyphicon.glyphicon-list
+    %a{"data-toggle" => "tab", href: "#calendarView", onclick: "$('#calendar_filter_type').val('');add_css('calendar');", rel:"tooltip", title:"Calender View", style:"margin-left:-4px"}
+      %button.btn.btn-default#btn_task_calender{type: "button",style: "border-radius:0 4px 4px 0;outline:none"}
+        %span.glyphicon.glyphicon-calendar
+
+  /- if current_user.is_admin? || current_user.is_super_admin?
+  .btn-group
+    %span#show_main
+      .btn-group
+        %button.btn.btn-default.dropdown-toggle.f_menu{"data-toggle" => "dropdown", type: "button",onclick: "reser_all_submenu();"}
+          %span.glyphicon.glyphicon-filter
+          Filter
+        %ul.dropdown-menu.show_menu{role: "menu"}
+          %li.arrow_top{style: "margin-left:87px;z-index:99"}
+          %li.dropdown-submenu
+            %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "show_hide_submenu('deal_type');"} Deal Type
+            #dtype{style: "display: none;position:absolute;left:145px;top:-11px;"}
+              .arrow_left.deal_arw{style: "display:none;"}
+              %ul#cre_by_app.dropdown-menu{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                - current_user.organization.deal_statuses.order("name").each do |dtype|
+                  %li
+                    %a{href: "javascript:void(0)",onclick: "check_radio_button(#{dtype.id},'deal_type')",class: "taskFilterSelectDropdow"}
+                      %input{id:"deal_type_#{dtype.id}", class: "deal_by_c",type: "radio", value: "#{dtype.id}",d_type: "#{dtype.name}",style: "margin-left:-10px;cursor:pointer;",name: "deal_type"}
+                        =dtype.name
+                  %li.divider
+          %li.divider
+          %li.dropdown-submenu
+            %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "show_hide_submenu('assigned');"} Assigned To
+            #asg{style: "display: none;position: absolute;left:145px;top:-11px;"}
+              .arrow_left.asg_arw{style: "display:none;"}
+              %ul.dropdown-menu{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                - all_org_users.each do |assg_by|
+                  %li
+                    %a{href: "javascript:void(0)",onclick: "check_radio_button(#{assg_by.id},'assigned')",class: "taskFilterSelectDropdow"}
+                      %input{id:"assg_by_#{assg_by.id}", class: "asg_by_c",type: "radio", value: "#{assg_by.id}",a_name: "#{assg_by.full_name}",style: "margin-left:-10px;cursor:pointer;",name: "assg_by"}
+                        =assg_by.full_name
+                  %li.divider
+          %li.divider
+          %li.dropdown-submenu
+            %a{href: "javascript:void(0)","data-toggle"=>"dropdown",onclick: "show_hide_submenu('task_type');"} Task Type
+            #tsk{style: "display: none;position:absolute;left:145px;top:-11px;"}
+              .arrow_left.tsk_arw{style: "display:none;"}
+              %ul#cre_by_app.dropdown-menu{style: "height:200px;overflow-y:scroll;overflow-x:hidden;display:inline-block;position:relative;"}
+                - current_user.organization.task_types.order("name").each do |tsk_type|
+                  %li
+                    %a{href: "javascript:void(0)",onclick: "check_radio_button(#{tsk_type.id},'task_type')",class: "taskFilterSelectDropdow"}
+                      %input{id:"task_type_#{tsk_type.id}", class: "task_by_c",type: "radio", value: "#{tsk_type.id}",t_type: "#{tsk_type.name}",style: "margin-left:-10px;cursor:pointer;",name: "task_type"}
+                        =tsk_type.name
+                  %li.divider       
+          %li.divider
+          %li.date_show.dropdown-submenu{onclick: "show_hide_submenu('date');"}
+            %a{href: "javascript:void(0)","data-toggle"=>"dropdown"} Any Time
+            #dt{style: "display: none;position: absolute;left:145px;top:-11px;"}
+              .arrow_left.date_arw{style: "display:none;"}
+              %ul.dropdown-menu{style: "display:inline-block;position:relative;"}
+                %li
+                  %a{href: "javascript:void(0)",onclick: "check_radio_button('past_week','date')" ,class: "taskFilterSelectDropdow"}  
+                    %input{id:"past_week", class: "date_c",type: "radio", value: "Past Week",style: "margin-left:-10px;cursor:pointer;",name: "date"}
+                    Past Week
+                %li.divider
+                %li
+                  %a{href: "javascript:void(0)",onclick: "check_radio_button('past_two_weeks','date')",class: "taskFilterSelectDropdow"}  
+                    %input{id:"past_two_weeks", class: "date_c",type: "radio", value: "Past Two Weeks",style: "margin-left:-10px;cursor:pointer;",name: "date"}
+                    Past Two Weeks
+                %li.divider
+                %li
+                  %a{href: "javascript:void(0)",onclick: "check_radio_button('past_three_weeks','date')",class: "taskFilterSelectDropdow"}  
+                    %input{id:"past_three_weeks", class: "date_c",type: "radio", value: "Past Three Weeks",style: "margin-left:-10px;cursor:pointer;",name: "date"}
+                    Past Three Weeks
+                %li.divider
+                %li
+                  %a{href: "javascript:void(0)",onclick: "check_radio_button('past_month','date')",class: "taskFilterSelectDropdow"}  
+                    %input{id:"past_month", class: "date_c",type: "radio", value: "Past Month",style: "margin-left:-10px;cursor:pointer;",name: "date"}
+                    Past Month
+                %li.divider
+                %li
+                  %a{href: "javascript:void(0)",onclick: "check_radio_button('past_year','date')",class: "taskFilterSelectDropdow"}  
+                    %input{id:"past_year", class: "date_c",type: "radio", value: "Past Year",style: "margin-left:-10px;cursor:pointer;",name: "date"}
+                    Past Year
+                %li.divider            
+                     
+      
+    /%a#taskFilterNow{:href=>"javascript:",rel: "tooltip", title: "Click to Filter", onclick: "add_css_filter('filter');",:style=> "cursor:pointer;text-decoration:none;padding: 2px;"}
+    /  %button.btn.btn-default#btn_task_filter{type: "button"}
+    /    %span.glyphicon.glyphicon-filter
+    /    Filter 
+    %a{"data-toggle" => "modal", href: "#taskModal", onclick: "$('#task_form')[0].reset();$('#clicked_button_ref').val(check_active_tab());$('#email_err').html('');",rel: "tooltip", title: "Add a task"}
+      %button.btn.btn-primary.p5{type: "button"}        
+        %span.glyphicon.glyphicon-plus-sign 
+        Add a Task               
+
+.tablisting.task_tab
+  %ul.nav.nav-tabs
+    =render partial: "task_tab_data"
+  .cb
+  
+  #filter_options.filter_box{style: "display:none"}
+    .col-md-12.deal_filter
+      .row
+        .dataFilter.col-md-3.deal_type
+          =select_tag "filter_deal_type", options_from_collection_for_select(current_user.organization.deal_statuses.order("name"), "id", "name"), :class=>"col-md-12 form-control taskFilterSelectDropdow", :prompt => "- Deal type -"
+        .dataFilter.col-md-3
+          =select_tag "filter_assigned_to", options_from_collection_for_select(all_org_users, "id", "full_name"), :class=>"col-md-12 form-control taskFilterSelectDropdow", :prompt => "- Assigned to -"
+        .dataFilter.col-md-3
+          =select_tag "filter_task_type", options_from_collection_for_select(current_user.organization.task_types.order("name"), "id", "name"), :class=>"col-md-12 form-control taskFilterSelectDropdow", :prompt => "- Task type -"
+        #anyTimeFil.col-md-3
+          = select_tag "filter_date", options_for_select(["Past Week","Past Two Weeks","Past Three Weeks", "Past Month", "Past Year"]),:class=>"col-md-12 form-control taskFilterSelectDropdow", :prompt => "- Any time -"
+  .cb10.get-space
+#task_list.body{style: "padding: 0"}
+  =render :partial => "tasks/task_list"
+= hidden_field_tag "calendar_filter_type", "",value: ""
+:javascript
+  $(function() {
+    $('a[rel="tooltip"],i,input:checkbox,button,div,span').powerTip({smartPlacement: true,fadeInTime: 100,fadeOutTime: 200});
+    select_task_filter_cookies();
+  });
+  
+  function check_active_tab(){
+    tab_name="all"
+    $( "ul.nav-tabs li" ).each(function() {
+      if($( this ).hasClass( "active" ))
+        tab_name = $( this ).attr("id");
+    });
+    return tab_name
+  }
+  
+  function add_css(type){
+    if(type == 'all'){      
+      if(!$("#btn_task_all").hasClass("active"))        
+        display_tasks('all')
+      $("#btn_task_calender").removeClass('active').attr('style'); 
+      $("#btn_task_all").addClass('active').attr('style', 'cursor:default;border-radius:4px 0 0 4px;outline:none');  
+    }else if(type == 'calendar'){      
+       if($("#btn_task_all").hasClass("active"))
+         display_tasks('calendar')
+       $("#btn_task_calender").addClass('active').attr('style', 'cursor:default;border-radius:0 4px 4px 0;outline:none');         
+       $("#btn_task_all").removeClass('active').attr('style', 'cursor:pointer;border-radius:4px 0 0 4px;outline:none');
+    }
+  }
+  function add_css_filter(){
+    if (!$('#filter_options').is(':visible')) 
+       $("#btn_task_filter").addClass('active').attr('style', 'border-radius:0 4px 4px 0;outline:none');
+     else
+       $("#btn_task_filter").removeClass('active').attr('style', 'border-radius:0 4px 4px 0;outline:none');
+  }
+  
+  
+  function select_task_filter_cookies()
+  {
+    if(("#{cookies[:task_type_v]}" == "true" ) || ("#{cookies[:deal_type_v]}" == "true" ) || ("#{cookies[:asg_type_v]}" == "true" ) || ("#{cookies[:dt_type_v]}" == "true" )){
+      if("#{cookies[:task_type_v]}" == "true" ){
+        $('#filter_task_type').val("#{cookies[:task_type_val]}");
+        $(".tag_filter").show();
+        $(".task_type_tag").show();
+        $("#task_type_tag_txt").html("#{cookies[:task_type_text]}");
+      }
+     if("#{cookies[:asg_type_v]}" == "true" ){
+        $('#filter_assigned_to').val("#{cookies[:asg_to_val]}");
+        $(".tag_filter").show();
+        $(".assigned_to_tag").show();
+        $("#assigned_to_tag_txt").html("#{cookies[:asg_type_text]}");
+      }
+    if("#{cookies[:deal_type_v]}" == "true" ){
+      $('#filter_deal_type').val("#{cookies[:deal_type_val]}");
+      $(".tag_filter").show();
+      $(".deal_type_tag").show();
+      $("#deal_type_tag_txt").html("#{cookies[:deal_type_text]}");
+    }
+    if("#{cookies[:dt_type_v]}" == "true" ){
+      $('#filter_date').val("#{cookies[:dt_range]}");
+      $(".tag_filter").show();
+      $(".date_tag").show();
+      $("#date_tag_txt").html("#{cookies[:dt_type_text]}");
+    }
+    }
+  }
+  $(document).ready(function(){
+    t = $('#task_assigned_to').val("#{params[:assigned_to]}");
+    y = $('#task_year').val("#{params[:y]}");
+    q = $('#task_quarter').val("#{params[:q]}");
+    document.cookie="task_assigned_to="+t.val();
+    document.cookie="task_year="+y.val();
+    document.cookie="task_quarter="+q.val();
+    document.cookie="t_type=#{params[:t_type]}";
+    $('input[name="filterTasks"]').removeAttr('checked');
+    if("#{cookies[:task_page_tab]}" != ""){
+      //display_tasks("#{cookies[:task_page_tab]}")
+    }
+    else if(#{params[:type].present?} == true){
+      display_tasks("#{params[:type]}")
+    }
+    else if(#{@comp_task_type.present?}){
+      display_tasks("#{@comp_task_type}")
+    }
+    else{
+      tc=$("#today_task_count").val();
+      oc=$("#overdue_task_count").val();
+      uc=$("#upcoming_task_count").val();
+      if( tc == 0 && oc > 0){
+        //$("#overdueTask").addClass("active");
+        display_tasks('overdue');
+      }else if(tc==0 && oc ==0 && uc > 0){
+        //$("#upcomingTask").addClass("active");
+        display_tasks('upcoming');
+      }else{
+        //$("#todayTask").addClass("active");
+        display_tasks('today');
+      }
+    }
+    if(("#{cookies[:task_type_v]}" == "true" ) || ("#{cookies[:deal_type_v]}" == "true" ) || ("#{cookies[:asg_type_v]}" == "true" ) || ("#{cookies[:dt_type_v]}" == "true" )){
+      $("#btn_task_filter").addClass('active').attr('style', 'border-radius:0 4px 4px 0;outline:none');
+    }
+  });
+  
+  function load_task_tabs(task_tab, flag){
+    $.ajax({
+        type: "POST",
+        url: "/task_tab_data",
+        dataType: 'json',
+        async: true,
+        beforeSend: function(){
+          $("#task_loader").show();
+        },
+        success: function(data)
+        {
+         
+        },
+        error: function(data) {
+          $("#task_loader").hide();
+        },
+        complete: function(data) {
+          //alert(data.responseText)
+          $(".nav-tabs").html(data.responseText);
+          $("#task_loader").hide();   
+          $("li").removeClass("active");
+          $("#"+task_tab+"Task").addClass("active"); 
+          if(flag)
+            display_tasks(task_tab);      
+        }
+    });
+  }
+
+  function active_display_tasks(task_type){
+      display_tasks(task_type)
+  }
+  function display_tasks(task_status){
+    if("#{cookies[:task_page_tab]}" == ""){
+      document.cookie="task_page_tab="+task_status;
+    }
+    else if("#{cookies[:task_page_tab]}" != "" && "#{cookies[:task_page_tab]}" != task_status){
+      document.cookie="task_page_tab="+task_status;
+      reset_datatable_cookies();
+    }
+    window.history.pushState(null, "Title", "/tasks?type="+task_status+"");
+    if((task_status == "calendar") || (task_status == "today")){
+      $("#anyTimeFil").hide();
+      $(".deal_type").hide();
+      $(".date_show").hide();
+      $(".dataFilter").removeClass("col-md-3");
+      $(".dataFilter").addClass("col-md-4");
+    }else{
+      $("#anyTimeFil").show();
+      $(".deal_type").show();
+      $(".date_show").show();
+      $(".dataFilter").removeClass("col-md-4");
+      $(".dataFilter").addClass("col-md-3");
+    }
+    $("#task_status_value").val(task_status);
+    $("#filter_options").hide();
+    //reset_all_task()
+    $(".resetFilter").hide(300);
+    $('input:checkbox').removeAttr('checked');
+    $("#task_type").val(task_status);
+    action="/"+task_status+"_task";
+    if(("#{cookies[:task_type_v]}" != "true" ) || ("#{cookies[:deal_type_v]}" != "true" ) || ("#{cookies[:asg_type_v]}" != "true" ) || ("#{cookies[:dt_type_v]}" != "true" )){   
+    $.ajax({
+        type: "POST",
+        url: "/task_listing",
+        dataType: 'json',
+        data: {task_status: task_status},
+        async: true,
+        beforeSend: function(){
+          $("#task_loader").show();
+        },
+        success: function(data)
+        {
+         
+        },
+        error: function(data) {
+          $("#task_loader").hide();
+        },
+        complete: function(data) {
+          //alert(data.responseText)
+          $("#task_list").html(data.responseText);
+          $("#task_loader").hide();
+          $("li").removeClass("active");
+          $("#"+task_status+"Task").addClass("active")
+          
+        }
+    });
+    }
+    else
+    {setTimeout('multi_filter_task()', 1000);}
+  }
+  
+  $('.taskFilterSelectDropdow').click(function() {
+    multi_filter_task()
+  });
+  
+  function multi_filter_task(){
+   var selected_tab =""
+    if ( $( "#task_calendar_view" ).length ) {
+    var cal = true;
+    }else{
+    selected_tab = $(".task_tab .active").attr('id').replace('Task','');
+    }
+    var deal_type_val = $("input:radio[name='deal_type']:checked").val();
+    var asg_to_val = $("input:radio[name='assg_by']:checked").val();
+    var task_type_val = $("input:radio[name='task_type']:checked").val();
+    //var deal_type_val = $("#filter_deal_type").val();
+    //var asg_to_val = $("#filter_assigned_to").val();
+    //var task_type_val = $("#filter_task_type").val();
+    //var dt_range = $("#filter_date").val();
+    var dt_range = $("input:radio[name='date']:checked").val();
+    var task_type_v = false;
+    var deal_type_v = false;
+    var asg_type_v = false;
+    var dt_type_v = false;
+    if(deal_type_val != "" && typeof deal_type_val != 'undefined'){
+      deal_type_v = true;
+      deal_type_text=$('#deal_type_'+deal_type_val).attr("d_type");
+      document.cookie="deal_type_v=true";
+      document.cookie="deal_type_val="+deal_type_val;
+      document.cookie="deal_type_text="+deal_type_text;
+      $(".tag_filter").show(300);
+      $(".deal_type_tag").show(300);
+      $("#deal_type_tag_txt").html(deal_type_text)
+    }else{
+      $(".deal_type_tag").hide(300);
+      $.removeCookie("deal_type_v");
+      $.removeCookie("deal_type_val");
+      $.removeCookie("deal_type_text");
+    }
+    if(asg_to_val != "" && typeof asg_to_val != 'undefined'){
+      asg_type_v = true;
+      asg_type_text = $('#assg_by_'+asg_to_val).attr("a_name");
+      document.cookie="asg_type_v=true";
+      document.cookie="asg_to_val="+asg_to_val;
+      document.cookie="asg_type_text="+asg_type_text;
+      $(".tag_filter").show(300);
+      $(".assigned_to_tag").show(300);
+      $("#assigned_to_tag_txt").html(asg_type_text)
+    }else{
+      $(".assigned_to_tag").hide(300);
+      $.removeCookie("asg_type_v");
+      $.removeCookie("asg_to_val");
+      $.removeCookie("asg_type_text");
+    }
+    if(task_type_val != "" && typeof task_type_val != 'undefined'){
+      task_type_v = true;
+      task_type_text = $('#task_type_'+task_type_val).attr("t_type");
+      document.cookie="task_type_v=true";
+      document.cookie="task_type_val="+task_type_val;
+      document.cookie="task_type_text="+task_type_text;
+      $(".tag_filter").show(300);
+      $(".task_type_tag").show(300);
+      $("#task_type_tag_txt").html(task_type_text)
+    }else{
+      $(".task_type_tag").hide(300);
+      $.removeCookie("task_type_v");
+      $.removeCookie("task_type_val");
+      $.removeCookie("task_type_text");
+    }
+    if(dt_range != "" && typeof dt_range != 'undefined'){
+      dt_type_v = true;
+      dt_type_text = dt_range;
+      document.cookie="dt_type_v=true";
+      document.cookie="dt_range="+dt_range;
+      document.cookie="dt_type_text="+dt_type_text;
+      $(".tag_filter").show(300);
+      $(".date_tag").show();
+      $("#date_tag_txt").html(dt_type_text)
+    }else{
+      $(".date_tag").hide();    
+      $.removeCookie("dt_type_v");
+      $.removeCookie("dt_range");
+      $.removeCookie("dt_type_text");
+    }
+    if(deal_type_val == "" && asg_to_val == "" && task_type_val == "" && dt_range == ""){
+      $(".task_reset_tag").hide();
+    }
+    else if(typeof deal_type_val === 'undefined' && typeof asg_to_val === 'undefined' && typeof task_type_val === 'undefined' && typeof dt_range === 'undefined')
+    {
+      $('.reset_tag').hide();
+    }
+    else{
+      $('.task_reset_tag').show(300);
+    }
+    $.ajax({
+      type: "POST",
+      url: "/task_filter",
+      dataType: 'json',
+      async: true,
+      data: {deal_type: deal_type_val, asg_to: asg_to_val, task_type: task_type_val , task_status: selected_tab, dt_range: dt_range,cal:cal},
+      beforeSend: function(){
+        $("#task_loader").show();
+      },
+      success: function(data)
+      {
+       
+      },
+      error: function(data) {
+       $("#task_loader").hide();
+      },
+      complete: function(data) {
+        $("#task_list").html(data.responseText);
+        $("#task_loader").hide();
+        
+      }
+    });
+  }
+  
+
+  function reset_task_list(){
+    var selected_tab= $('.active').attr('id').replace('Task','');
+    display_tasks(selected_tab)
+  }
+  $( "#taskFilterShow" ).click(function() {
+    //$("#filter_options").slideToggle( "slow" );
+    $("#filter_icon").toggleClass('icon-chevron-down icon-chevron-up');
+  });
+  
+  function reset_task_filter(id, remove_id){
+    $('.'+id+"_tag").hide();
+    $('.'+remove_id+'_c').removeAttr('checked');
+    $(".task_reset_tag").hide();
+    //$('#filter_'+id).prop('selectedIndex',0);
+    //$("#show_filter_tskmsg").html('');
+    multi_filter_task();
+  }
+  function reset_all_task_filter(){
+    $(".task_reset_tag").hide();
+    $("#show_filter_tskmsg").html('');
+    $('.deal_by_c').removeAttr('checked'); 
+    $('.asg_by_c').removeAttr('checked'); 
+    $('.task_by_c').removeAttr('checked'); 
+    $('.date_c').removeAttr('checked'); 
+    reset_all_task()
+    multi_filter_task();
+    reset_datatable_cookies();
+    $("#btn_task_filter").removeClass('active').attr('style', 'border-radius:0 4px 4px 0;outline:none');
+    $("#filter_options").hide();
+  }
+  
+  function reset_all_task(){
+    var cookies = document.cookie.split(";");
+    for(var i=0; i < cookies.length; i++) {
+      var equals = cookies[i].indexOf("=");
+      var name = equals > -1 ? cookies[i].substr(0, equals) : cookies[i];
+      $.removeCookie("+ name +");
+    }
+    $('.task_reset_tag').hide();
+    $('.deal_type_tag').hide(300);
+    $('.assigned_to_tag').hide(300);
+    $('.task_type_tag').hide(300);
+    $('.date_tag').hide(300);
+    $('#filter_deal_type').prop('selectedIndex',0);
+    $('#filter_assigned_to').prop('selectedIndex',0);
+    $('#filter_task_type').prop('selectedIndex',0);
+    $('#filter_date').prop('selectedIndex',0);
+    $.each(['deal_type_v','deal_type_val','deal_type_text','asg_type_v','asg_to_val','asg_type_text','task_type_v','task_type_val','task_type_text','task_page_tab'], function( index, value ) {
+       $.removeCookie(value);
+    });
+  }
+  $('#show_main').click(function(event){
+    event.stopPropagation();
+  });
+  $('html').click(function() {
+   $('.show_menu').hide(); 
+  });
+  $('html').click(function() {
+    //Hide the menus if visible
+  });    
+  function reset_datatable_cookies(){
+    if('#{cookies[:SpryMedia_DataTables_taskList_tasks]}' != ""){
+      $.removeCookie("SpryMedia_DataTables_taskList_tasks");
+    }
+  } 
+  function show_hide_submenu(type)
+  {
+    if(type == "deal_type")
+    {
+      $('.deal_arw').show();
+      $('#dtype').show();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.tsk_arw').hide();
+      $('#tsk').hide();
+      $('.date_arw').hide();
+      $('#dt').hide();
+    }
+    else if(type == "assigned")
+    {
+      $('.deal_arw').hide();
+      $('#dtype').hide();
+      $('.asg_arw').show();
+      $('#asg').show();
+      $('.tsk_arw').hide();
+      $('#tsk').hide();
+      $('.date_arw').hide();
+      $('#dt').hide();
+    }
+    else if(type == "task_type")
+    {
+      $('.deal_arw').hide();
+      $('#dtype').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.tsk_arw').show();
+      $('#tsk').show();
+      $('.date_arw').hide();
+      $('#dt').hide();
+    }
+    else if(type == "date")
+    {
+      $('.deal_arw').hide();
+      $('#dtype').hide();
+      $('.asg_arw').hide();
+      $('#asg').hide();
+      $('.tsk_arw').hide();
+      $('#tsk').hide();
+      $('.date_arw').show();
+      $('#dt').show();
+    }    
+  }
+  function check_radio_button(id,type)
+  {
+    reset_datatable_cookies();
+    if(type == "deal_type")
+    {
+      $("#deal_type_"+id).prop("checked", true);
+    }
+    else if(type == "assigned")
+    {
+     $("#assg_by_"+id).prop("checked", true);
+    }
+    else if(type == "task_type")
+    {
+     $("#task_type_"+id).prop("checked", true);
+    }
+    else if(type == "date")
+    {
+     $("#"+id).prop("checked", true);
+    }    
+  }
+  function reser_all_submenu()
+  {
+   $('.deal_type').hide();
+   $('#dtype').hide();
+   $('.asg_arw').hide();
+   $('#asg').hide();
+   $('.task_type').hide();
+   $('#tsk').hide();
+   $('.date_arw').hide();
+   $('#dt').hide();
+  }
